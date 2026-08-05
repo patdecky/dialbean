@@ -1,23 +1,23 @@
-import { DileBeanStorageSchema } from '../types';
+import { DileBeanSchema } from './types';
 
 export interface StorageAdapter {
-  loadData(): DileBeanStorageSchema;
-  saveData(data: DileBeanStorageSchema): void;
+  loadData(): DileBeanSchema;
+  saveData(data: DileBeanSchema): void;
 }
 
 const LOCAL_STORAGE_KEY = 'DILEBEAN_DATA_V1';
 
-const DEFAULT_INITIAL_DATA: DileBeanStorageSchema = {
+const DEFAULT_INITIAL_DATA: DileBeanSchema = {
   version: 1,
   bags: [],
   grinders: [],
   brewers: [],
-  baseRecipes: [],
+  recipes: [],
   dialIns: []
 };
 
 export class LocalStorageAdapter implements StorageAdapter {
-  loadData(): DileBeanStorageSchema {
+  loadData(): DileBeanSchema {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (!raw) {
       this.saveData(DEFAULT_INITIAL_DATA);
@@ -31,7 +31,7 @@ export class LocalStorageAdapter implements StorageAdapter {
     }
   }
 
-  saveData(data: DileBeanStorageSchema): void {
+  saveData(data: DileBeanSchema): void {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
   }
 }
