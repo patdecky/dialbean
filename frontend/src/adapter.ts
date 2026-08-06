@@ -1,4 +1,5 @@
-import { DileBeanSchema } from './types';
+import type { DileBeanSchema } from './types';
+import { bags_base, grinders_base, brewers_base, recipes_base } from './BaseLib';
 
 export interface StorageAdapter {
   loadData(): DileBeanSchema;
@@ -9,11 +10,15 @@ const LOCAL_STORAGE_KEY = 'DILEBEAN_DATA_V1';
 
 const DEFAULT_INITIAL_DATA: DileBeanSchema = {
   version: 1,
-  bags: [],
-  grinders: [],
-  brewers: [],
-  recipes: [],
-  dialIns: []
+  bags_base,
+  bags_user: [],
+  grinders_base,
+  grinders_user: [],
+  brewers_base,
+  brewers_user: [],
+  recipes_base,
+  recipes_user: [],
+  brews: []
 };
 
 export class LocalStorageAdapter implements StorageAdapter {

@@ -1,7 +1,6 @@
 // --- ENUMS & SCALARS ---
 export type RoastLevel = 'Light' | 'Medium' | 'Dark';
 export type BrewMethod = 'Pour-Over' | 'Espresso' | 'Immersion' | 'Hybrid' | 'Batch';
-export type ItemLocation = 'Countertop' | 'Shelf' | 'TrashBin';
 
 export interface Rating {
     sweetness: number;  // 1 to 5
@@ -15,68 +14,92 @@ export interface Rating {
 export interface Bag {
     id: string;
     name: string;
-    isBaseBag: boolean; // true if this is a base bag, false if it's a user-created variant
     roaster?: string;
     roastLevel: RoastLevel;
     roastDate?: string; // ISO String
-    dateOpened: string; // ISO String
+    dateOpened?: string; // ISO String
     isFinished: boolean;
+    isBaseBag: boolean; // true for base bags, false for user-defined bags
+}
+export interface BaseBag extends Bag {
+    isBaseBag: true;
+}
+
+export interface UserBag extends Bag {
+    isBaseBag: false;
 }
 
 export interface Grinder {
     id: string;
     name: string;
-    isBaseGrinder: boolean; // true if this is a base grinder, false if it's a user-created variant
     scaleMin: number;
     scaleMax: number;
     stepSize: number; // e.g., 0.5 or 1.0
     cleanedDate?: string;
+    isBaseGrinder: boolean; // true for base grinders, false for user-defined grinders
+}
+export interface BaseGrinder extends Grinder {
+    isBaseGrinder: true;
+}
+export interface UserGrinder extends Grinder {
+    isBaseGrinder: false;
 }
 
 export interface Brewer {
     id: string;
-    isBaseBrewer: boolean; // true if this is a base brewer, false if it's a user-created variant
     name: string;
     method: BrewMethod;
-    maxCapacityMl: number;
     cleanedDate?: string;
-    location: ItemLocation;
+    isBaseBrewer: boolean; // true for base brewers, false for user-defined brewers
 }
-
+export interface BaseBrewer extends Brewer {
+    isBaseBrewer: true;
+}
+export interface UserBrewer extends Brewer {
+    isBaseBrewer: false;
+}
 
 export interface Recipe {
     id: string;
     name: string;
-    isBaseRecipe: boolean; // true if this is a base recipe, false if it's a user-created variant
     brewMethod: BrewMethod;
     waterMl: number;
     doseGrams: number;
     tempC: number;
     grindPct: number; // 0% to 100% relative scale
     instructions: string; // Free-text instructions or markdown
+    isBaseRecipe: boolean; // true for base recipes, false for user-defined recipes
 }
+export interface BaseRecipe extends Recipe {
+    isBaseRecipe: true;
+}
+export interface UserRecipe extends Recipe {
+    isBaseRecipe: false;
+}
+
 
 export interface Evaluation {
     id: string;
     timestamp: string; // ISO String
     ratings: Rating;
-    isDelicious: boolean;
-    isDisgusting: boolean;
     notes?: string;
 }
 
-export interface DialIn {
+export interface Brew {
     id: string;
     bagId: string;
     brewerId: string;
     grinderId: string;
-    baseRecipeId: string;
-
+    recipeId: string;
+    timestamp: string; // ISO String
+    lastUsedTimestamp?: string; // ISO String
+    
     // Active Dial-In Levers (Adjusted over time)
-    currentWaterMl: number; // Fixed anchor set by user
-    currentDoseGrams: number;
-    currentTempC: number;
-    currentGrindClick: number; // Converted from relative % to actual grinder units
+    waterDelta: number; // Fixed anchor set by user
+    doseDelta: number;
+    tempDelta: number;
+    grinderDelta: number; // Converted from relative % to actual grinder units
+    isDisgusting?: boolean;
 
     evaluations: Evaluation[];
 }
@@ -84,9 +107,13 @@ export interface DialIn {
 // --- DATABASE ROOT SCHEMA (for LocalStorage / JSON export) ---
 export interface DileBeanSchema {
     version: number;
-    bags: Bag[];
-    grinders: Grinder[];
-    brewers: Brewer[];
-    recipes: Recipe[];
-    dialIns: DialIn[];
+    readonly bags_base: BaseBag[];
+    bags_user: UserBag[];
+    grinders_base: BaseGrinder[];
+    grinders_user: UserGrinder[];
+    brewers_base: BaseBrewer[];
+    brewers_user: UserBrewer[];
+    recipes_base: BaseRecipe[];
+    recipes_user: UserRecipe[];
+    brews: Brew[];
 }
