@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type {
     DileBeanSchema,
-    UserBag,
-    UserGrinder,
-    UserBrewer,
-    UserRecipe,
+    Bag,
+    Grinder,
+    Brewer,
+    Recipe,
     Brew,
     Evaluation
 } from './types';
@@ -14,17 +14,19 @@ import { LocalStorageAdapter } from './adapter';
 interface DileBeanContextType {
     data: DileBeanSchema;
     // Quick Actions
-    addUserBag: (bag: Omit<UserBag, 'id' | 'isBaseBag'>) => void;
-    removeUserBag: (bagId: string) => void;
-    addUserGrinder: (grinder: Omit<UserGrinder, 'id' | 'isBaseGrinder'>) => void;
-    removeUserGrinder: (grinderId: string) => void;
-    addUserBrewer: (brewer: Omit<UserBrewer, 'id' | 'isBaseBrewer'>) => void;
-    removeUserBrewer: (brewerId: string) => void;
-    addUserRecipe: (recipe: Omit<UserRecipe, 'id' | 'isBaseRecipe'>) => void;
-    removeUserRecipe: (recipeId: string) => void;
-    newBrew: (bagId: string, brewerId: string, isBaseBrewer:boolean, grinderId: string, isBaseGrinder:boolean, recipeId: string, isBaseRecipe:boolean) => Brew;
+    addBag: (bag: Omit<Bag, 'id' | 'isBaseBag' | 'active'>) => void;
+    removeBag: (bagId: string) => void;
+    addGrinder: (grinder: Omit<Grinder, 'id' | 'isBaseGrinder' | 'active'>) => void;
+    removeGrinder: (grinderId: string) => void;
+    addBrewer: (brewer: Omit<Brewer, 'id' | 'isBaseBrewer' | 'active'>) => void;
+    removeBrewer: (brewerId: string) => void;
+    addRecipe: (recipe: Omit<Recipe, 'id' | 'isBaseRecipe' | 'active'>) => void;
+    removeRecipe: (recipeId: string) => void;
+    newBrew: (bagId: string, brewerId: string, grinderId: string, recipeId: string) => Brew;
     markBrewUsed: (brewId: string) => Brew;
     setBrewDisgusting: (brewId: string, isDisgusting: boolean) => Brew;
+    setBrewName: (brewId: string, name: string) => Brew;
+    getBrewDefaultName: (brewId: string) => string;
     removeBrew: (brewId: string) => void;
     addEvaluation: (brewId: string, evaluation: Omit<Evaluation, 'id' | 'timestamp'>) => Brew;
     removeEvaluation: (brewId: string, evaluationId: string) => Brew;
@@ -46,81 +48,67 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // --- ACTIONS ---
 
-    const addUserBag = (bagData: Omit<UserBag, 'id' | 'isBaseBag'>) => {
-        const newBag: UserBag = { ...bagData, id: crypto.randomUUID(), isBaseBag: false };
-        setData((prev) => ({ ...prev, bags_user: [...prev.bags_user, newBag] }));
+    const addBag = (bagData: Omit<Bag, 'id' | 'isBaseBag' | 'active'>) => {
+        const newBag: Bag = { ...bagData, id: crypto.randomUUID(), isBaseBag: false, active: false };
+        setData((prev) => ({ ...prev, bags: [...prev.bags, newBag] }));
     };
 
-    const removeUserBag = (bagId: string) => {
+    const removeBag = (bagId: string) => {
         setData((prev) => ({
             ...prev,
-            bags_user: prev.bags_user.filter((bag) => bag.id !== bagId)
+            bags: prev.bags.filter((bag) => bag.id !== bagId)
         }));
     };
 
-    const addUserGrinder = (grinderData: Omit<UserGrinder, 'id'| 'isBaseGrinder'>) => {
-        const newGrinder: UserGrinder = { ...grinderData, id: crypto.randomUUID(), isBaseGrinder: false };
-        setData((prev) => ({ ...prev, grinders_user: [...prev.grinders_user, newGrinder] }));
+    const addGrinder = (grinderData: Omit<Grinder, 'id'| 'isBaseGrinder' | 'active'>) => {
+        const newGrinder: Grinder = { ...grinderData, id: crypto.randomUUID(), isBaseGrinder: false, active: false };
+        setData((prev) => ({ ...prev, grinders: [...prev.grinders, newGrinder] }));
     };
-    const removeUserGrinder = (grinderId: string) => {
+    const removeGrinder = (grinderId: string) => {
         setData((prev) => ({
             ...prev,
-            grinders_user: prev.grinders_user.filter((grinder) => grinder.id !== grinderId)
+            grinders: prev.grinders.filter((grinder) => grinder.id !== grinderId)
         }));
     };
 
-    const addUserBrewer = (brewerData: Omit<UserBrewer, 'id'| 'isBaseBrewer'>) => {
-        const newBrewer: UserBrewer = { ...brewerData, id: crypto.randomUUID(), isBaseBrewer: false };
-        setData((prev) => ({ ...prev, brewers_user: [...prev.brewers_user, newBrewer] }));
+    const addBrewer = (brewerData: Omit<Brewer, 'id'| 'isBaseBrewer' | 'active'>) => {
+        const newBrewer: Brewer = { ...brewerData, id: crypto.randomUUID(), isBaseBrewer: false, active: false };
+        setData((prev) => ({ ...prev, brewers: [...prev.brewers, newBrewer] }));
     };
 
-    const removeUserBrewer = (brewerId: string) => {
+    const removeBrewer = (brewerId: string) => {
         setData((prev) => ({
             ...prev,
-            brewers_user: prev.brewers_user.filter((brewer) => brewer.id !== brewerId)
+            brewers: prev.brewers.filter((brewer) => brewer.id !== brewerId)
         }));
     }
 
-    const addUserRecipe = (recipeData: Omit<UserRecipe, 'id' | 'isBaseRecipe'>) => {
-        const newRecipe: UserRecipe = { ...recipeData, id: crypto.randomUUID(), isBaseRecipe: false };
-        setData((prev) => ({ ...prev, recipes_user: [...prev.recipes_user, newRecipe] }));
+    const addRecipe = (recipeData: Omit<Recipe, 'id' | 'isBaseRecipe' | 'active'>) => {
+        const newRecipe: Recipe = { ...recipeData, id: crypto.randomUUID(), isBaseRecipe: false, active: false };
+        setData((prev) => ({ ...prev, recipes: [...prev.recipes, newRecipe] }));
     };
 
-    const removeUserRecipe = (recipeId: string) => {
+    const removeRecipe = (recipeId: string) => {
         setData((prev) => ({
             ...prev,
-            recipes_user: prev.recipes_user.filter((recipe) => recipe.id !== recipeId)
+            recipes: prev.recipes.filter((recipe) => recipe.id !== recipeId)
         }));
     };
 
     const newBrew = (
         bagId: string,
         brewerId: string,
-        isBaseBrewer: boolean,
         grinderId: string,
-        isBaseGrinder: boolean,
         recipeId: string,
-        isBaseRecipe: boolean
     ): Brew => {
-        let recipe;
-        if (isBaseRecipe) {
-            recipe = data.recipes_base.find((r) => r.id === recipeId);
-        } else {
-            recipe = data.recipes_user.find((r) => r.id === recipeId);
-        }
-        let grinder;
-        if (isBaseGrinder) {
-            grinder = data.grinders_base.find((g) => g.id === grinderId);
-        } else {
-            grinder = data.grinders_user.find((g) => g.id === grinderId);
-        }
-        let brewer;
-        if (isBaseBrewer) {
-            brewer = data.brewers_base.find((b) => b.id === brewerId);
-        } else {
-            brewer = data.brewers_user.find((b) => b.id === brewerId);
-        }
+        const bag = data.bags.find((b) => b.id === bagId);
+        const recipe = data.recipes.find((r) => r.id === recipeId);
+        const grinder = data.grinders.find((g) => g.id === grinderId);
+        const brewer = data.brewers.find((b) => b.id === brewerId);
         
+        if (!bag) {
+            throw new Error(`Bag with ID ${bagId} not found`);
+        }
         if (!recipe) {
             throw new Error(`Recipe with ID ${recipeId} not found`);
         }
@@ -130,10 +118,15 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (!brewer) {
             throw new Error(`Brewer with ID ${brewerId} not found`);
         }
+        const newBag: Bag = {...bag, active: true};
+        const newRecipe: Recipe = {...recipe, active: true};
+        const newGrinder: Grinder = {...grinder, active: true};
+        const newBrewer: Brewer = {...brewer, active: true};
 
         const newBrew: Brew = {
             id: crypto.randomUUID(),
             bagId,
+            name: "",
             brewerId,
             grinderId,
             recipeId,
@@ -144,8 +137,25 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             grinderDelta: 0,
             evaluations: [],
         };
-
-        setData((prev) => ({ ...prev, brews: [...prev.brews, newBrew] }));
+        setData((prev) => ({ ...prev, 
+            brews: [...prev.brews, newBrew],
+            bags: prev.bags.map((d) => {
+                if (d.id !== bagId) return d;
+                return newBag;
+            }),
+            recipes: prev.recipes.map((d) => {
+                if (d.id !== recipeId) return d;
+                return newRecipe;
+            }),
+            grinders: prev.grinders.map((d) => {
+                if (d.id !== grinderId) return d;
+                return newGrinder;
+            }),
+            brewers: prev.brewers.map((d) => {
+                if (d.id !== brewerId) return d;
+                return newBrewer;
+            })
+        }));
         return newBrew;
     };
 
@@ -187,10 +197,87 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return newBrew;
     };
 
-    const removeBrew = (brewId: string) => {
+    const setBrewName = (brewId: string, name: string) => {
+        const brew = data.brews.find((d) => d.id === brewId);
+        if (!brew) {
+            throw new Error(`Brew with ID ${brewId} not found`);
+        }
+        const newBrew: Brew = {
+            ...brew,
+            name
+        };
         setData((prev) => ({
             ...prev,
-            brews: prev.brews.filter((d) => d.id !== brewId)
+            brews: prev.brews.map((d) => {
+                if (d.id !== brewId) return d;
+                return newBrew;
+            })
+        }));
+        return newBrew;
+    };
+
+    const getBrewDefaultName = (brewId: string) => {
+        const brew = data.brews.find((d) => d.id === brewId);
+        const bagName = data.bags.find((bag) => bag.id === brew?.bagId)?.name || "Unknown Bag";
+        const brewerName = data.brewers.find((brewer) => brewer.id === brew?.brewerId)?.name || "Unknown Brewer";
+        const grinderName = data.grinders.find((grinder) => grinder.id === brew?.grinderId)?.name || "Unknown Grinder";
+        const recipeName = data.recipes.find((recipe) => recipe.id === brew?.recipeId)?.name || "Unknown Recipe";
+        return `${bagName} on ${brewerName} with ${grinderName} using ${recipeName}`;
+    };
+
+    const removeBrew = (brewId: string) => {
+        const brew = data.brews.find((d) => d.id === brewId);
+        if (!brew) return;
+        const bag = data.bags.find((d) => d.id === brew.bagId);
+        const recipe = data.recipes.find((d) => d.id === brew.recipeId);
+        const grinder = data.grinders.find((d) => d.id === brew.grinderId);
+        const brewer = data.brewers.find((d) => d.id === brew.brewerId);
+        let newBag: Bag | undefined;
+        let newRecipe: Recipe | undefined;
+        let newGrinder: Grinder | undefined;
+        let newBrewer: Brewer | undefined;
+        if (bag) {
+            const bagUsed = data.brews.some((d) => (d.id !== brewId && d.bagId == bag.id))
+            if (!bagUsed)
+                newBag = {...bag, active: false};
+        }
+        if (recipe) {
+            const recipeUsed = data.brews.some((d) => (d.id !== brewId && d.recipeId == recipe.id))
+            if (!recipeUsed)
+                newRecipe = {...recipe, active: false};
+        }
+        if (grinder) {
+            const grinderUsed = data.brews.some((d) => (d.id !== brewId && d.grinderId == grinder.id))
+            if (!grinderUsed)
+                newGrinder = {...grinder, active: false};
+        }
+        if (brewer) {
+            const brewerUsed = data.brews.some((d) => (d.id !== brewId && d.brewerId == brewer.id))
+            if (!brewerUsed)
+                newBrewer = {...brewer, active: false};
+        }
+
+
+
+        setData((prev) => ({
+            ...prev,
+            brews: prev.brews.filter((d) => d.id !== brewId),
+            bags: prev.bags.map((d) => {
+                if (d.id !== brew.bagId) return d;
+                return newBag ?? d;
+            }),
+            recipes: prev.recipes.map((d) => {
+                if (d.id !== brew.recipeId) return d;
+                return newRecipe ?? d;
+            }),
+            grinders: prev.grinders.map((d) => {
+                if (d.id !== brew.grinderId) return d;
+                return newGrinder ?? d;
+            }),
+            brewers: prev.brewers.map((d) => {
+                if (d.id !== brew.brewerId) return d;
+                return newBrewer ?? d;
+            })
         }));
     }
 
@@ -267,17 +354,19 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         <DileBeanContext.Provider
             value={{
                 data,
-                addUserBag,
-                removeUserBag,
-                addUserGrinder,
-                removeUserGrinder,
-                addUserBrewer,
-                removeUserBrewer,
-                addUserRecipe,
-                removeUserRecipe,
+                addBag,
+                removeBag,
+                addGrinder,
+                removeGrinder,
+                addBrewer,
+                removeBrewer,
+                addRecipe,
+                removeRecipe,
                 newBrew,
                 markBrewUsed,
                 setBrewDisgusting,
+                setBrewName,
+                getBrewDefaultName,
                 removeBrew,
                 addEvaluation,
                 removeEvaluation,

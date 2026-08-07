@@ -20,14 +20,9 @@ export interface Bag {
     dateOpened?: string; // ISO String
     isFinished: boolean;
     isBaseBag: boolean; // true for base bags, false for user-defined bags
-}
-export interface BaseBag extends Bag {
-    isBaseBag: true;
+    active: boolean;
 }
 
-export interface UserBag extends Bag {
-    isBaseBag: false;
-}
 
 export interface Grinder {
     id: string;
@@ -37,13 +32,9 @@ export interface Grinder {
     stepSize: number; // e.g., 0.5 or 1.0
     cleanedDate?: string;
     isBaseGrinder: boolean; // true for base grinders, false for user-defined grinders
+    active: boolean;
 }
-export interface BaseGrinder extends Grinder {
-    isBaseGrinder: true;
-}
-export interface UserGrinder extends Grinder {
-    isBaseGrinder: false;
-}
+
 
 export interface Brewer {
     id: string;
@@ -51,13 +42,9 @@ export interface Brewer {
     method: BrewMethod;
     cleanedDate?: string;
     isBaseBrewer: boolean; // true for base brewers, false for user-defined brewers
+    active: boolean;
 }
-export interface BaseBrewer extends Brewer {
-    isBaseBrewer: true;
-}
-export interface UserBrewer extends Brewer {
-    isBaseBrewer: false;
-}
+
 
 export interface Recipe {
     id: string;
@@ -69,13 +56,9 @@ export interface Recipe {
     grindPct: number; // 0% to 100% relative scale
     instructions: string; // Free-text instructions or markdown
     isBaseRecipe: boolean; // true for base recipes, false for user-defined recipes
+    active: boolean;
 }
-export interface BaseRecipe extends Recipe {
-    isBaseRecipe: true;
-}
-export interface UserRecipe extends Recipe {
-    isBaseRecipe: false;
-}
+
 
 
 export interface Evaluation {
@@ -87,6 +70,7 @@ export interface Evaluation {
 
 export interface Brew {
     id: string;
+    name: string;
     bagId: string;
     brewerId: string;
     grinderId: string;
@@ -107,13 +91,9 @@ export interface Brew {
 // --- DATABASE ROOT SCHEMA (for LocalStorage / JSON export) ---
 export interface DileBeanSchema {
     version: number;
-    readonly bags_base: BaseBag[];
-    bags_user: UserBag[];
-    grinders_base: BaseGrinder[];
-    grinders_user: UserGrinder[];
-    brewers_base: BaseBrewer[];
-    brewers_user: UserBrewer[];
-    recipes_base: BaseRecipe[];
-    recipes_user: UserRecipe[];
+    bags: Bag[];
+    grinders: Grinder[];
+    brewers: Brewer[];
+    recipes: Recipe[];
     brews: Brew[];
 }

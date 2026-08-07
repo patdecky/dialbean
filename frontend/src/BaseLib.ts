@@ -1,8 +1,8 @@
-import type { BaseBrewer, BaseRecipe, BaseGrinder, BaseBag } from './types';
+import type { Brewer, Recipe, Grinder, Bag } from './types';
 
-export const bags_base: BaseBag[] = [
+export const bags: Bag[] = [
     {
-        id: 'base-bag-1',
+        id: '1',
         name: 'Specialty Coffee',
         roastLevel: 'Medium',
         roastDate: '2026-08-06',
@@ -11,9 +11,9 @@ export const bags_base: BaseBag[] = [
     }
 ];
 
-export const grinders_base: BaseGrinder[] = [
+export const grinders: Grinder[] = [
     {
-        id: 'base-grinder-1',
+        id: '1',
         name: 'Generic Grinder',
         scaleMin: 1,
         scaleMax: 30,
@@ -22,18 +22,18 @@ export const grinders_base: BaseGrinder[] = [
     }
 ];
 
-export const brewers_base: BaseBrewer[] = [
+export const brewers: Brewer[] = [
     {
-        id: 'base-brewer-1',
+        id: '1',
         name: 'Hario V60',
         method: 'Pour-Over',
         isBaseBrewer: true
     }
 ];
 
-export const recipes_base: BaseRecipe[] = [
+export const recipes: Recipe[] = [
     {
-        id: 'base-recipe-1',
+        id: '1',
         name: 'Morning Pour-Over',
         brewMethod: 'Pour-Over',
         waterMl: 300,
