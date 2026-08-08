@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type {
-    DileBeanSchema,
+    DialBeanSchema,
     Bag,
     Grinder,
     Brewer,
@@ -11,35 +11,35 @@ import type {
 import type { StorageAdapter } from './adapter';
 import { LocalStorageAdapter } from './adapter';
 
-interface DileBeanContextType {
-    data: DileBeanSchema;
+interface DialBeanContextType {
+    data: DialBeanSchema;
     // Quick Actions
-    addBag: (bag: Omit<Bag, 'id' | 'isBaseBag' | 'active'>) => void;
+    addBag: (bag: Omit<Bag, 'id' | 'isBase' | 'active'>) => void;
     removeBag: (bagId: string) => void;
-    addGrinder: (grinder: Omit<Grinder, 'id' | 'isBaseGrinder' | 'active'>) => void;
+    addGrinder: (grinder: Omit<Grinder, 'id' | 'isBase' | 'active'>) => void;
     removeGrinder: (grinderId: string) => void;
-    addBrewer: (brewer: Omit<Brewer, 'id' | 'isBaseBrewer' | 'active'>) => void;
+    addBrewer: (brewer: Omit<Brewer, 'id' | 'isBase' | 'active'>) => void;
     removeBrewer: (brewerId: string) => void;
-    addRecipe: (recipe: Omit<Recipe, 'id' | 'isBaseRecipe' | 'active'>) => void;
+    addRecipe: (recipe: Omit<Recipe, 'id' | 'isBase' | 'active'>) => void;
     removeRecipe: (recipeId: string) => void;
-    newBrew: (bagId: string, brewerId: string, grinderId: string, recipeId: string) => Brew;
-    markBrewUsed: (brewId: string) => Brew;
-    setBrewDisgusting: (brewId: string, isDisgusting: boolean) => Brew;
+    newBrew: (name: string, bagId: string, brewerId: string, grinderId: string, recipeId: string) => Brew;
+    markDialInUsed: (brewId: string) => Brew;
     setBrewName: (brewId: string, name: string) => Brew;
-    getBrewDefaultName: (brewId: string) => string;
     removeBrew: (brewId: string) => void;
-    addEvaluation: (brewId: string, evaluation: Omit<Evaluation, 'id' | 'timestamp'>) => Brew;
-    removeEvaluation: (brewId: string, evaluationId: string) => Brew;
     dialIn: (brewId: string, doseDelta?: number, tempDelta?: number, grindDelta?: number) => Brew;
+    removeDialIn: (brewId: string) => Brew;
+    setDialInDisgusting: (brewId: string, isDisgusting: boolean) => Brew;
+    addEvaluation: (brewId: string, evaluation: Omit<Evaluation, 'id' | 'timestamp'>) => Brew;
+    removeEvaluation: (brewId: string) => Brew;
 }
 
 // Single instance of your storage adapter
 const storageAdapter: StorageAdapter = new LocalStorageAdapter();
 
-const DileBeanContext = createContext<DileBeanContextType | null>(null);
+const DialBeanContext = createContext<DialBeanContextType | null>(null);
 
-export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [data, setData] = useState<DileBeanSchema>(() => storageAdapter.loadData());
+export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const [data, setData] = useState<DialBeanSchema>(() => storageAdapter.loadData());
 
     // Auto-sync to LocalStorage whenever state updates
     useEffect(() => {
@@ -48,8 +48,8 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // --- ACTIONS ---
 
-    const addBag = (bagData: Omit<Bag, 'id' | 'isBaseBag' | 'active'>) => {
-        const newBag: Bag = { ...bagData, id: crypto.randomUUID(), isBaseBag: false, active: false };
+    const addBag = (bagData: Omit<Bag, 'id' | 'isBase' | 'active'>) => {
+        const newBag: Bag = { ...bagData, id: crypto.randomUUID(), isBase: false, active: false };
         setData((prev) => ({ ...prev, bags: [...prev.bags, newBag] }));
     };
 
@@ -60,8 +60,8 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }));
     };
 
-    const addGrinder = (grinderData: Omit<Grinder, 'id'| 'isBaseGrinder' | 'active'>) => {
-        const newGrinder: Grinder = { ...grinderData, id: crypto.randomUUID(), isBaseGrinder: false, active: false };
+    const addGrinder = (grinderData: Omit<Grinder, 'id'| 'isBase' | 'active'>) => {
+        const newGrinder: Grinder = { ...grinderData, id: crypto.randomUUID(), isBase: false, active: false };
         setData((prev) => ({ ...prev, grinders: [...prev.grinders, newGrinder] }));
     };
     const removeGrinder = (grinderId: string) => {
@@ -71,8 +71,8 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }));
     };
 
-    const addBrewer = (brewerData: Omit<Brewer, 'id'| 'isBaseBrewer' | 'active'>) => {
-        const newBrewer: Brewer = { ...brewerData, id: crypto.randomUUID(), isBaseBrewer: false, active: false };
+    const addBrewer = (brewerData: Omit<Brewer, 'id'| 'isBase' | 'active'>) => {
+        const newBrewer: Brewer = { ...brewerData, id: crypto.randomUUID(), isBase: false, active: false };
         setData((prev) => ({ ...prev, brewers: [...prev.brewers, newBrewer] }));
     };
 
@@ -83,8 +83,8 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }));
     }
 
-    const addRecipe = (recipeData: Omit<Recipe, 'id' | 'isBaseRecipe' | 'active'>) => {
-        const newRecipe: Recipe = { ...recipeData, id: crypto.randomUUID(), isBaseRecipe: false, active: false };
+    const addRecipe = (recipeData: Omit<Recipe, 'id' | 'isBase' | 'active'>) => {
+        const newRecipe: Recipe = { ...recipeData, id: crypto.randomUUID(), isBase: false, active: false };
         setData((prev) => ({ ...prev, recipes: [...prev.recipes, newRecipe] }));
     };
 
@@ -96,6 +96,7 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
 
     const newBrew = (
+        name: string,
         bagId: string,
         brewerId: string,
         grinderId: string,
@@ -126,16 +127,12 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const newBrew: Brew = {
             id: crypto.randomUUID(),
             bagId,
-            name: "",
+            name: name,
             brewerId,
             grinderId,
             recipeId,
             timestamp: new Date().toISOString(),
-            waterDelta: 0,
-            doseDelta: 0,
-            tempDelta: 0,
-            grinderDelta: 0,
-            evaluations: [],
+            dialIns: [],
         };
         setData((prev) => ({ ...prev, 
             brews: [...prev.brews, newBrew],
@@ -159,14 +156,21 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return newBrew;
     };
 
-    const markBrewUsed = (brewId: string) => {
+    const markDialInUsed = (brewId: string) => {
         const brew = data.brews.find((d) => d.id === brewId);
         if (!brew) {
             throw new Error(`Brew with ID ${brewId} not found`);
         }
+        if (brew.dialIns.length === 0) {
+            throw new Error(`Brew with ID ${brewId} has no dial-ins`);
+        }
+        const newDialIn = {
+            ...brew.dialIns[brew.dialIns.length - 1],
+            lastUsedTimestamp: new Date().toISOString()
+        }
         const newBrew: Brew = {
             ...brew,
-            lastUsedTimestamp: new Date().toISOString()
+            dialIns: [...brew.dialIns.slice(0, -1), newDialIn]
         };
         setData((prev) => ({
             ...prev,
@@ -178,14 +182,21 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return newBrew;
     };
 
-    const setBrewDisgusting = (brewId: string, isDisgusting: boolean = true) => {
+    const setDialInDisgusting = (brewId: string, isDisgusting: boolean = true) => {
         const brew = data.brews.find((d) => d.id === brewId);
         if (!brew) {
             throw new Error(`Brew with ID ${brewId} not found`);
         }
+        if (brew.dialIns.length === 0) {
+            throw new Error(`Brew with ID ${brewId} has no dial-ins`);
+        }
+        const newDialIn = {
+            ...brew.dialIns[brew.dialIns.length - 1],
+            isDisgusting
+        };
         const newBrew: Brew = {
             ...brew,
-            isDisgusting
+            dialIns: [...brew.dialIns.slice(0, -1), newDialIn]
         };
         setData((prev) => ({
             ...prev,
@@ -214,15 +225,6 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             })
         }));
         return newBrew;
-    };
-
-    const getBrewDefaultName = (brewId: string) => {
-        const brew = data.brews.find((d) => d.id === brewId);
-        const bagName = data.bags.find((bag) => bag.id === brew?.bagId)?.name || "Unknown Bag";
-        const brewerName = data.brewers.find((brewer) => brewer.id === brew?.brewerId)?.name || "Unknown Brewer";
-        const grinderName = data.grinders.find((grinder) => grinder.id === brew?.grinderId)?.name || "Unknown Grinder";
-        const recipeName = data.recipes.find((recipe) => recipe.id === brew?.recipeId)?.name || "Unknown Recipe";
-        return `${bagName} on ${brewerName} with ${grinderName} using ${recipeName}`;
     };
 
     const removeBrew = (brewId: string) => {
@@ -281,6 +283,28 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }));
     }
 
+    const removeDialIn = (brewId: string) => {
+        const brew = data.brews.find((d) => d.id === brewId);
+        if (!brew) {
+            throw new Error(`Brew with ID ${brewId} not found`);
+        }
+        if (brew.dialIns.length === 0) {
+            throw new Error(`Brew with ID ${brewId} has no dial-ins`);
+        }
+        const newBrew: Brew = {
+            ...brew,
+            dialIns: brew.dialIns.slice(0, -1)
+        };
+        setData((prev) => ({
+            ...prev,
+            brews: prev.brews.map((d) => {
+                if (d.id !== brewId) return d;
+                return newBrew;
+            })
+        }));
+        return newBrew;
+    }
+
     const addEvaluation = (
         brewId: string,
         evalData: Omit<Evaluation, 'id' | 'timestamp'>
@@ -289,14 +313,21 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (!brew) {
             throw new Error(`Brew with ID ${brewId} not found`);
         }
+        if (brew.dialIns.length === 0) {
+            throw new Error(`Brew with ID ${brewId} has no dial-ins`);
+        }
         const newEval: Evaluation = {
             ...evalData,
             id: crypto.randomUUID(),
             timestamp: new Date().toISOString()
         };
+        const newDialIn = {
+            ...brew.dialIns[brew.dialIns.length - 1],
+            evaluations: [...brew.dialIns[brew.dialIns.length - 1].evaluations, newEval]
+        };
         const newBrew: Brew = {
             ...brew,
-            evaluations: [...brew.evaluations, newEval],
+            dialIns: [...brew.dialIns.slice(0, -1), newDialIn]
         };
         setData((prev) => ({
             ...prev,
@@ -308,14 +339,24 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return newBrew;
     };
 
-    const removeEvaluation = (brewId: string, evaluationId: string) => {
+    const removeEvaluation = (brewId: string) => {
         const brew = data.brews.find((d) => d.id === brewId);
         if (!brew) {
             throw new Error(`Brew with ID ${brewId} not found`);
         }
+        if (brew.dialIns.length === 0) {
+            throw new Error(`Brew with ID ${brewId} has no dial-ins`);
+        }
+        if (brew.dialIns[brew.dialIns.length - 1].evaluations.length === 0) {
+            throw new Error(`Brew with ID ${brewId} has no evaluations to remove`);
+        }
+        const newDialIn = {
+            ...brew.dialIns[brew.dialIns.length - 1],
+            evaluations: brew.dialIns[brew.dialIns.length - 1].evaluations.slice(0, -1)
+        };
         const newBrew: Brew = {
             ...brew,
-            evaluations: brew.evaluations.filter((e) => e.id !== evaluationId)
+            dialIns: [...brew.dialIns.slice(0, -1), newDialIn]
         };
         setData((prev) => ({
             ...prev,
@@ -336,9 +377,15 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
         const newBrew: Brew = {
             ...brew,
-            doseDelta: doseDelta ?? 0,
-            tempDelta: tempDelta ?? 0,
-            grinderDelta: grindDelta ?? 0
+            dialIns: [...brew.dialIns, {
+                waterDelta: 0,
+                doseDelta: doseDelta ?? 0,
+                tempDelta: tempDelta ?? 0,
+                grinderDelta: grindDelta ?? 0,
+                evaluations: [],
+                timestamp: new Date().toISOString(),
+                lastUsedTimestamp: new Date().toISOString()
+            }]
         };
         setData((prev) => ({
             ...prev,
@@ -351,7 +398,7 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
 
     return (
-        <DileBeanContext.Provider
+        <DialBeanContext.Provider
             value={{
                 data,
                 addBag,
@@ -363,10 +410,10 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 addRecipe,
                 removeRecipe,
                 newBrew,
-                markBrewUsed,
-                setBrewDisgusting,
+                markDialInUsed,
+                removeDialIn,
+                setDialInDisgusting,
                 setBrewName,
-                getBrewDefaultName,
                 removeBrew,
                 addEvaluation,
                 removeEvaluation,
@@ -374,16 +421,16 @@ export const DileBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             }}
         >
             {children}
-        </DileBeanContext.Provider>
+        </DialBeanContext.Provider>
     );
 };
 
 // Custom Hook for accessing data
 // eslint-disable-next-line react-refresh/only-export-components
-export const useDileBean = () => {
-    const context = useContext(DileBeanContext);
+export const useDialBean = () => {
+    const context = useContext(DialBeanContext);
     if (!context) {
-        throw new Error('useDileBean must be used within a DileBeanProvider');
+        throw new Error('useDialBean must be used within a DialBeanProvider');
     }
     return context;
 };

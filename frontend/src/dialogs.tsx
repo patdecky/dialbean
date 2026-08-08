@@ -1,98 +1,229 @@
-import { useState } from 'react';
-import type { Brew, Brewer, Recipe, Grinder, Bag } from './types';
-import { useDileBean } from './DileBeanContext';
+import { useEffect, useState, useRef } from 'react';
+import type { Brew, Brewer, Recipe, Grinder, Bag, ItemType } from './types';
+import { useDialBean } from './DialBeanContext';
+import { SmallItemCard, MediumItemCard } from './Cards';
 
-export const PickBrewerDialog = ({ onBrewerSelected, onCancel }: { onBrewerSelected: (brewer: Brewer) => void; onCancel: () => void }) => {
-    const { data } = useDileBean();
-    const brewers: Brewer[] = data.brewers;
+export const ItemDetailsDialog = ({ item, type, onClose }: { item: ItemType; type: 'brewer' | 'grinder' | 'bag' | 'recipe'; onClose: () => void }) => {
     return (
-        <div className="absolute top-0 left-0 w-full h-full">
-            <div>Pick Brewer</div>
-            <ul>
-                {brewers.length > 0 ? (
-                    brewers.map((brewer) => (
-                        <li key={brewer.id} onClick={() => onBrewerSelected(brewer)}>
-                            {brewer.name} — {brewer.method}
-                        </li>
-                    ))
-                ) : (
-                    <li>No brewers available.</li>
-                )}
-            </ul>
-            <button onClick={onCancel}>Cancel</button>
+        <div className="fixed top-0 left-0 w-full h-full z-50 flex items-center justify-center">
+            <div className="fixed top-0 left-0 w-full h-full backdrop-blur-sm bg-gray-200 opacity-50"></div>
+            <div className="bg-white z-60 p-4 rounded shadow-md min-w-64 relative z-1">
+                <div>{type.charAt(0).toUpperCase() + type.slice(1)} Details:</div>
+                <div>Name: {item.name}</div>
+                {type === 'brewer' && <div>Method: {(item as Brewer).method}</div>}
+                {type === 'recipe' && <div>Method: {(item as Recipe).method}</div>}
+                {type === 'recipe' && <div>Instructions: {(item as Recipe).instructions}</div>}
+                <button onClick={onClose}>Close Details</button>
+            </div>
         </div>
     );
 }
 
-export const PickGrinderDialog = ({ onGrinderSelected, onCancel }: { onGrinderSelected: (grinder: Grinder) => void; onCancel: () => void }) => {
-    const { data } = useDileBean();
-    const grinders = data.grinders;
+export const PickItemDialog = ({ onItemSelected, onCancel, type }: { onItemSelected: (item: ItemType) => void; onCancel: () => void, type: 'brewer' | 'grinder' | 'bag' | 'recipe'; }) => {
+    const { data } = useDialBean();
+    let items: ItemType[];
+    if (type === 'brewer') {
+        items = data.brewers;
+    }
+    else if (type === 'grinder') {
+        items = data.grinders;
+    }
+    else if (type === 'bag') {
+        items = data.bags;
+    }
+    else if (type === 'recipe') {
+        items = data.recipes;
+    }
+    else {
+        throw new Error(`Invalid type: ${type}`);
+    }
+    const [filter, setFilter] = useState('');
+    const filterParts = filter.split(" ").map((part) => part.trim().toLowerCase()).filter((part) => part.length > 0);
+    const filteredItems = items.filter((item) =>
+        filterParts.every((part) => item.name.toLowerCase().includes(part) ||
+            ((type === "brewer" || type === "recipe") && (item as Brewer).method.toLowerCase().includes(part)) ||
+            (type === "recipe" && (item as Recipe).instructions.toLowerCase().includes(part))
+        ) ||
+        filter === '');
+    const [detailsItem, setDetailsItem] = useState<ItemType | null>(null);
     return (
-        <div className="absolute top-0 left-0 w-full h-full">
-            <div>Pick Grinder</div>
-            <ul>
-                {grinders.length > 0 ? (
-                    grinders.map((grinder) => (
-                        <li key={grinder.id} onClick={() => onGrinderSelected(grinder)}>
-                            {grinder.name}
-                        </li>
-                    ))
-                ) : (
-                    <li>No grinders available.</li>
+        <div className="fixed top-0 left-0 w-full h-full z-50 flex items-center justify-center">
+            <div className="fixed top-0 left-0 w-full h-full backdrop-blur-sm bg-gray-200 opacity-50"></div>
+            <div className="bg-white z-60 p-4 rounded shadow-md min-w-64 relative z-1">
+                {detailsItem && (
+                    <ItemDetailsDialog
+                        item={detailsItem}
+                        type={type}
+                        onClose={() => setDetailsItem(null)}
+                    />
                 )}
-            </ul>
-            <button onClick={onCancel}>Cancel</button>
+                <div>{type.charAt(0).toUpperCase() + type.slice(1)} Gallery:</div>
+                <input type="text" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filter items..." />
+                <button onClick={() => setFilter('')}>Clear Filter</button>
+                <div className="overflow-y-auto h-96 min-h-96 max-h-96 w-84 min-w-72">
+                    <div className="flex flex-wrap gap-2">
+                        {filteredItems.length > 0 ? (
+                            filteredItems.map((item) => (
+                                <MediumItemCard
+                                    key={item.id}
+                                    item={item}
+                                    type={type}
+                                    isSelected={false}
+                                    onItemSelected={onItemSelected}
+                                    onDetails={(item) => setDetailsItem(item)}
+                                    itemRef={null}
+                                />
+                            ))
+                        ) : (
+                            <div>No items available.</div>
+                        )}
+                    </div>
+                </div>
+                <button
+                    className="absolute top-2 right-2"
+                    onClick={onCancel}>Cancel</button>
+            </div>
         </div>
     );
 }
 
-export const PickBagDialog = ({ onBagSelected, onCancel }: { onBagSelected: (bag: Bag) => void; onCancel: () => void }) => {
-    const { data } = useDileBean();
-    const bags = data.bags;
-    return (
-        <div className="absolute top-0 left-0 w-full h-full">
-            <div>Pick Bag</div>
-            <ul>
-                {bags.length > 0 ? (
-                    bags.map((bag) => (
-                        <li key={bag.id} onClick={() => onBagSelected(bag)}>
-                            {bag.name}
-                        </li>
-                    ))
-                ) : (
-                    <li>No bags available.</li>
-                )}
-            </ul>
-            <button onClick={onCancel}>Cancel</button>
-        </div>
-    );
-}
 
-export const PickRecipeDialog = ({ onRecipeSelected, onCancel }: { onRecipeSelected: (recipe: Recipe) => void; onCancel: () => void }) => {
-    const { data } = useDileBean();
-    const recipes = data.recipes;
+export const PickItemCarousel = ({ selectedItem, onItemSelected, type }: { selectedItem: ItemType | null; onItemSelected: (item: ItemType) => void; type: 'brewer' | 'grinder' | 'bag' | 'recipe'; }) => {
+    const { data } = useDialBean();
+    let items: ItemType[];
+    // let visibleItems: ItemType[];
+    if (type === 'brewer') {
+        items = data.brewers;
+    } else if (type === 'grinder') {
+        items = data.grinders;
+    } else if (type === 'bag') {
+        items = data.bags;
+    } else if (type === 'recipe') {
+        items = data.recipes;
+    } else {
+        throw new Error(`Invalid type: ${type}`);
+    }
+    const activeUsedItems = items.filter((item) => item.active && !item.isBase);
+    const inactiveUserItems = items.filter((item) => !item.active && !item.isBase);
+    const activeBaseItems = items.filter((item) => item.isBase && item.active);
+    const visibleItems = [...activeUsedItems, ...inactiveUserItems, ...activeBaseItems];
+    if (selectedItem && !visibleItems.some((item) => item.id === selectedItem.id)) {
+        visibleItems.push(selectedItem);
+    }
+
+    const containerRef = useRef<HTMLDivElement>(null);
+    const selectedItemRef = useRef<HTMLDivElement>(null);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(false);
+
+    const [selectDialogActive, setSelectDialogActive] = useState(false);
+
+    useEffect(() => {
+        if (!selectedItem) {
+            if (visibleItems.length > 0) {
+                onItemSelected(visibleItems[0]);
+            }
+        }
+        if (selectedItem) {
+            selectedItemRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+                inline: "center",
+            });
+        }
+    }, [selectedItem?.id, visibleItems.length]);
+
+    const checkCanScroll = () => {
+        const el = containerRef.current;
+        if (!el) return;
+        const { scrollLeft, scrollWidth, clientWidth } = el;
+
+        setCanScrollLeft(scrollLeft > 1);
+
+        setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 1);
+    };
+
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+        checkCanScroll();
+        el.addEventListener("scroll", checkCanScroll);
+        const resizeObserver = new ResizeObserver(() => checkCanScroll());
+        resizeObserver.observe(el);
+        return () => {
+            el.removeEventListener("scroll", checkCanScroll);
+            resizeObserver.disconnect();
+        };
+    }, [visibleItems.length]);
+
+    const handleScroll = (deltaX: number) => {
+        if (containerRef.current) {
+            containerRef.current.scrollBy({
+                left: deltaX,
+                behavior: "smooth",
+            });
+        }
+    };
     return (
-        <div className="absolute top-0 left-0 w-full h-full">
-            <div>Pick Recipe</div>
-            <ul>
-                {recipes.length > 0 ? (
-                    recipes.map((recipe) => (
-                        <li key={recipe.id} onClick={() => onRecipeSelected(recipe)}>
-                            {recipe.name} — {recipe.brewMethod}
-                        </li>
-                    ))
-                ) : (
-                    <li>No recipes available.</li>
-                )}
-            </ul>
-            <button onClick={onCancel}>Cancel</button>
+        <div className="relative">
+            {canScrollLeft && (
+                <button
+                    onClick={() => handleScroll(-200)}
+                    className="absolute top-0 left-0 h-full p-1 rounded-sm bg-gray-100 shadow-[4px_0_8px_-4px_#0005] 
+                    z-10 opacity-50 hover:opacity-100 transition-opacity"
+                    aria-label="Scroll Left"
+                >
+                    ◀
+                </button>
+            )}
+            <div className="overflow-x-auto no-scrollbar"
+                ref={containerRef}>
+                <div className="flex items-center justify-start gap-2">
+                    {visibleItems.length > 0 && (
+                        visibleItems.map((item) => (
+                            <SmallItemCard
+                                key={item.id}
+                                item={item}
+                                type={type}
+                                isSelected={selectedItem?.id === item.id}
+                                onItemSelected={onItemSelected}
+                                itemRef={selectedItem?.id === item.id ? selectedItemRef : null}
+                            />
+                        ))
+                    )}
+                    <div className="px-4 py-1 bg-gray-100 border rounded-md"
+                        onClick={() => setSelectDialogActive(true)}>
+                        Gallery...
+                    </div>
+                    {selectDialogActive && (
+                        <PickItemDialog
+                            onItemSelected={(item) => {
+                                onItemSelected(item);
+                                setSelectDialogActive(false);
+                            }}
+                            onCancel={() => setSelectDialogActive(false)}
+                            type={type}
+                        />
+                    )}
+                </div>
+            </div>
+            {canScrollRight && (
+                <button
+                    onClick={() => handleScroll(200)}
+                    className="absolute top-0 right-0 h-full p-1 rounded-sm bg-gray-100 shadow-[-4px_0_8px_-4px_#0005] z-10 opacity-50 hover:opacity-100 transition-opacity flex items-center justify-center"
+                    aria-label="Scroll Right"
+                >
+                    ▶
+                </button>
+            )}
         </div>
     );
-}
+};
+
 
 export const NewBrewDialog = ({ brew, brewerId, grinderId, bagId, recipeId, onSaveBrew, onCancel }: { brew?: Brew; brewerId?: string; grinderId?: string; bagId?: string; recipeId?: string; onSaveBrew: (brew: Brew) => void; onCancel: () => void }) => {
-    const { data, getBrewDefaultName } = useDileBean();
-    const [name, setName] = useState(brew?.name || '');
+    const { data } = useDialBean();
+    const [name, setName] = useState(brew?.name || `Brew ${data.brews.length + 1}`);
     const [brewer, setBrewer] = useState(
         (
             brew?.brewerId && data.brewers.find((b) => b.id === brew.brewerId)) ||
@@ -122,82 +253,70 @@ export const NewBrewDialog = ({ brew, brewerId, grinderId, bagId, recipeId, onSa
         null
     );
 
-    const [pickBrewerActive, setPickBrewerActive] = useState(false);
-    const [pickGrinderActive, setPickGrinderActive] = useState(false);
-    const [pickBagActive, setPickBagActive] = useState(false);
-    const [pickRecipeActive, setPickRecipeActive] = useState(false);
-
 
     return (
-        <div className="absolute top-0 left-0 w-full h-full">
-            <div>New Brew</div>
-            <input type="text" value={name || getBrewDefaultName(brew?.id || '')} onChange={(e) => setName(e.target.value)} placeholder="Brew Name" />
-            <div>Brewer: {brewer ? brewer.name : 'None selected'}
-                <button onClick={() => setPickBrewerActive(true)}>Pick</button>
+        <div className="fixed top-0 left-0 h-full w-full flex items-center justify-center z-10">
+            <div className="fixed inset-0 h-dvh w-screen overflow-hidden bg-amber-200 opacity-50 z-10"></div>
+            <div className="bg-white p-4 rounded max-h-[90dvh] overflow-y-auto shadow-md w-96 max-w-96 relative z-11">
+                <div>New Brew</div>
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Brew Name" />
+                <button onClick={() => setName("")}>Default Name</button>
+                <div>{brewer ? "Brewer" : 'Brewer not selected'}
+                    <PickItemCarousel
+                        selectedItem={brewer}
+                        onItemSelected={(item) => {
+                            setBrewer(item as Brewer);
+                        }}
+                        type="brewer"
+                    />
+                </div>
+                <div>{grinder ? "Grinder" : 'Grinder not selected'}
+                    <PickItemCarousel
+                        selectedItem={grinder}
+                        onItemSelected={(item) => {
+                            setGrinder(item as Grinder);
+                        }}
+                        type="grinder"
+                    />
+                </div>
+                <div>{bag ? "Bag" : 'Bag not selected'}
+                    <PickItemCarousel
+                        selectedItem={bag}
+                        onItemSelected={(item) => {
+                            setBag(item as Bag);
+                        }}
+                        type="bag"
+                    />
+                </div>
+                <div>{recipe ? "Recipe" : 'Recipe not selected'}
+                    <PickItemCarousel
+                        selectedItem={recipe}
+                        onItemSelected={(item) => {
+                            setRecipe(item as Recipe);
+                        }}
+                        type="recipe"
+                    />
+                </div>
+                <button onClick={() => {
+                    if (!brewer || !grinder || !bag || !recipe) {
+                        alert("Please select a brewer, grinder, bag, and recipe before saving.");
+                        return;
+                    }
+                    onSaveBrew({
+                    ...brew || {},
+                    id: crypto.randomUUID(),
+                    name: name,
+                    brewerId: brewer.id,
+                    grinderId: grinder.id,
+                    bagId: bag.id,
+                    recipeId: recipe.id,
+                    timestamp: new Date().toISOString(),
+                    dialIns: brew?.dialIns || []
+                })}}
+                    disabled={!brewer || !grinder || !bag || !recipe}
+                >Save Brew</button>
+                <button className="absolute top-2 right-2" onClick={onCancel}>Cancel</button>
             </div>
-            <div>Grinder: {grinder ? grinder.name : 'None selected'}
-                <button onClick={() => setPickGrinderActive(true)}>Pick</button>
-            </div>
-            <div>Bag: {bag ? bag.name : 'None selected'}
-                <button onClick={() => setPickBagActive(true)}>Pick</button>
-            </div>
-            <div>Recipe: {recipe ? recipe.name : 'None selected'}
-                <button onClick={() => setPickRecipeActive(true)}>Pick</button>
-            </div>
-            <button onClick={() => onSaveBrew({ ...brew || {}, 
-            id: crypto.randomUUID(), 
-            name: name || getBrewDefaultName(brew?.id || ''), 
-            brewerId: brewer?.id || '', 
-            grinderId: grinder?.id || '', 
-            bagId: bag?.id || '', 
-            recipeId: recipe?.id || '',
-            timestamp: new Date().toISOString(),
-            waterDelta: brew?.waterDelta || 0,
-            doseDelta: brew?.doseDelta || 0,
-            tempDelta: brew?.tempDelta || 0,
-            grinderDelta: brew?.grinderDelta || 0,
-            evaluations: brew?.evaluations && brew.evaluations.length > 0 ? [brew.evaluations[brew.evaluations.length - 1]] : [],
-        })}
-                disabled={!name || !brewer || !grinder || !bag || !recipe}
-            >Save Brew</button>
-            {pickBrewerActive && (
-                <PickBrewerDialog
-                    onBrewerSelected={(brewer) => {
-                        setBrewer(brewer);
-                        setPickBrewerActive(false);
-                    }}
-                    onCancel={() => setPickBrewerActive(false)}
-                />
-            )}
-            {pickGrinderActive && (
-                <PickGrinderDialog
-                    onGrinderSelected={(grinder) => {
-                        setGrinder(grinder);
-                        setPickGrinderActive(false);
-                    }}
-                    onCancel={() => setPickGrinderActive(false)}
-                />
-            )}
-            {pickBagActive && (
-                <PickBagDialog
-                    onBagSelected={(bag) => {
-                        setBag(bag);
-                        setPickBagActive(false);
-                    }}
-                    onCancel={() => setPickBagActive(false)}
-                />
-            )}
-            {pickRecipeActive && (
-                <PickRecipeDialog
-                    onRecipeSelected={(recipe) => {
-                        setRecipe(recipe);
-                        setPickRecipeActive(false);
-                    }}
-                    onCancel={() => setPickRecipeActive(false)}
-                />
-            )}
-            <button onClick={onCancel}>Cancel</button>
-
         </div>
     );
 }

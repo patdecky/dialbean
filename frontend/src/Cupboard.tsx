@@ -1,12 +1,12 @@
 import type { Grinder, Brewer, Bag } from './types';
-import { useDileBean } from './DileBeanContext';
+import { useDialBean } from './DialBeanContext';
 
 
 const Cupboard = () => {
-    const { data } = useDileBean();
-    const userBrewers: Brewer[] = data.brewers.filter((brewer) => !brewer.isBaseBrewer);
-    const userGrinders: Grinder[] = data.grinders.filter((grinder) => !grinder.isBaseGrinder);
-    const userBags: Bag[] = data.bags.filter((bag) => !bag.isBaseBag);
+    const { data } = useDialBean();
+    const userBrewers: Brewer[] = data.brewers.filter((brewer) => !brewer.isBase);
+    const userGrinders: Grinder[] = data.grinders.filter((grinder) => !grinder.isBase);
+    const userBags: Bag[] = data.bags.filter((bag) => !bag.isBase);
 
 
     return (

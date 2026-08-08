@@ -1,6 +1,6 @@
 import './App.css'
 import { Routes, Route, Outlet, NavLink, useLocation } from "react-router";
-import { DileBeanProvider } from "./DileBeanContext";
+import { DialBeanProvider } from "./DialBeanContext";
 
 import Counter from './Counter'
 import Cupboard from './Cupboard'
@@ -14,7 +14,7 @@ const Layout = () => {
     const activeClassName = baseClassName + " bg-taupe-500";
     const inactiveClassName = baseClassName + " bg-taupe-400";
     return (
-        <div className="App bg-amber-50">
+        <div className="App bg-amber-50 h-dvh w-screen overflow-hidden">
             <div className="absolute top-0 left-0 w-full flex justify-center">
                 <nav className="flex font-bold justify-center items-center border mt-4 rounded-lg bg-red-100 overflow-hidden">
                     <ul className="flex justify-center items-center">
@@ -47,7 +47,7 @@ function App() {
 
     return (
         <>
-            <DileBeanProvider>
+            <DialBeanProvider>
                 <Routes>
                     <Route element={<Layout />} >
                         <Route path="/counter?" element={<Counter />} />
@@ -56,7 +56,7 @@ function App() {
                         <Route path="/compost" element={<Compost />} />
                     </Route>
                 </Routes>
-            </DileBeanProvider>
+            </DialBeanProvider>
         </>
     )
 }

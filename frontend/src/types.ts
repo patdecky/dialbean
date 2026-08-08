@@ -1,6 +1,7 @@
 // --- ENUMS & SCALARS ---
 export type RoastLevel = 'Light' | 'Medium' | 'Dark';
 export type BrewMethod = 'Pour-Over' | 'Espresso' | 'Immersion' | 'Hybrid' | 'Batch';
+export type ItemType = Brewer | Bag | Grinder | Recipe;
 
 export interface Rating {
     sweetness: number;  // 1 to 5
@@ -19,7 +20,7 @@ export interface Bag {
     roastDate?: string; // ISO String
     dateOpened?: string; // ISO String
     isFinished: boolean;
-    isBaseBag: boolean; // true for base bags, false for user-defined bags
+    isBase: boolean; // true for base bags, false for user-defined bags
     active: boolean;
 }
 
@@ -31,7 +32,7 @@ export interface Grinder {
     scaleMax: number;
     stepSize: number; // e.g., 0.5 or 1.0
     cleanedDate?: string;
-    isBaseGrinder: boolean; // true for base grinders, false for user-defined grinders
+    isBase: boolean; // true for base grinders, false for user-defined grinders
     active: boolean;
 }
 
@@ -41,7 +42,7 @@ export interface Brewer {
     name: string;
     method: BrewMethod;
     cleanedDate?: string;
-    isBaseBrewer: boolean; // true for base brewers, false for user-defined brewers
+    isBase: boolean; // true for base brewers, false for user-defined brewers
     active: boolean;
 }
 
@@ -49,13 +50,13 @@ export interface Brewer {
 export interface Recipe {
     id: string;
     name: string;
-    brewMethod: BrewMethod;
+    method: BrewMethod;
     waterMl: number;
     doseGrams: number;
     tempC: number;
     grindPct: number; // 0% to 100% relative scale
     instructions: string; // Free-text instructions or markdown
-    isBaseRecipe: boolean; // true for base recipes, false for user-defined recipes
+    isBase: boolean; // true for base recipes, false for user-defined recipes
     active: boolean;
 }
 
@@ -68,6 +69,17 @@ export interface Evaluation {
     notes?: string;
 }
 
+export interface DialIn {
+    waterDelta: number;
+    doseDelta: number;
+    tempDelta: number;
+    grinderDelta: number;
+    isDisgusting?: boolean;
+    evaluations: Evaluation[];
+    timestamp: string; // ISO String
+    lastUsedTimestamp?: string; // ISO String
+}
+
 export interface Brew {
     id: string;
     name: string;
@@ -76,20 +88,12 @@ export interface Brew {
     grinderId: string;
     recipeId: string;
     timestamp: string; // ISO String
-    lastUsedTimestamp?: string; // ISO String
-    
-    // Active Dial-In Levers (Adjusted over time)
-    waterDelta: number; // Fixed anchor set by user
-    doseDelta: number;
-    tempDelta: number;
-    grinderDelta: number; // Converted from relative % to actual grinder units
-    isDisgusting?: boolean;
-
-    evaluations: Evaluation[];
+    dialIns: DialIn[];
 }
 
+
 // --- DATABASE ROOT SCHEMA (for LocalStorage / JSON export) ---
-export interface DileBeanSchema {
+export interface DialBeanSchema {
     version: number;
     bags: Bag[];
     grinders: Grinder[];

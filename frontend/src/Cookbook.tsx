@@ -1,10 +1,10 @@
 import type { Recipe } from './types';
-import { useDileBean } from './DileBeanContext';
+import { useDialBean } from './DialBeanContext';
 
 const Cookbook = () => {
-    const { data } = useDileBean();
-    const baseRecipes: Recipe[] = data.recipes?.filter((recipe) => recipe.isBaseRecipe) || [];
-    const userRecipes: Recipe[] = data.recipes?.filter((recipe) => !recipe.isBaseRecipe) || [];
+    const { data } = useDialBean();
+    const baseRecipes: Recipe[] = data.recipes?.filter((recipe) => recipe.isBase) || [];
+    const userRecipes: Recipe[] = data.recipes?.filter((recipe) => !recipe.isBase) || [];
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen">
@@ -17,7 +17,7 @@ const Cookbook = () => {
                         <>
                         {userRecipes.map((recipe) => (
                             <li key={recipe.id}>
-                                {recipe.name} — {recipe.brewMethod}
+                                {recipe.name} — {recipe.method}
                             </li>
                             ))}
                             <hr />
@@ -28,7 +28,7 @@ const Cookbook = () => {
                     {baseRecipes.length > 0 ? (
                         baseRecipes.map((recipe) => (
                             <li key={recipe.id}>
-                                {recipe.name} — {recipe.brewMethod}
+                                {recipe.name} — {recipe.method}
                             </li>
                         ))
                     ) : (
