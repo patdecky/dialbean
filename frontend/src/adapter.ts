@@ -1,5 +1,5 @@
 import type { DialBeanSchema } from './types';
-import { bags, grinders, brewers, recipes } from './base_lib';
+import { bags, grinders, brewers, recipes, brews } from './base_lib';
 
 export interface StorageAdapter {
   loadData(): DialBeanSchema;
@@ -14,7 +14,7 @@ const DEFAULT_INITIAL_DATA: DialBeanSchema = {
   grinders: grinders,
   brewers: brewers,
   recipes: recipes,
-  brews: []
+  brews: brews
 };
 
 export class LocalStorageAdapter implements StorageAdapter {

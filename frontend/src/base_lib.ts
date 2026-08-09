@@ -4,11 +4,33 @@ export const bags: Bag[] = [
     {
         id: '1',
         name: 'Specialty Coffee',
-        roastLevel: 'Medium',
+        roaster: "Coffee Club",
+        iconId: "1",
+        roastLevel: 'Light',
         roastDate: '2026-08-06',
         isFinished: false,
-        isBase: true, 
-        active: false
+        isBase: true,
+        active: true
+    },
+    {
+        id: '2',
+        name: 'Specialty Coffee',
+        iconId: "2",
+        roastLevel: 'Medium',
+        isFinished: false,
+        isBase: true,
+        active: true
+    },
+    {
+        id: '3',
+        name: 'Specialty Coffee',
+        iconId: "3",
+        roastLevel: 'Dark',
+        roastDate: '2026-08-06',
+        dateOpened: '2026-08-06',
+        isFinished: false,
+        isBase: true,
+        active: true
     }
 ];
 
@@ -20,7 +42,7 @@ export const grinders: Grinder[] = [
         scaleMax: 30,
         stepSize: 1,
         isBase: true,
-        active: false
+        active: true
     }
 ];
 
@@ -52,7 +74,7 @@ export const brewers: Brewer[] = [
         method: 'Pour-Over',
         isBase: true,
         active: true
-    },{
+    }, {
         id: '5',
         name: 'Hario V60',
         method: 'Pour-Over',
@@ -79,7 +101,7 @@ export const brewers: Brewer[] = [
         method: 'Pour-Over',
         isBase: true,
         active: true
-    },{
+    }, {
         id: '9',
         name: 'Hario V60',
         method: 'Pour-Over',
@@ -134,7 +156,7 @@ export const brewers: Brewer[] = [
         method: 'Pour-Over',
         isBase: true,
         active: false
-    },{
+    }, {
         id: '17',
         name: 'Hario V60',
         method: 'Pour-Over',
@@ -161,7 +183,7 @@ export const brewers: Brewer[] = [
         method: 'Pour-Over',
         isBase: true,
         active: false
-    },{
+    }, {
         id: '21',
         name: 'Hario V60',
         method: 'Pour-Over',
@@ -202,6 +224,59 @@ export const recipes: Recipe[] = [
         grindPct: 45,
         instructions: 'Use a medium grind and pour in 3 stages.',
         isBase: true,
-        active: false
+        active: true
+    }
+];
+
+
+export const brews: Brew[] = [
+    {
+        id: "1",
+        name: "Brew 1",
+        bagId: "1",
+        brewerId: "1",
+        grinderId: "1",
+        recipeId: "1",
+        timestamp: new Date().toISOString(),
+        dialIns: [{
+            waterDelta: 0,
+            doseDelta: 0,
+            tempDelta: 0,
+            grinderDelta: 0,
+            evaluations: [],
+            timestamp: new Date().toISOString()
+        }]
+    },
+    {
+        id: "2",
+        name: "Brew 2",
+        bagId: "1",
+        brewerId: "1",
+        grinderId: "1",
+        recipeId: "1",
+        timestamp: new Date().toISOString(),
+        dialIns: [
+            {
+                waterDelta: 0,
+                doseDelta: 0,
+                tempDelta: 1,
+                grinderDelta: 0,
+                evaluations: [
+                    {
+                        id: "1",
+                        timestamp: new Date().toISOString(),
+                        ratings: {
+                            sweetness: 3,
+                            acidity: 3,
+                            bitterness: 3,
+                            body: 3,
+                            strength: 3
+                        },
+                        notes: "Tasted good."
+                    }
+                ],
+                timestamp: new Date().toISOString()
+            }
+        ]
     }
 ];

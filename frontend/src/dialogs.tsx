@@ -1,21 +1,61 @@
 import { useEffect, useState, useRef } from 'react';
 import type { Brew, Brewer, Recipe, Grinder, Bag, ItemType } from './types';
 import { useDialBean } from './DialBeanContext';
-import { SmallItemCard, MediumItemCard } from './Cards';
+import { SmallItemCard, DialInCard } from './Cards';
+import { brewer_icons, grinder_icons, bag_icons } from "./icons";
+
 
 export const ItemDetailsDialog = ({ item, type, onClose }: { item: ItemType; type: 'brewer' | 'grinder' | 'bag' | 'recipe'; onClose: () => void }) => {
+    const Icon = type === "brewer" ? ((item as Brewer).iconId ? brewer_icons[(item as Brewer).iconId!]?.icon : brewer_icons["1"].icon) :
+        type === "grinder" ? ((item as Grinder).iconId ? grinder_icons[(item as Grinder).iconId!]?.icon : grinder_icons["1"].icon) :
+            type === "bag" ? ((item as Bag).iconId ? bag_icons[(item as Bag).iconId!]?.icon : bag_icons["1"].icon) : undefined;
     return (
-        <div className="fixed top-0 left-0 w-full h-full z-50 flex items-center justify-center">
-            <div className="fixed top-0 left-0 w-full h-full backdrop-blur-sm bg-gray-200 opacity-50"></div>
-            <div className="bg-white z-60 p-4 rounded shadow-md min-w-64 relative z-1">
-                <div>{type.charAt(0).toUpperCase() + type.slice(1)} Details:</div>
-                <div>Name: {item.name}</div>
-                {type === 'brewer' && <div>Method: {(item as Brewer).method}</div>}
-                {type === 'recipe' && <div>Method: {(item as Recipe).method}</div>}
-                {type === 'recipe' && <div>Instructions: {(item as Recipe).instructions}</div>}
-                <button onClick={onClose}>Close Details</button>
+        type === "recipe" ? (
+            <div className="fixed top-0 left-0 w-full h-full z-50 flex items-center justify-center">
+                <div className="fixed top-0 left-0 w-full h-full backdrop-blur-sm bg-gray-200 opacity-50"></div>
+                <div className="bg-gray-200 rounded-xl shadow-xl z-60 p-4 rounded shadow-md min-w-64 relative z-1 max-h-[90dvh] overflow-y-auto shadow-md w-96">
+                    <div>{type.charAt(0).toUpperCase() + type.slice(1)} Details:</div>
+                    <div>Name: {item.name}</div>
+                    <div>Method: {(item as Recipe).method}</div>
+                    <div>Instructions: {(item as Recipe).instructions}</div>
+                    <button
+                        className="absolute top-2 right-2"
+                        onClick={onClose}>Close Details</button>
+                </div>
             </div>
-        </div>
+        ) : (
+
+            <div className="fixed top-0 left-0 w-full h-full z-50 flex items-center justify-center">
+                <div className="fixed top-0 left-0 w-full h-full backdrop-blur-sm bg-gray-200 opacity-50"></div>
+                <div className="bg-gray-200 rounded-lg z-60 p-4 rounded shadow-md relative z-1 max-h-[90dvh] overflow-y-auto shadow-md w-40 h-60">
+                    <div className="flex items-center justify-center w-full mt-6">
+                        {Icon && <Icon style={{ width: "40px", height: "40px", minWidth: "40px", minHeight: "40px" }} />}
+                    </div>
+                    {type === "brewer" &&
+                        <>
+                            <div>{item.name}</div>
+                            <div>{(item as Brewer).method}</div>
+                        </>
+                    }
+                    {type === "grinder" &&
+                        <>
+                            <div>{item.name}</div>
+                            <div>{(item as Grinder).scaleMin} - {(item as Grinder).scaleMax}</div>
+                        </>
+                    }
+                    {type === "bag" &&
+                        <>
+                            <div>{item.name}</div>
+                            <div>{(item as Bag).roaster}</div>
+                        </>
+                    }
+                    <button 
+                        className="absolute top-2 right-2"
+                        onClick={onClose}>Close Details</button>
+                </div>
+            </div>
+
+        )
     );
 }
 
@@ -64,7 +104,7 @@ export const PickItemDialog = ({ onItemSelected, onCancel, type }: { onItemSelec
                     <div className="flex flex-wrap gap-2">
                         {filteredItems.length > 0 ? (
                             filteredItems.map((item) => (
-                                <MediumItemCard
+                                <SmallItemCard
                                     key={item.id}
                                     item={item}
                                     type={type}
@@ -117,6 +157,7 @@ export const PickItemCarousel = ({ selectedItem, onItemSelected, type }: { selec
     const [canScrollRight, setCanScrollRight] = useState(false);
 
     const [selectDialogActive, setSelectDialogActive] = useState(false);
+    const [detailsItem, setDetailsItem] = useState<ItemType | null>(null);
 
     useEffect(() => {
         if (!selectedItem) {
@@ -166,6 +207,13 @@ export const PickItemCarousel = ({ selectedItem, onItemSelected, type }: { selec
     };
     return (
         <div className="relative">
+            {detailsItem && (
+                <ItemDetailsDialog
+                    item={detailsItem}
+                    type={type}
+                    onClose={() => setDetailsItem(null)}
+                />
+            )}
             {canScrollLeft && (
                 <button
                     onClick={() => handleScroll(-200)}
@@ -187,6 +235,7 @@ export const PickItemCarousel = ({ selectedItem, onItemSelected, type }: { selec
                                 type={type}
                                 isSelected={selectedItem?.id === item.id}
                                 onItemSelected={onItemSelected}
+                                onDetails={(item) => setDetailsItem(item)}
                                 itemRef={selectedItem?.id === item.id ? selectedItemRef : null}
                             />
                         ))
@@ -303,19 +352,95 @@ export const NewBrewDialog = ({ brew, brewerId, grinderId, bagId, recipeId, onSa
                         return;
                     }
                     onSaveBrew({
-                    ...brew || {},
-                    id: crypto.randomUUID(),
-                    name: name,
-                    brewerId: brewer.id,
-                    grinderId: grinder.id,
-                    bagId: bag.id,
-                    recipeId: recipe.id,
-                    timestamp: new Date().toISOString(),
-                    dialIns: brew?.dialIns || []
-                })}}
+                        ...brew || {},
+                        id: crypto.randomUUID(),
+                        name: name,
+                        brewerId: brewer.id,
+                        grinderId: grinder.id,
+                        bagId: bag.id,
+                        recipeId: recipe.id,
+                        timestamp: new Date().toISOString(),
+                        dialIns: brew?.dialIns || []
+                    })
+                }}
                     disabled={!brewer || !grinder || !bag || !recipe}
                 >Save Brew</button>
                 <button className="absolute top-2 right-2" onClick={onCancel}>Cancel</button>
+            </div>
+        </div>
+    );
+}
+
+export const BrewDetailsDialog = ({ brew, onClose }: { brew: Brew; onClose: () => void }) => {
+    const { data } = useDialBean();
+    const brewer: Brewer | undefined = data.brewers.find((b) => b.id === brew.brewerId);
+    const grinder: Grinder | undefined = data.grinders.find((g) => g.id === brew.grinderId);
+    const bag: Bag | undefined = data.bags.find((b) => b.id === brew.bagId);
+    const recipe: Recipe | undefined = data.recipes.find((r) => r.id === brew.recipeId);
+    const [detailsItem, setDetailsItem] = useState<ItemType | null>(null);
+    const [detailsItemType, setDetailsItemType] = useState<'brewer' | 'grinder' | 'bag' | 'recipe' | null>('recipe');
+    if (!brewer) return;
+    if (!grinder) return;
+    if (!bag) return;
+    if (!recipe) return;
+
+    return (
+        <div className="fixed top-0 left-0 h-full w-full flex items-center justify-center z-10">
+            {detailsItem && (
+                <ItemDetailsDialog
+                    item={detailsItem}
+                    type={detailsItemType}
+                    onClose={() => setDetailsItem(null)}
+                />
+            )}
+            <div className="fixed inset-0 h-dvh w-screen overflow-hidden bg-amber-200 opacity-50 z-10"></div>
+            <div className="bg-white p-4 rounded max-h-[90dvh] overflow-y-auto shadow-md w-96 max-w-96 relative z-11">
+                <button className="absolute top-2 right-2" onClick={onClose}>Close</button>
+                <div>Brew Details: {brew.name}</div>
+                <div className="flex justify-start items-center gap-1">
+                    <SmallItemCard
+                        item={brewer}
+                        type="brewer"
+                        onDetails={(item) => {
+                            setDetailsItem(item);
+                            setDetailsItemType("brewer");
+                        }}
+                    />
+                    <SmallItemCard
+                        item={grinder}
+                        type="grinder"
+                        onDetails={(item) => {
+                            setDetailsItem(item);
+                            setDetailsItemType("grinder");
+                        }}
+                    />
+                    <SmallItemCard
+                        item={bag}
+                        type="bag"
+                        onDetails={(item) => {
+                            setDetailsItem(item);
+                            setDetailsItemType("bag");
+                        }}
+                    />
+                    <SmallItemCard
+                        item={recipe}
+                        type="recipe"
+                        onDetails={(item) => {
+                            setDetailsItem(item);
+                            setDetailsItemType("recipe");
+                        }}
+                    />
+                </div>
+                <div className="pt-2">
+                    {brew.dialIns.length > 0 &&
+                        <DialInCard
+                            dialIn={brew.dialIns[brew.dialIns.length - 1]}
+                            recipe={recipe}
+                            grinder={grinder}
+                        />
+                    }
+                </div>
+                <button>Dial In</button>
             </div>
         </div>
     );

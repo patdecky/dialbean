@@ -132,7 +132,14 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             grinderId,
             recipeId,
             timestamp: new Date().toISOString(),
-            dialIns: [],
+            dialIns: [{
+                waterDelta: 0,
+                doseDelta: 0,
+                tempDelta: 0,
+                grinderDelta: 0,
+                evaluations: [],
+                timestamp: new Date().toISOString()
+            }],
         };
         setData((prev) => ({ ...prev, 
             brews: [...prev.brews, newBrew],

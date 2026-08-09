@@ -3,6 +3,8 @@ export type RoastLevel = 'Light' | 'Medium' | 'Dark';
 export type BrewMethod = 'Pour-Over' | 'Espresso' | 'Immersion' | 'Hybrid' | 'Batch';
 export type ItemType = Brewer | Bag | Grinder | Recipe;
 
+
+
 export interface Rating {
     sweetness: number;  // 1 to 5
     acidity: number;    // 1 to 5
@@ -15,6 +17,7 @@ export interface Rating {
 export interface Bag {
     id: string;
     name: string;
+    iconId?: string;
     roaster?: string;
     roastLevel: RoastLevel;
     roastDate?: string; // ISO String
@@ -28,6 +31,7 @@ export interface Bag {
 export interface Grinder {
     id: string;
     name: string;
+    iconId?: string;
     scaleMin: number;
     scaleMax: number;
     stepSize: number; // e.g., 0.5 or 1.0
@@ -40,6 +44,7 @@ export interface Grinder {
 export interface Brewer {
     id: string;
     name: string;
+    iconId?: string;
     method: BrewMethod;
     cleanedDate?: string;
     isBase: boolean; // true for base brewers, false for user-defined brewers
