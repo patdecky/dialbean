@@ -1,65 +1,42 @@
-import type { Grinder, Brewer, Bag } from './types';
-import { useDialBean } from './DialBeanContext';
-
+import { useDialBean } from "./DialBeanContext.tsx"
+import { PickItemCarousel } from "./dialogs.tsx"
 
 const Cupboard = () => {
     const { data } = useDialBean();
-    const userBrewers: Brewer[] = data.brewers.filter((brewer) => !brewer.isBase);
-    const userGrinders: Grinder[] = data.grinders.filter((grinder) => !grinder.isBase);
-    const userBags: Bag[] = data.bags.filter((bag) => !bag.isBase);
-
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen">
-            
-            <section>
-                <h2 className="text-xl font-semibold mb-2">Brewers</h2>
-                <ul>
-                    {userBrewers.length > 0 ? (
-                        userBrewers.map((brewer) => (
-                            <li key={brewer.id}>
-                                {brewer.name} — {brewer.method}
-                            </li>
-                        ))
-                    ) : (
-                        <li>No user brewers available.</li>
-                    )}
-                </ul>
-                <button>Add brewer</button>
-            </section>
+        <div className="flex flex-col items-center justify-center h-screen w-screen">
+            <div className="flex flex-col items-start justify-start w-96 max-w-96 gap-2">
+                <div className="w-full">
+                    <PickItemCarousel
+                        items={data.brewers}
+                        onSelectDetails={true}
+                        type="brewer"
+                    />
+                </div>
+                <div className="w-full">
+                    <PickItemCarousel
+                        items={data.grinders}
+                        onSelectDetails={true}
+                        type="grinder"
+                    />
+                </div>
+                <div className="w-full">
+                    <PickItemCarousel
+                        items={data.bags}
+                        onSelectDetails={true}
+                        type="bag"
+                    />
+                </div>
+                <div className="w-full">
+                    <PickItemCarousel
+                        items={data.recipes}
+                        onSelectDetails={true}
+                        type="recipe"
+                    />
+                </div>
 
-
-            <section>
-                <h2 className="text-xl font-semibold mb-2">Grinders</h2>
-                <ul>
-                    {userGrinders.length > 0 ? (
-                        userGrinders.map((grinder) => (
-                            <li key={grinder.id}>
-                                {grinder.name}
-                            </li>
-                        ))
-                    ) : (
-                        <li>No user grinders available.</li>
-                    )}
-                </ul>
-                <button>Add grinder</button>
-            </section>
-
-            <section>
-                <h2 className="text-xl font-semibold mb-2">Bags</h2>
-                <ul>
-                    {userBags.length > 0 ? (
-                        userBags.map((bag) => (
-                            <li key={bag.id}>
-                                {bag.name}
-                            </li>
-                        ))
-                    ) : (
-                        <li>No user bags available.</li>
-                    )}
-                </ul>
-                <button>Add bag</button>
-            </section>
+            </div>
         </div>
     )
 }

@@ -1,6 +1,6 @@
 import { GiCoffeePot, GiManualMeatGrinder, GiCoffeeBeans } from "react-icons/gi";
 import { MdGrain, MdWaterDrop } from "react-icons/md";
-import { FaWeightHanging, FaTemperatureHalf, FaLemon } from "react-icons/fa6";
+import { FaWeightHanging, FaTemperatureHalf, FaRegLemon  } from "react-icons/fa6";
 import { LuCandy, LuHop, LuMilk, LuSearchCheck, LuInfo } from "react-icons/lu";
 import { BiSolidCoffeeBean } from "react-icons/bi";
 import { HiMiniAdjustmentsHorizontal } from "react-icons/hi2";
@@ -132,7 +132,7 @@ export const EvaluationCard = ({ evaluation, onSelected = null }: {
                     </span>
                 </div>
                 <div className="flex justify-start gap-1 items-center">
-                    <FaLemon />
+                    <FaRegLemon />
                     <span>
                         {evaluation.ratings.acidity}
                     </span>

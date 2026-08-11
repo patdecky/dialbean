@@ -54,6 +54,14 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
 
     const removeBag = (bagId: string) => {
+        const bag = data.bags.find((b) => b.id === bagId);
+        if (!bag) return;
+        if (bag.isBase) {
+            throw new Error(`Cannot remove base bag with ID ${bagId}`);
+        }
+        if (bag.active) {
+            throw new Error(`Cannot remove active bag with ID ${bagId}`);
+        }
         setData((prev) => ({
             ...prev,
             bags: prev.bags.filter((bag) => bag.id !== bagId)
@@ -65,6 +73,14 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setData((prev) => ({ ...prev, grinders: [...prev.grinders, newGrinder] }));
     };
     const removeGrinder = (grinderId: string) => {
+        const grinder = data.grinders.find((g) => g.id === grinderId);
+        if (!grinder) return;
+        if (grinder.isBase) {
+            throw new Error(`Cannot remove base grinder with ID ${grinderId}`);
+        }
+        if (grinder.active) {
+            throw new Error(`Cannot remove active grinder with ID ${grinderId}`);
+        }
         setData((prev) => ({
             ...prev,
             grinders: prev.grinders.filter((grinder) => grinder.id !== grinderId)
@@ -77,11 +93,19 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
 
     const removeBrewer = (brewerId: string) => {
+        const brewer = data.brewers.find((b) => b.id === brewerId);
+        if (!brewer) return;
+        if (brewer.isBase) {
+            throw new Error(`Cannot remove base brewer with ID ${brewerId}`);
+        }
+        if (brewer.active) {
+            throw new Error(`Cannot remove active brewer with ID ${brewerId}`);
+        }
         setData((prev) => ({
             ...prev,
             brewers: prev.brewers.filter((brewer) => brewer.id !== brewerId)
         }));
-    }
+    };
 
     const addRecipe = (recipeData: Omit<Recipe, 'id' | 'isBase' | 'active'>) => {
         const newRecipe: Recipe = { ...recipeData, id: crypto.randomUUID(), isBase: false, active: false };
@@ -89,6 +113,14 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
 
     const removeRecipe = (recipeId: string) => {
+        const recipe = data.recipes.find((r) => r.id === recipeId);
+        if (!recipe) return;
+        if (recipe.isBase) {
+            throw new Error(`Cannot remove base recipe with ID ${recipeId}`);
+        }
+        if (recipe.active) {
+            throw new Error(`Cannot remove active recipe with ID ${recipeId}`);
+        }
         setData((prev) => ({
             ...prev,
             recipes: prev.recipes.filter((recipe) => recipe.id !== recipeId)

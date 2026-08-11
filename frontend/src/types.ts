@@ -1,7 +1,25 @@
 // --- ENUMS & SCALARS ---
-export type RoastLevel = 'Light' | 'Medium' | 'Dark';
-export type BrewMethod = 'Pour-Over' | 'Espresso' | 'Immersion' | 'Hybrid' | 'Batch';
+export type RoastLevel = | 'Light'
+    | 'Light-Medium'
+    | 'Medium'
+    | 'Medium-Dark'
+    | 'Dark';
+export type BrewerType =
+    | 'V60'
+    | 'Flat-Bottom'
+    | 'Chemex'
+    | 'AeroPress'
+    | 'French-Press'
+    | 'Moka-Pot'
+    | 'Lever-Espresso'
+    | 'Semi-Auto-Espresso'
+    | 'Super-Auto-Espresso'
+    | 'Drip-Machine'
+    | 'Cold-Brew-Vessel'
+    | 'Siphon'
+    | 'Custom';
 export type ItemType = Brewer | Bag | Grinder | Recipe;
+export type MachineType = Brewer | Bag | Grinder;
 
 
 
@@ -45,7 +63,7 @@ export interface Brewer {
     id: string;
     name: string;
     iconId?: string;
-    method: BrewMethod;
+    type: BrewerType;
     cleanedDate?: string;
     isBase: boolean; // true for base brewers, false for user-defined brewers
     active: boolean;
@@ -55,7 +73,7 @@ export interface Brewer {
 export interface Recipe {
     id: string;
     name: string;
-    method: BrewMethod;
+    type: BrewerType;
     waterMl: number;
     doseGrams: number;
     tempC: number;

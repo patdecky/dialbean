@@ -1,12 +1,14 @@
 import { useState } from 'react';
 
-import type { Brew } from './types';
+import type { Bag, Brew, Brewer, Grinder, Recipe } from './types';
 import { useDialBean } from './DialBeanContext';
 import { NewBrewDialog, BrewDetailsDialog } from './dialogs';
 
 
 const Counter = () => {
-    const { data, newBrew } = useDialBean();
+    const { data, newBrew, addBag, addBrewer, addGrinder, addRecipe,
+        removeBag, removeBrewer, removeGrinder, removeRecipe
+    } = useDialBean();
     const userBrews: Brew[] = data.brews;
     const [selectedBrew, setSelectedBrew] = useState<Brew | null>(null);
     const [newBrewActive, setNewBrewActive] = useState(false);
@@ -27,8 +29,8 @@ const Counter = () => {
                     ) : (
                         <div>No brews available.</div>
                     )}
+                    <button onClick={() => setNewBrewActive(true)}>New Brew</button>
                 </div>
-                <button onClick={() => setNewBrewActive(true)}>New Brew</button>
                 {newBrewActive && (
                     <NewBrewDialog
                         onSaveBrew={(brew) => {
@@ -36,13 +38,35 @@ const Counter = () => {
                             setNewBrewActive(false);
                         }}
                         onCancel={() => setNewBrewActive(false)}
+                        onAddBrewer={addBrewer}
+                        onAddGrinder={addGrinder}
+                        onAddBag={addBag}
+                        onAddRecipe={addRecipe}
+                        bags={data.bags}
+                        brewers={data.brewers}
+                        grinders={data.grinders}
+                        recipes={data.recipes}
+                        brews={data.brews}
+                        onRemoveBag={(bag) => removeBag((bag as Bag).id)}
+                        onRemoveBrewer={(brewer) => removeBrewer((brewer as Brewer).id)}
+                        onRemoveGrinder={(grinder) => removeGrinder((grinder as Grinder).id)}
+                        onRemoveRecipe={(recipe) => removeRecipe((recipe as Recipe).id)}
                     />
                 )}
                 {selectedBrew && (
-                    <BrewDetailsDialog 
-                    key={selectedBrew.id} 
-                    brew={selectedBrew} 
-                    onClose={() => setSelectedBrew(null)} />
+                    <BrewDetailsDialog
+                        key={selectedBrew.id}
+                        brew={selectedBrew}
+                        onClose={() => setSelectedBrew(null)}
+                        brewers={data.brewers}
+                        bags={data.bags}
+                        grinders={data.grinders}
+                        recipes={data.recipes}
+                        onAddBrewer={addBrewer}
+                        onAddGrinder={addGrinder}
+                        onAddBag={addBag}
+                        onAddRecipe={addRecipe}
+                    />
                 )}
             </div>
         </div>

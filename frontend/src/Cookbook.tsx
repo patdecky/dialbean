@@ -17,7 +17,7 @@ const Cookbook = () => {
                         <>
                         {userRecipes.map((recipe) => (
                             <li key={recipe.id}>
-                                {recipe.name} — {recipe.method}
+                                {recipe.name} — {recipe.type}
                             </li>
                             ))}
                             <hr />
@@ -28,7 +28,7 @@ const Cookbook = () => {
                     {baseRecipes.length > 0 ? (
                         baseRecipes.map((recipe) => (
                             <li key={recipe.id}>
-                                {recipe.name} — {recipe.method}
+                                {recipe.name} — {recipe.type}
                             </li>
                         ))
                     ) : (

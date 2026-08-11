@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="48"
+   height="48"
+   viewBox="0 0 48 48"
+   version="1.1"
+   id="svg1"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient24">
+      <stop
+         style="stop-color:#afeeee;stop-opacity:1;"
+         offset="0"
+         id="stop26" />
+      <stop
+         style="stop-color:#afeeee;stop-opacity:1;"
+         offset="0.74223304"
+         id="stop28" />
+      <stop
+         style="stop-color:#cd853f;stop-opacity:1;"
+         offset="0.74223304"
+         id="stop29" />
+      <stop
+         style="stop-color:#cd853f;stop-opacity:1;"
+         offset="1"
+         id="stop27" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#linearGradient24"
+       id="linearGradient27"
+       x1="621.69495"
+       y1="16.789764"
+       x2="621.69495"
+       y2="37.210236"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <g
+     id="layer1"
+     transform="translate(-599.68311)">
+    <g
+       id="g29"
+       transform="translate(1.9999955,4)">
+      <path
+         style="fill:url(#linearGradient27);stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+         d="m 618.68311,16 v 7 l -6,12 c -0.71344,1.577707 0.50823,3 2,3 h 14 c 1.51385,0 2.7661,-1.631638 2,-3 l -6,-12 v -7 z"
+         id="path23" />
+      <rect
+         style="fill:#afeeee;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+         id="rect23"
+         width="8"
+         height="3"
+         x="617.68311"
+         y="13" />
+      <path
+         style="fill:#afeeee;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+         d="m 626.03666,33 c 1.41437,2 0.64645,2.399534 0.64645,2.399534"
+         id="path24" />
+    </g>
+    <rect
+       style="fill:#dcdcdc;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       id="rect57-8-2"
+       width="27.96875"
+       height="3"
+       x="609.69873"
+       y="42" />
+    <path
+       style="fill:#deb887;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+       d="m 620.68311,16.994583 c 0,-1.994583 -1,-2.298525 -1,-4.298525 h 8 c 0,2 -1,2.303942 -1,4.287476 z"
+       id="path29" />
+  </g>
+</svg>
