@@ -2,8 +2,9 @@ import { useEffect, useState, useRef } from 'react';
 import type { Brew, Brewer, Recipe, Grinder, Bag, ItemType, MachineType } from './types';
 import { useDialBean } from './DialBeanContext';
 import { SmallItemCard, DialInCard } from './Cards';
-import { brewer_icons, grinder_icons, bag_icons } from "./icons";
+import { brewer_icons, grinder_icons, bag_icons, XIcon } from "./icons";
 import { MdClose } from "react-icons/md";
+import { formatLastUsed } from './formating';
 
 export const ConfirmDialog = ({ message, onConfirm, onCancel }:
     {
@@ -726,15 +727,28 @@ export const BrewDetailsDialog = ({ brew, onClose, brewers, grinders, bags, reci
                     }}
                 />
             )}
-            <div className="fixed inset-0 h-dvh w-screen overflow-hidden bg-amber-200 opacity-50 z-10"></div>
-            <div className="bg-white p-4 rounded max-h-[90dvh] overflow-y-auto shadow-md w-96 max-w-96 relative z-11">
-                <button className="absolute top-2 right-2 hover:bg-gray-200 rounded-full p-1" onClick={onClose}><MdClose /></button>
-                <div>Brew Details: {brew.name}</div>
+            <div className="fixed inset-0 overflow-hidden backdrop-blur-xs z-10" onClick={onClose}></div>
+            <div className="bg-bg2 border border-bg4 p-4 rounded-xl max-h-[90dvh] overflow-y-auto shadow-2xl/40 min-w-50 min-h-50 max-w-[90dvw] relative z-11 flex flex-col gap-1">
+                <div className="flex flex-col">
+                    <button className="bg-transparent absolute top-1 right-1 rounded-full p-1" onClick={onClose}><XIcon /></button>
+                    <h2>{brew.name}</h2>
+                    <div className="text-xs text-fg3">
+                        {new Date(brew.timestamp).toLocaleString()}
+                    </div>
+                    {brew.lastUsedTimestamp &&
+                        <div className="text-xs text-fg3">
+                            {formatLastUsed(brew.lastUsedTimestamp)}
+                        </div>}
+                </div>
                 <div className="flex justify-start items-center gap-1">
                     <SmallItemCard
                         item={brewer}
                         type="brewer"
                         onDetails={(item) => {
+                            setDetailsItem(item);
+                            setDetailsItemType("brewer");
+                        }}
+                        onItemSelected={(item) => {
                             setDetailsItem(item);
                             setDetailsItemType("brewer");
                         }}
@@ -746,6 +760,10 @@ export const BrewDetailsDialog = ({ brew, onClose, brewers, grinders, bags, reci
                             setDetailsItem(item);
                             setDetailsItemType("grinder");
                         }}
+                        onItemSelected={(item) => {
+                            setDetailsItem(item);
+                            setDetailsItemType("grinder");
+                        }}
                     />
                     <SmallItemCard
                         item={bag}
@@ -754,15 +772,23 @@ export const BrewDetailsDialog = ({ brew, onClose, brewers, grinders, bags, reci
                             setDetailsItem(item);
                             setDetailsItemType("bag");
                         }}
+                        onItemSelected={(item) => {
+                            setDetailsItem(item);
+                            setDetailsItemType("bag");
+                        }}
                     />
-                    <SmallItemCard
+                    {/* <SmallItemCard
                         item={recipe}
                         type="recipe"
                         onDetails={(item) => {
                             setDetailsItem(item);
                             setDetailsItemType("recipe");
                         }}
-                    />
+                        onItemSelected={(item) => {
+                            setDetailsItem(item);
+                            setDetailsItemType("recipe");
+                        }}
+                    /> */}
                 </div>
                 <div className="pt-2">
                     {brew.dialIns.length > 0 &&
@@ -774,6 +800,10 @@ export const BrewDetailsDialog = ({ brew, onClose, brewers, grinders, bags, reci
                     }
                 </div>
                 <button>Dial In</button>
+                <button>evaluate</button>
+                <button>remove</button>
+                <button>copy</button>
+                <button>edit?</button>
             </div>
         </div>
     );

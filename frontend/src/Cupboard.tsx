@@ -5,8 +5,8 @@ const Cupboard = () => {
     const { data } = useDialBean();
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen w-screen">
-            <div className="flex flex-col items-start justify-start w-96 max-w-96 gap-2">
+        <div className="flex flex-col items-center justify-center h-full w-full">
+            <div className="flex flex-col items-start justify-start max-w-100 gap-2">
                 <div className="w-full">
                     <PickItemCarousel
                         items={data.brewers}

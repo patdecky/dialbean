@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="48"
+   height="48"
+   viewBox="0 0 48 48"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <g
+     id="layer1"
+     transform="translate(-899.6831)">
+    <rect
+       style="fill:#daa520;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+       id="rect74-6"
+       width="22"
+       height="32"
+       x="912.68311"
+       y="13" />
+    <rect
+       style="fill:#daa520;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+       id="rect74-6-7"
+       width="22"
+       height="4.0000005"
+       x="899.94824"
+       y="-158.23204"
+       transform="rotate(10.304849)" />
+    <rect
+       style="fill:#deb887;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+       id="rect75-6"
+       width="22"
+       height="14"
+       x="912.68311"
+       y="20" />
+    <g
+       id="g80-1"
+       transform="rotate(-123.31589,897.70386,14.571276)"
+       style="fill:#cd853f">
+      <ellipse
+         style="fill:#cd853f;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+         id="path79-8"
+         cx="874.55853"
+         cy="27.079981"
+         rx="5.5463686"
+         ry="3.5174809" />
+      <path
+         style="fill:#cd853f;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+         d="M 869.56125,25.55403 C 870.97687,27 872.68416,27.48199 874.68311,27 c 1.90151,-0.505745 3.54739,0 4.93766,1.517235 v 0"
+         id="path80-4" />
+    </g>
+    <g
+       id="g80-8-9"
+       transform="rotate(-54.601255,900.68311,-23.372724)"
+       style="fill:#cd853f">
+      <ellipse
+         style="fill:#cd853f;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+         id="path79-9-6"
+         cx="874.55853"
+         cy="27.079981"
+         rx="5.5463686"
+         ry="3.5174809" />
+      <path
+         style="fill:#cd853f;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+         d="M 869.56125,25.55403 C 870.97687,27 872.68416,27.48199 874.68311,27 c 1.90151,-0.505745 3.54739,0 4.93766,1.517235 v 0"
+         id="path80-3-3" />
+    </g>
+  </g>
+</svg>

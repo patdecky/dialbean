@@ -38,35 +38,24 @@
        y1="14.500322"
        x2="122.24663"
        y2="38.500267"
-       gradientUnits="userSpaceOnUse" />
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(2.0000007,3)" />
   </defs>
   <g
      id="layer1"
      transform="translate(-100.24665)">
-    <g
-       id="g25"
-       transform="translate(2.0000007,3)">
-      <path
-         style="fill:url(#linearGradient23);fill-opacity:1;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
-         d="m 111.24665,11 c 3,6 5,10.998698 5,14 0,4 -5,11 -5,14 0,3 2.06585,3 3,3 h 15 c 1,0 3,0 3,-3 0,-3 -4,-10 -4,-14 0,-3.000005 2,-8 5,-14 z"
-         id="path18" />
-      <path
-         style="fill:#deb887;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
-         d="m 131.24665,21 h -18 c 1.33333,2.666667 1.33333,5.333333 0,8 h 18 c -1.33333,-2.666667 -1.33333,-5.333333 0,-8 z"
-         id="path19" />
-      <path
-         style="fill:#daa520;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
-         d="m 113.26562,10.508233 -1.01897,-2 h 20 l -0.9654,2 z"
-         id="path20" />
-      <path
-         style="fill:#daa520;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
-         d="m 62.131135,9.546875 -0.807811,-2 21.6,-0.011049 -0.800001,2 z"
-         id="path20-3" />
-      <path
-         style="fill:#daa520;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
-         d="m 11.999999,7.484375 -1,-2 h 22 l -1,2 z"
-         id="path20-9" />
-    </g>
+    <path
+       style="fill:url(#linearGradient23);fill-opacity:1;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       d="m 113.24665,14 c 3,6 5,10.998698 5,14 0,4 -5,11 -5,14 0,3 2.06585,3 3,3 h 15 c 1,0 3,0 3,-3 0,-3 -4,-10 -4,-14 0,-3.000005 2,-8 5,-14 z"
+       id="path18" />
+    <path
+       style="fill:#deb887;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       d="m 133.24665,24 h -18 c 1.33333,2.666667 1.33333,5.333333 0,8 h 18 c -1.33333,-2.666667 -1.33333,-5.333333 0,-8 z"
+       id="path19" />
+    <path
+       style="fill:#daa520;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       d="m 115.26562,13.508233 -1.01897,-2 h 20 l -0.9654,2 z"
+       id="path20" />
     <path
        style="fill:#deb887;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
        d="m 115.2506,28 h 17.99605"

@@ -23,7 +23,7 @@ interface DialBeanContextType {
     addRecipe: (recipe: Omit<Recipe, 'id' | 'isBase' | 'active'>) => void;
     removeRecipe: (recipeId: string) => void;
     newBrew: (name: string, bagId: string, brewerId: string, grinderId: string, recipeId: string) => Brew;
-    markDialInUsed: (brewId: string) => Brew;
+    markBrewUsed: (brewId: string) => Brew;
     setBrewName: (brewId: string, name: string) => Brew;
     removeBrew: (brewId: string) => void;
     dialIn: (brewId: string, doseDelta?: number, tempDelta?: number, grindDelta?: number) => Brew;
@@ -195,7 +195,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return newBrew;
     };
 
-    const markDialInUsed = (brewId: string) => {
+    const markBrewUsed = (brewId: string) => {
         const brew = data.brews.find((d) => d.id === brewId);
         if (!brew) {
             throw new Error(`Brew with ID ${brewId} not found`);
@@ -203,13 +203,9 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (brew.dialIns.length === 0) {
             throw new Error(`Brew with ID ${brewId} has no dial-ins`);
         }
-        const newDialIn = {
-            ...brew.dialIns[brew.dialIns.length - 1],
-            lastUsedTimestamp: new Date().toISOString()
-        }
         const newBrew: Brew = {
             ...brew,
-            dialIns: [...brew.dialIns.slice(0, -1), newDialIn]
+            lastUsedTimestamp: new Date().toISOString()
         };
         setData((prev) => ({
             ...prev,
@@ -423,7 +419,6 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 grinderDelta: grindDelta ?? 0,
                 evaluations: [],
                 timestamp: new Date().toISOString(),
-                lastUsedTimestamp: new Date().toISOString()
             }]
         };
         setData((prev) => ({
@@ -449,7 +444,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 addRecipe,
                 removeRecipe,
                 newBrew,
-                markDialInUsed,
+                markBrewUsed,
                 removeDialIn,
                 setDialInDisgusting,
                 setBrewName,

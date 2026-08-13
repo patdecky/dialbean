@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="24"
+   height="24"
+   viewBox="0 0 24 24"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <mask
+       maskUnits="userSpaceOnUse"
+       id="mask-powermask-path-effect78">
+      <path
+         id="mask-powermask-path-effect78_box"
+         style="fill:#ffffff;fill-opacity:1"
+         d="M 3.36e-5,52.999974 H 23.999969 v 4.00005 H 3.36e-5 Z" />
+      <path
+         id="mask-powermask-path-effect121_box"
+         style="fill:#ffffff;fill-opacity:1"
+         d="M 3.36e-5,52.999974 H 23.999969 v 4.00005 H 3.36e-5 Z" />
+      <circle
+         style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0"
+         id="circle78"
+         cx="16.5"
+         cy="55"
+         r="2.5"
+         d="M 19,55 A 2.5,2.5 0 0 1 16.5,57.5 2.5,2.5 0 0 1 14,55 2.5,2.5 0 0 1 16.5,52.5 2.5,2.5 0 0 1 19,55 Z" />
+    </mask>
+    <mask
+       maskUnits="userSpaceOnUse"
+       id="mask-powermask-path-effect79">
+      <path
+         id="mask-powermask-path-effect79_box"
+         style="fill:#ffffff;fill-opacity:1"
+         d="M -2.97e-5,60.000013 H 23.999985 v 4.000011 H -2.97e-5 Z" />
+      <path
+         id="mask-powermask-path-effect122_box"
+         style="fill:#ffffff;fill-opacity:1"
+         d="M -2.97e-5,60.000013 H 23.999985 v 4.000011 H -2.97e-5 Z" />
+      <circle
+         style="display:inline;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0"
+         id="circle79"
+         cx="8.8762016"
+         cy="61.999992"
+         r="2.5"
+         d="m 11.376202,61.999992 a 2.5,2.5 0 0 1 -2.5000004,2.5 2.5,2.5 0 0 1 -2.5,-2.5 2.5,2.5 0 0 1 2.5,-2.5 2.5,2.5 0 0 1 2.5000004,2.5 z" />
+    </mask>
+    <mask
+       maskUnits="userSpaceOnUse"
+       id="mask-powermask-path-effect80">
+      <path
+         id="mask-powermask-path-effect80_box"
+         style="fill:#ffffff;fill-opacity:1"
+         d="M -1.35e-5,67.000003 H 24.000002 v 4.00001 H -1.35e-5 Z" />
+      <path
+         id="mask-powermask-path-effect123_box"
+         style="fill:#ffffff;fill-opacity:1"
+         d="M -1.35e-5,67.000003 H 24.000002 v 4.00001 H -1.35e-5 Z" />
+      <circle
+         style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0"
+         id="circle80"
+         cx="14.5"
+         cy="69"
+         r="2.5"
+         d="M 17,69 A 2.5,2.5 0 0 1 14.5,71.5 2.5,2.5 0 0 1 12,69 2.5,2.5 0 0 1 14.5,66.5 2.5,2.5 0 0 1 17,69 Z" />
+    </mask>
+  </defs>
+  <g
+     id="layer1"
+     transform="translate(5.46875e-6,-50)">
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0"
+       d="m 2.0000336,54.999974 19.9999354,5e-5"
+       id="path111"
+       mask="url(#mask-powermask-path-effect78)" />
+    <circle
+       style="fill:#808080;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0"
+       id="path114"
+       cx="16.5"
+       cy="55"
+       r="2.5" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0"
+       d="m 1.9999703,62.000024 20.0000147,-1.1e-5"
+       id="path112"
+       mask="url(#mask-powermask-path-effect79)" />
+    <circle
+       style="display:inline;fill:#808080;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0"
+       id="path114-1"
+       cx="8.8762016"
+       cy="61.999992"
+       r="2.5" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0"
+       d="m 1.9999865,69.000013 20.0000155,-10e-6"
+       id="path113"
+       mask="url(#mask-powermask-path-effect80)" />
+    <circle
+       style="fill:#808080;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0"
+       id="path114-1-4"
+       cx="14.499981"
+       cy="68.999992"
+       r="2.5" />
+  </g>
+</svg>

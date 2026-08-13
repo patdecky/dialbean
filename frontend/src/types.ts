@@ -100,7 +100,6 @@ export interface DialIn {
     isDisgusting?: boolean;
     evaluations: Evaluation[];
     timestamp: string; // ISO String
-    lastUsedTimestamp?: string; // ISO String
 }
 
 export interface Brew {
@@ -111,6 +110,7 @@ export interface Brew {
     grinderId: string;
     recipeId: string;
     timestamp: string; // ISO String
+    lastUsedTimestamp?: string; // ISO String
     dialIns: DialIn[];
 }
 

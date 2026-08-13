@@ -16,17 +16,83 @@
   font-display: swap;
 }
 
-body {
-  font-family: 'ComicNeue', sans-serif;
+@font-face {
+  font-family: 'Roboto-Medium';
+  src: url('./assets/Roboto-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+@font-face {
+  font-family: 'Inter-VariableFont_opsz,wght';
+  src: url('./assets/Inter-VariableFont_opsz,wght.ttf') format('truetype-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
 }
 
-/* Hide scrollbar for IE, Edge and Firefox */
-.no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+@theme {
+  --color-bg1: #FAF6F3;
+  --color-bg2: #F6ECE7;
+  --color-bg3: #EADED8;
+  --color-bg4: #F0D8CC;
+  --color-bgitem: #FFF7ED;
+  --color-mid: #FAB47F;
+  --color-fg1: #361B16;
+  --color-fg2: #54321D;
+  --color-fg3: #6F5139;
+  --color-copper: #BB7746;
+  --color-text1: #361B16;
+  --color-text2: #54321D;
+}
+
+@layer base {
+  body {
+    font-family: 'Inter-VariableFont_opsz,wght';
+    box-sizing: border-box;
+  }
+
+  h1 {
+    font-size: 1.25rem;
+    font-weight: 300;
+    letter-spacing: -0.05em;
+    @apply text-fg1;
+  }
+
+  h2 {
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: -0.05em;
+    @apply text-fg1;
+  }
+
+  .font-hand {
+    font-family: 'ComicNeue', sans-serif;
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
+
+  .inactive .main-menu-icon {
+    @apply filter grayscale contrast-1000 opacity-80;
+  }
+
+  button {
+    @apply bg-fg1 text-bg1 rounded-md px-2 py-1 cursor-pointer hover:inset-ring-1 inset-ring-mid;
+  }
+
+  button.active {
+    @apply bg-blue-200;
+  }
 }

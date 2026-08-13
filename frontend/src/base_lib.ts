@@ -50,21 +50,21 @@ export const brewers: Brewer[] = [
     {
         id: '1',
         name: 'Hario V60',
-        type: 'Pour-Over',
+        type: 'V60',
         isBase: true,
         active: true
     },
     {
         id: '2',
         name: 'Aeropress with super long name',
-        type: 'Immersion',
+        type: 'AeroPress',
         isBase: true,
         active: true
     },
     {
         id: '3',
         name: 'Espresso Machine',
-        type: 'Espresso',
+        type: 'Espresso-Automatic',
         isBase: true,
         active: true
     },
@@ -255,6 +255,7 @@ export const brews: Brew[] = [
         grinderId: "1",
         recipeId: "1",
         timestamp: new Date().toISOString(),
+        lastUsedTimestamp: new Date().toISOString(),
         dialIns: [
             {
                 waterDelta: 0,
