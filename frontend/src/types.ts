@@ -10,63 +10,64 @@ export type BrewerType =
     | 'Chemex'
     | 'AeroPress'
     | 'French-Press'
-    | 'Moka-Pot'
-    | 'Lever-Espresso'
-    | 'Semi-Auto-Espresso'
-    | 'Super-Auto-Espresso'
-    | 'Drip-Machine'
-    | 'Cold-Brew-Vessel'
+    | 'Moka Pot'
+    | 'Lever Espresso'
+    | 'Semi Auto Espresso'
+    | 'Super Auto Espresso'
+    | 'Drip Machine'
+    | 'Cold Brew Vessel'
     | 'Siphon'
     | 'Custom';
 export type ItemType = Brewer | Bag | Grinder | Recipe;
 export type MachineType = Brewer | Bag | Grinder;
-
-
-
-export interface Rating {
-    sweetness: number;  // 1 to 5
-    acidity: number;    // 1 to 5
-    bitterness: number; // 1 to 5
-    body: number;       // 1 to 5
-    strength: number;   // 1 to 5
-}
-
+export type DialInRequest = 
+    | 'Less Bitter'
+    | 'More Bitter'
+    | 'Less Sweet'
+    | 'More Sweet'
+    | 'Less Acidic'
+    | 'More Acidic'
+    | 'Less Body'
+    | 'More Body'
+    | 'Less Strength'
+    | 'More Strength'
+    
 // --- DOMAIN ENTITIES ---
 export interface Bag {
     id: string;
     name: string;
-    iconId?: string;
+    iconId: string;
     roaster?: string;
     roastLevel: RoastLevel;
     roastDate?: string; // ISO String
     dateOpened?: string; // ISO String
     isFinished: boolean;
     isBase: boolean; // true for base bags, false for user-defined bags
-    active: boolean;
+    usedInBrew: boolean;
 }
 
 
 export interface Grinder {
     id: string;
     name: string;
-    iconId?: string;
+    iconId: string;
     scaleMin: number;
     scaleMax: number;
     stepSize: number; // e.g., 0.5 or 1.0
     cleanedDate?: string;
     isBase: boolean; // true for base grinders, false for user-defined grinders
-    active: boolean;
+    usedInBrew: boolean;
 }
 
 
 export interface Brewer {
     id: string;
     name: string;
-    iconId?: string;
+    iconId: string;
     type: BrewerType;
     cleanedDate?: string;
     isBase: boolean; // true for base brewers, false for user-defined brewers
-    active: boolean;
+    usedInBrew: boolean;
 }
 
 
@@ -80,20 +81,22 @@ export interface Recipe {
     grindPct: number; // 0% to 100% relative scale
     instructions: string; // Free-text instructions or markdown
     isBase: boolean; // true for base recipes, false for user-defined recipes
-    active: boolean;
+    usedInBrew: boolean;
 }
 
 
 
 export interface Evaluation {
-    id: string;
     timestamp: string; // ISO String
-    ratings: Rating;
+    sweetness: number;  // 1 to 5
+    acidity: number;    // 1 to 5
+    bitterness: number; // 1 to 5
+    body: number;       // 1 to 5
+    strength: number;   // 1 to 5
     notes?: string;
 }
 
 export interface DialIn {
-    waterDelta: number;
     doseDelta: number;
     tempDelta: number;
     grinderDelta: number;

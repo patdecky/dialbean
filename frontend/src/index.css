@@ -37,6 +37,7 @@
   --color-bg2: #F6ECE7;
   --color-bg3: #EADED8;
   --color-bg4: #F0D8CC;
+  --color-bgrec: #fffda2;
   --color-bgitem: #FFF7ED;
   --color-mid: #FAB47F;
   --color-fg1: #361B16;
@@ -48,8 +49,46 @@
 }
 
 @layer base {
+  *:focus {
+    outline: none !important;
+
+  }
+
+  input[type="text"]:focus,
+  input[type="number"]:focus, 
+  textarea:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 2px #FAB47F !important;
+    border-color: #FAB47F !important;
+  }
+
   body {
     font-family: 'Inter-VariableFont_opsz,wght';
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    box-sizing: border-box;
+    /* Prevents body elasticity/bounce on iOS */
+    @apply text-fg1;
+  }
+
+  #root {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  * {
     box-sizing: border-box;
   }
 
@@ -57,14 +96,19 @@
     font-size: 1.25rem;
     font-weight: 300;
     letter-spacing: -0.05em;
-    @apply text-fg1;
   }
 
   h2 {
     font-size: 1rem;
     font-weight: 400;
     letter-spacing: -0.05em;
-    @apply text-fg1;
+  }
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: -0.05em;
+    @apply text-fg2;
   }
 
   .font-hand {
@@ -85,14 +129,55 @@
   }
 
   .inactive .main-menu-icon {
-    @apply filter grayscale contrast-1000 opacity-80;
+    @apply filter grayscale contrast-1000 opacity-50;
+  }
+
+  .inactive .main-menu-text {
+    @apply opacity-50;
   }
 
   button {
-    @apply bg-fg1 text-bg1 rounded-md px-2 py-1 cursor-pointer hover:inset-ring-1 inset-ring-mid;
+    @apply bg-fg1 border border-transparent text-bg1 rounded-md px-3 py-[3px] cursor-pointer hover:ring-1 ring-mid text-nowrap;
   }
 
-  button.active {
-    @apply bg-blue-200;
+  button.inverse {
+    @apply bg-transparent text-fg1 border-fg1;
   }
+
+  button.sm {
+    @apply rounded-md px-[6px] py-[2px] text-sm;
+  }
+
+  button.xs {
+    @apply rounded-sm px-[5px] py-[1px] text-xs;
+  }
+
+
+  .dialog {
+    @apply fixed inset-0 flex flex-col items-center justify-center z-10 absolute;
+  }
+
+  .dialog .backdrop {
+    @apply fixed inset-0 backdrop-blur-sm;
+  }
+
+  .dialog .modal {
+    @apply bg-bg1 border border-bg2 p-4 rounded-lg shadow-2xl/40 relative z-1 min-w-30 min-h-30 max-w-[90dvw] max-h-[90dvh] overflow-y-auto flex flex-col;
+  }
+
+  .dialog .details {
+    @apply bg-bg2 border border-bg3 p-4 rounded-xl shadow-2xl/40 relative z-1 min-w-50 min-h-50 max-w-[90dvw] max-h-[90dvh] overflow-y-auto;
+  }
+
+  .modal .message {
+    @apply mt-2 mb-4 text-center flex-1 flex items-center justify-center;
+  }
+  .modal .options {
+    @apply flex justify-center gap-4;
+  }
+
+  p { 
+    min-height: 1.5rem;
+  }
+
 }

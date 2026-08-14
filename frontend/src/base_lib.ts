@@ -3,213 +3,209 @@ import type { Brewer, Recipe, Grinder, Bag } from './types';
 export const bags: Bag[] = [
     {
         id: '1',
-        name: 'Specialty Coffee',
-        roaster: "Coffee Club",
+        name: 'Light Roast Generic Bag',
         iconId: "1",
         roastLevel: 'Light',
-        roastDate: '2026-08-06',
         isFinished: false,
         isBase: true,
-        active: true
+        usedInBrew: false
     },
     {
         id: '2',
-        name: 'Specialty Coffee',
+        name: 'Light-Medium Roast Generic Bag',
         iconId: "2",
-        roastLevel: 'Medium',
+        roastLevel: 'Light-Medium',
         isFinished: false,
         isBase: true,
-        active: true
+        usedInBrew: false
     },
     {
         id: '3',
-        name: 'Specialty Coffee',
+        name: 'Medium Roast Generic Bag',
         iconId: "3",
-        roastLevel: 'Dark',
-        roastDate: '2026-08-06',
-        dateOpened: '2026-08-06',
+        roastLevel: 'Medium',
         isFinished: false,
         isBase: true,
-        active: true
+        usedInBrew: false
+    },
+    {
+        id: '4',
+        name: 'Medium-Dark Roast Generic Bag',
+        iconId: "4",
+        roastLevel: 'Medium-Dark',
+        isFinished: false,
+        isBase: true,
+        usedInBrew: false
+    },
+    {
+        id: '5',
+        name: 'Dark Roast Generic Bag',
+        iconId: "5",
+        roastLevel: 'Dark',
+        isFinished: false,
+        isBase: true,
+        usedInBrew: false
+    },
+    {
+        id: '6',
+        name: 'Indian Monsoon Malabar',
+        iconId: "3",
+        roastLevel: 'Medium',
+        roastDate: '2026-08-06',
+        // dateOpened: '2026-08-06',
+        isFinished: false,
+        isBase: false,
+        usedInBrew: true
     }
 ];
 
 export const grinders: Grinder[] = [
     {
         id: '1',
-        name: 'Generic Grinder',
+        name: 'Manual Generic Grinder',
+        iconId: "1",
         scaleMin: 1,
         scaleMax: 30,
         stepSize: 1,
         isBase: true,
-        active: true
+        usedInBrew: false
+    },
+    {
+        id: '2',
+        name: 'Semi-Automatic Generic Grinder',
+        iconId: "2",
+        scaleMin: 1,
+        scaleMax: 30,
+        stepSize: 1,
+        isBase: true,
+        usedInBrew: false
+    },
+    {
+        id: '3',
+        name: 'Automatic Generic Grinder',
+        iconId: "3",
+        scaleMin: 1,
+        scaleMax: 30,
+        stepSize: 1,
+        isBase: true,
+        usedInBrew: false
+    },
+    {
+        id: '4',
+        name: 'Vintage Generic Grinder',
+        iconId: "4",
+        scaleMin: 1,
+        scaleMax: 30,
+        stepSize: 1,
+        isBase: true,
+        usedInBrew: false
+    },
+    {
+        id: '5',
+        name: 'Caffia Barista Pink',
+        iconId: "1",
+        scaleMin: 1,
+        scaleMax: 30,
+        stepSize: 1,
+        isBase: false,
+        usedInBrew: true
     }
 ];
 
 export const brewers: Brewer[] = [
     {
         id: '1',
-        name: 'Hario V60',
-        type: 'V60',
+        name: 'AeroPress',
+        type: 'AeroPress',
+        iconId: "1",
         isBase: true,
-        active: true
+        usedInBrew: false
     },
     {
         id: '2',
-        name: 'Aeropress with super long name',
-        type: 'AeroPress',
+        name: 'V60',
+        type: 'V60',
+        iconId: "2",
         isBase: true,
-        active: true
+        usedInBrew: false
     },
     {
         id: '3',
-        name: 'Espresso Machine',
-        type: 'Espresso-Automatic',
+        name: 'Flat-Bottom',
+        type: 'Flat-Bottom',
+        iconId: "3",
         isBase: true,
-        active: true
+        usedInBrew: false
     },
     {
         id: '4',
-        name: 'Hario V60000000000000000000000000',
-        type: 'Pour-Over',
+        name: 'Chemex',
+        type: 'Chemex',
+        iconId: "4",
         isBase: true,
-        active: true
+        usedInBrew: false
     }, {
         id: '5',
-        name: 'Hario V60',
-        type: 'Pour-Over',
+        name: 'French-Press',
+        type: 'French-Press',
+        iconId: "5",
         isBase: true,
-        active: true
+        usedInBrew: false
     },
     {
         id: '6',
-        name: 'Aeropress',
-        type: 'Immersion',
+        name: 'Moka Pot',
+        type: 'Moka Pot',
+        iconId: "6",
         isBase: true,
-        active: true
+        usedInBrew: false
     },
     {
         id: '7',
-        name: 'Espresso Machine',
-        type: 'Espresso',
+        name: 'Lever Espresso',
+        type: 'Lever Espresso',
+        iconId: "7",
         isBase: true,
-        active: true
+        usedInBrew: false
     },
     {
         id: '8',
-        name: 'Hario V60',
-        type: 'Pour-Over',
+        name: 'Semi Auto Espresso',
+        type: 'Semi Auto Espresso',
+        iconId: "8",
         isBase: true,
-        active: true
+        usedInBrew: false
     }, {
         id: '9',
-        name: 'Hario V60',
-        type: 'Pour-Over',
+        name: 'Super Auto Espresso',
+        type: 'Super Auto Espresso',
+        iconId: "9",
         isBase: true,
-        active: true
+        usedInBrew: false
     },
     {
         id: '10',
-        name: 'Aeropress',
-        type: 'Immersion',
+        name: 'Drip Machine',
+        type: 'Drip Machine',
+        iconId: "10",
         isBase: true,
-        active: true
+        usedInBrew: false
     },
     {
         id: '11',
-        name: 'Espresso Machine',
-        type: 'Espresso',
+        name: 'Cold Brew Vessel',
+        type: 'Cold Brew Vessel',
+        iconId: "11",
         isBase: true,
-        active: true
+        usedInBrew: false
     },
     {
         id: '12',
-        name: 'Hario V60',
-        type: 'Pour-Over',
+        name: 'Siphon',
+        type: 'Siphon',
+        iconId: "12",
         isBase: true,
-        active: true
-    },
-    {
-        id: '13',
-        name: 'Hario V60',
-        type: 'Pour-Over',
-        isBase: true,
-        active: true
-    },
-    {
-        id: '14',
-        name: 'Aeropress',
-        type: 'Immersion',
-        isBase: true,
-        active: true
-    },
-    {
-        id: '15',
-        name: 'Espresso Machine',
-        type: 'Espresso',
-        isBase: true,
-        active: false
-    },
-    {
-        id: '16',
-        name: 'Hario V60',
-        type: 'Pour-Over',
-        isBase: true,
-        active: false
-    }, {
-        id: '17',
-        name: 'Hario V60',
-        type: 'Pour-Over',
-        isBase: true,
-        active: false
-    },
-    {
-        id: '18',
-        name: 'Aeropress',
-        type: 'Immersion',
-        isBase: true,
-        active: false
-    },
-    {
-        id: '19',
-        name: 'Espresso Machine',
-        type: 'Espresso',
-        isBase: true,
-        active: false
-    },
-    {
-        id: '20',
-        name: 'Hario V60',
-        type: 'Pour-Over',
-        isBase: true,
-        active: false
-    }, {
-        id: '21',
-        name: 'Hario V60',
-        type: 'Pour-Over',
-        isBase: true,
-        active: false
-    },
-    {
-        id: '22',
-        name: 'Aeropress',
-        type: 'Immersion',
-        isBase: true,
-        active: false
-    },
-    {
-        id: '23',
-        name: 'Espresso Machine',
-        type: 'Espresso',
-        isBase: true,
-        active: false
-    },
-    {
-        id: '24',
-        name: 'Hario V60',
-        type: 'Pour-Over',
-        isBase: true,
-        active: false
+        usedInBrew: false
     }
 ];
 
@@ -217,14 +213,14 @@ export const recipes: Recipe[] = [
     {
         id: '1',
         name: 'Morning Pour-Over with Specialty Coffee and very long name to test the text wrapping and overflow behavior in the UI',
-        type: 'Pour-Over',
+        type: 'V60',
         waterMl: 300,
         doseGrams: 18,
         tempC: 93,
         grindPct: 45,
         instructions: 'Use a medium grind and pour in 3 stages.',
         isBase: true,
-        active: true
+        usedInBrew: true
     }
 ];
 
@@ -233,13 +229,12 @@ export const brews: Brew[] = [
     {
         id: "1",
         name: "Brew 1",
-        bagId: "1",
+        bagId: "6",
         brewerId: "1",
         grinderId: "1",
         recipeId: "1",
         timestamp: new Date().toISOString(),
         dialIns: [{
-            waterDelta: 0,
             doseDelta: 0,
             tempDelta: 0,
             grinderDelta: 0,
@@ -250,7 +245,7 @@ export const brews: Brew[] = [
     {
         id: "2",
         name: "Brew 2",
-        bagId: "1",
+        bagId: "6",
         brewerId: "1",
         grinderId: "1",
         recipeId: "1",
@@ -258,22 +253,56 @@ export const brews: Brew[] = [
         lastUsedTimestamp: new Date().toISOString(),
         dialIns: [
             {
-                waterDelta: 0,
                 doseDelta: 0,
+                tempDelta: 0,
+                grinderDelta: 0,
+                evaluations: [
+                    {
+                        id: "1",
+                        timestamp: new Date().toISOString(),
+                        sweetness: 3,
+                        acidity: 3,
+                        bitterness: 3,
+                        body: 3,
+                        strength: 3,
+                        notes: "Tasted good."
+                    },
+                    {
+                        id: "2",
+                        timestamp: new Date().toISOString(),
+                        sweetness: 4,
+                        acidity: 3,
+                        bitterness: 3,
+                        body: 3,
+                        strength: 4,
+                        notes: "Great"
+                    }
+                ],
+                timestamp: new Date().toISOString()
+            },
+            {
+                doseDelta: 1,
                 tempDelta: 1,
                 grinderDelta: 0,
                 evaluations: [
                     {
                         id: "1",
                         timestamp: new Date().toISOString(),
-                        ratings: {
-                            sweetness: 3,
-                            acidity: 3,
-                            bitterness: 3,
-                            body: 3,
-                            strength: 3
-                        },
-                        notes: "Tasted good."
+                        sweetness: 3,
+                        acidity: 3,
+                        bitterness: 3,
+                        body: 3,
+                        strength: 3,
+                    },
+                    {
+                        id: "2",
+                        timestamp: new Date().toISOString(),
+                        sweetness: 4,
+                        acidity: 3,
+                        bitterness: 3,
+                        body: 3,
+                        strength: 4,
+                        notes: "Great"
                     }
                 ],
                 timestamp: new Date().toISOString()

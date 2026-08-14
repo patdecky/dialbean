@@ -1,11 +1,11 @@
 import { useDialBean } from "./DialBeanContext.tsx"
-import { PickItemCarousel } from "./dialogs.tsx"
+import { PickItemCarousel } from "./components.tsx"
 
 const Cupboard = () => {
     const { data } = useDialBean();
 
     return (
-        <div className="flex flex-col items-center justify-center h-full w-full">
+        <div className="flex flex-col items-center justify-center h-full w-full overflow-hidden">
             <div className="flex flex-col items-start justify-start max-w-100 gap-2">
                 <div className="w-full">
                     <PickItemCarousel

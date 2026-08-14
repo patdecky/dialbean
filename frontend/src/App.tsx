@@ -1,5 +1,7 @@
 import './App.css'
 import { Routes, Route, Outlet, NavLink, useLocation } from "react-router";
+import { useEffect } from "react";
+
 import { DialBeanProvider } from "./DialBeanContext";
 import { CounterIcon, CupboardIcon, CookbookIcon } from "./icons";
 
@@ -11,44 +13,54 @@ import Cookbook from './Cookbook'
 const Layout = () => {
     const location = useLocation();
     const baseClassName = "flex flex-col text-sm items-center px-2 py-1 rounded-md hover:ring hover:ring-bg2";
-    const activeClassName = baseClassName + " bg-bg1 active";
+    const activeClassName = baseClassName + " bg-bg1 usedInBrew";
     const inactiveClassName = baseClassName + " inactive";
     return (
-        <div className="h-dvh w-screen overflow-hidden bg-bg1 flex flex-col justify-stretch items-center landscape:flex-row">
-            <div className="flex-grow w-full h-full">
-            <Outlet />
+        <main className="overflow-hidden h-dvh w-full bg-bg1 flex flex-col justify-stretch items-stretch landscape:flex-row">
+            <div className="flex-1 min-h-0 min-w-0 w-full">
+                <Outlet />
             </div>
-            <nav className="bg-bg2 w-full landscape:w-fit landscape:h-full landscape:border-l border-t border-bg3 flex landscape:flex-col justify-center items-between gap-2 p-1">
+            <nav id="mainNav" className="shrink-0 bg-bg2 landscape:border-l border-t border-bg3 flex p-1 landscape:flex-col justify-center items-between gap-2">
                 <NavLink to="/counter" className={({ isActive }) =>
                     (isActive || location.pathname === "/") ? activeClassName : inactiveClassName}>
-                    <CounterIcon className="mt-1 main-menu-icon"/>
-                    <span>
+                    <CounterIcon className="mt-1 main-menu-icon" />
+                    <span className="main-menu-text">
                         Counter
                     </span>
                 </NavLink>
                 <NavLink to="/cupboard" className={({ isActive }) =>
                     isActive ? activeClassName : inactiveClassName}>
-                    <CupboardIcon  className="mt-1 main-menu-icon"/>
-                    <span>
+                    <CupboardIcon className="mt-1 main-menu-icon" />
+                    <span className="main-menu-text">
                         Cupboard
                     </span>
                 </NavLink>
                 <NavLink to="/cookbook" className={({ isActive }) =>
                     isActive ? activeClassName : inactiveClassName}>
-                    <CookbookIcon className="mt-1 main-menu-icon"/>
-                    <span>
+                    <CookbookIcon className="mt-1 main-menu-icon" />
+                    <span className="main-menu-text">
                         Cookbook
                     </span>
                 </NavLink>
             </nav>
-        </div>
+        </main>
 
     )
 }
 
 
 function App() {
-
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Tab') {
+                e.preventDefault(); // Completely disables the Tab key across the entire application
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, []);
     return (
         <>
             <DialBeanProvider>
