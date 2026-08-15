@@ -356,6 +356,20 @@ export const MenuActionIcon: React.FC<IconProps> = ({
 </svg>
             );
             
+export const MinusActionIcon: React.FC<IconProps> = ({
+            size = 16,
+            strokeColor = 'currentColor',
+            fillColor = 'none',
+            className = '',
+            ...props
+            }) => (
+            <svg className={className} {...props} xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 16 16">
+  <g transform="translate(-340,-68)">
+    <path d="m 343.53033,76 h 8.93934" stroke={strokeColor} fill={fillColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="none" />
+  </g>
+</svg>
+            );
+            
 export const PlusActionIcon: React.FC<IconProps> = ({
             size = 16,
             strokeColor = 'currentColor',

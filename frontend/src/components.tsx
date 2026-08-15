@@ -1,7 +1,7 @@
-import { useEffect, useState, useRef } from 'react';
-import type { Brew, Brewer, Recipe, Grinder, Bag, ItemType, MachineType, DialIn, Evaluation, BrewerType } from './types';
+import { useEffect, useState, useRef, Fragment, useMemo } from 'react';
+import type { Brew, Brewer, Recipe, Grinder, Bag, ItemType, MachineType, DialIn, Evaluation, BrewerType, DialInRequest, DialInSuggestion } from './types';
 import { useDialBean } from './DialBeanContext';
-import { SmallItemCard, DialInCard, EvaluationCard, SingleRatingCard } from './cards';
+import { SmallItemCard, DialInCard, EvaluationCard, SingleRatingCard, EvaluationAverageCard, MediumRecipeCard } from './cards';
 import {
     brewer_icons,
     grinder_icons,
@@ -25,12 +25,14 @@ import {
     InfoActionIcon,
     DownActionIcon,
     UpActionIcon,
+    MinusActionIcon,
+    PlusActionIcon,
 } from "./action_icons";
 
-import { MdClose } from "react-icons/md";
+import { MdClose, MdVisibility } from "react-icons/md";
 import { formatLastUsed } from './formating';
-import { BrewRatingInfo, ConfirmBagFinishedModal, ConfirmCloseEvaluation, ConfirmDeleteDialInModal, ConfirmDeleteEvaluationModal } from './modals';
-import { suggestDialIn } from './brain';
+import { BrewRatingInfo, ConfirmBagFinishedModal, ConfirmCloseEvaluation, ConfirmCopyBrewModal, ConfirmDeleteBrewModal, ConfirmDeleteDialInModal, ConfirmDeleteEvaluationModal, ConfirmEditBrewModal } from './modals';
+import { getGrind, getGrindPrecision, suggestDialIn, suggestRequest } from './brain';
 
 export const ConfirmDialog = ({ message, onConfirm, onCancel }:
     {
@@ -87,40 +89,74 @@ export const PickTypeDialog = ({ type, onIconSelected, onClose, selectedIconId }
     );
 };
 
-export const ItemDetailsDialog = ({ item, type, onClose, onCopyItem, onRemoveItem }:
+export const ItemDetailsDialog = ({ item, type, onClose, onCopyItem, onRemoveItem, onEditItem }:
     {
         item: ItemType;
         type: 'brewer' | 'grinder' | 'bag' | 'recipe';
         onClose: () => void;
         onCopyItem?: ((item: ItemType) => void) | null;
         onRemoveItem?: ((item: ItemType) => void) | null;
+        onEditItem?: ((item: ItemType) => void) | null;
     }) => {
-    console.log(onRemoveItem)
     const Icon = type === "brewer" ? ((item as Brewer).iconId ? brewer_icons[(item as Brewer).iconId!]?.icon : brewer_icons["1"].icon) :
         type === "grinder" ? ((item as Grinder).iconId ? grinder_icons[(item as Grinder).iconId!]?.icon : grinder_icons["1"].icon) :
             type === "bag" ? ((item as Bag).iconId ? bag_icons[(item as Bag).iconId!]?.icon : bag_icons["1"].icon) : undefined;
+
+    const [showOptionButtons, setShowOptionButtons] = useState(false);
+
     return (
         type === "recipe" ? (
-            <div className="fixed top-0 left-0 w-full h-full z-100 flex items-center justify-center">
-                <div className="fixed top-0 left-0 w-full h-full backdrop-blur-sm bg-gray-200 opacity-50"></div>
-                <div className="bg-yellow-200 shadow-xl z-60 p-4 rounded shadow-md min-w-64 relative z-1 max-h-[90dvh] overflow-y-auto shadow-md w-96">
+            <div className="dialog">
+                <div className="backdrop" onClick={onClose}></div>
+                <div className="recipe">
+                    <div className="absolute top-2 right-2 flex gap-2">
+                        {(onRemoveItem || onCopyItem || onEditItem) &&
+                            (
+                                showOptionButtons ?
+                                    (<div className="flex gap-2">
+                                        {onRemoveItem && <button onClick={() => onRemoveItem(item)}
+                                            className="p-1 bg-transparent rounded-full" >
+                                            <DeleteActionIcon strokeColor="var(--color-fg1)" fillColor="white" />
+                                        </button>}
+                                        {onCopyItem && <button onClick={() => onCopyItem(item)}
+                                            className="p-1 bg-transparent rounded-full" >
+                                            <CopyActionIcon strokeColor="var(--color-fg1)" fillColor="white" />
+                                        </button>}
+                                        {onEditItem && <button onClick={() => onEditItem(item)}
+                                            className="p-1 bg-transparent rounded-full" >
+                                            <EditActionIcon strokeColor="var(--color-fg1)" fillColor="white" />
+                                        </button>}
+                                        <button onClick={() => { setShowOptionButtons(false) }}
+                                            className="p-1 rounded-full" >
+                                            <RightActionIcon strokeColor="var(--color-bg1)" />
+                                        </button>
+                                    </div>
+                                    ) : (
+                                        <button onClick={() => setShowOptionButtons(true)}
+                                            className="p-1 bg-transparent rounded-full"
+                                        >
+                                            <EllipsisActionIcon fillColor="var(--color-fg1)" />
+                                        </button>
+                                    )
+                            )
+                        }
+                        <button onClick={onClose} className="p-1 bg-transparent rounded-full">
+                            <XActionIcon strokeColor="var(--color-fg1)" />
+                        </button>
+                    </div>
                     <div>Name: {item.name}</div>
                     <div>Method: {(item as Recipe).type}</div>
                     <div>Instructions: {(item as Recipe).instructions}</div>
-                    <button
-                        className="absolute top-2 right-2 hover:bg-yellow-300 rounded-full p-1"
-                        onClick={onClose}><MdClose /></button>
                     <div className="flex gap-1">
-                        {onCopyItem && <button className="border px-2 py-1 rounded-md hover:bg-yellow-300" onClick={() => onCopyItem(item)}>Copy</button>}
                         {onRemoveItem && <button className="border px-2 py-1 rounded-md hover:bg-yellow-300" onClick={() => onRemoveItem(item)}>Remove</button>}
                     </div>
                 </div>
-            </div>
+            </div >
         ) : (
 
-            <div className="fixed top-0 left-0 w-full h-full z-100 flex items-center justify-center">
-                <div className="fixed top-0 left-0 w-full h-full backdrop-blur-sm bg-gray-200 opacity-50"></div>
-                <div className="bg-gray-200 rounded-lg z-60 p-4 rounded shadow-md relative z-1 max-h-[90dvh] overflow-y-auto shadow-md w-40 h-60">
+            <div className="dialog">
+                <div className="backdrop"></div>
+                <div className="item">
                     <div className="flex items-center justify-center w-full mt-6">
                         {Icon && <Icon style={{ width: "40px", height: "40px", minWidth: "40px", minHeight: "40px" }} />}
                     </div>
@@ -554,7 +590,7 @@ export const PickItemCarousel = (
             )}
             <div className="overflow-x-auto no-scrollbar w-full"
                 ref={containerRef}>
-                <div className="flex items-center justify-start gap-2">
+                <div className="flex items-center justify-start gap-2 min-h-15">
                     {visibleItems.length > 0 && (
                         visibleItems.map((item) => (
                             <SmallItemCard
@@ -753,8 +789,8 @@ export const BrewDetailsDialog = ({
     onBagFinished,
     onSaveEvaluation,
     onSaveDialIn,
-    onDeleteEvaluation,
-    onDeleteDialIn
+    onDeleteLastEvaluation,
+    onDeleteLastDialIn
 }:
     {
         brew: Brew;
@@ -774,8 +810,8 @@ export const BrewDetailsDialog = ({
         onBagFinished: (bag: Bag) => void;
         onSaveEvaluation: (brew: Brew, evaluation: Omit<Evaluation, 'timestamp'>) => void;
         onSaveDialIn: (brew: Brew, dialIn: DialIn) => void;
-        onDeleteEvaluation: (brew: Brew, evaluation: Evaluation) => void;
-        onDeleteDialIn: () => void;
+        onDeleteLastEvaluation: (brew: Brew) => void;
+        onDeleteLastDialIn: (brew: Brew) => void;
     }) => {
     const brewer: Brewer | undefined = brewers.find((b) => b.id === brew.brewerId);
     const grinder: Grinder | undefined = grinders.find((g) => g.id === brew.grinderId);
@@ -789,8 +825,10 @@ export const BrewDetailsDialog = ({
     const [showBagFinishedModal, setShowBagFinishedModal] = useState<boolean>(false);
     const [showNewEvaluationDialog, setShowNewEvaluationDialog] = useState<boolean>(false);
     const [showNewDialInDialog, setShowNewDialInDialog] = useState<boolean>(false);
-    const [showConfirmDeleteEvaluationDialog, setShowConfirmDeleteEvaluationDialog] = useState<boolean>(false);
-    const [showConfirmDeleteDialInDialog, setShowConfirmDeleteDialInDialog] = useState<boolean>(false);
+    const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState<boolean>(false);
+    const [showConfirmCopyModal, setShowConfirmCopyModal] = useState<boolean>(false);
+    const [showConfirmEditModal, setShowConfirmEditModal] = useState<boolean>(false);
+
     // gui
     const [showDialIns, setShowDialIns] = useState<boolean>(false);
     const [showOptionButtons, setShowOptionButtons] = useState<boolean>(false);
@@ -852,51 +890,56 @@ export const BrewDetailsDialog = ({
                     brew={brew}
                     recipe={recipe}
                     grinder={grinder}
+                    bag={bag}
                     onClose={() => setShowNewDialInDialog(false)}
                     onSaveDialIn={(dialIn) => {
                         console.log("Saving dial-in", dialIn);
                     }}
                 />
             )}
-            {showConfirmDeleteEvaluationDialog && (
-                <ConfirmDeleteEvaluationModal
+            {showConfirmDeleteModal && (
+                <ConfirmDeleteBrewModal
+                    brew={brew}
+                    onCancel={() => setShowConfirmDeleteModal(false)}
                     onConfirm={() => {
-                        const lastDialIn = brew.dialIns[brew.dialIns.length - 1];
-                        const lastEvaluation = lastDialIn?.evaluations[lastDialIn.evaluations.length - 1];
-                        if (lastEvaluation) {
-                            onDeleteEvaluation(brew, lastEvaluation);
-                            setShowConfirmDeleteEvaluationDialog(false);
-                        }
-                        else {
-                            throw new Error("No evaluation to delete");
-                        }
+                        onDeleteBrew(brew);
+                        setShowConfirmDeleteModal(false);
                     }}
-                    onCancel={() => setShowConfirmDeleteEvaluationDialog(false)}
                 />
             )}
-            {showConfirmDeleteDialInDialog && (
-                <ConfirmDeleteDialInModal
+            {showConfirmEditModal && (
+                <ConfirmEditBrewModal
+                    brew={brew}
+                    onCancel={() => setShowConfirmEditModal(false)}
                     onConfirm={() => {
-                        onDeleteDialIn();
-                        setShowConfirmDeleteDialInDialog(false);
+                        onEditBrew(brew);
+                        setShowConfirmEditModal(false);
                     }}
-                    onCancel={() => setShowConfirmDeleteDialInDialog(false)}
                 />
             )}
+            {showConfirmCopyModal && (
+                <ConfirmCopyBrewModal
+                    brew={brew}
+                    onCancel={() => setShowConfirmCopyModal(false)}
+                    onConfirm={() => {
+                        onCopyBrew(brew);
+                        setShowConfirmCopyModal(false);
+                    }}
+                />
+            )}
+
             <div className="backdrop" onClick={onClose}></div>
-            <div className="details flex flex-col gap-1">
+            <div className="details flex flex-col gap-2">
                 <div className="flex flex-col">
-                    <div className="absolute top-1 right-1 gap-2 flex items-start justify-end">
+                    <div className="absolute top-2 right-2 gap-2 flex items-start justify-end">
                         {showOptionButtons &&
-                            <div className="flex gap-1">
-                                <button className="bg-transparent rounded-full p-1" onClick={() => onDeleteBrew(brew)}>
+                            <div className="flex gap-2">
+                                <button className="bg-transparent rounded-full p-1" onClick={() => setShowConfirmDeleteModal(true)}>
                                     <DeleteActionIcon strokeColor='var(--color-fg1)' fillColor="var(--color-bg1)" /></button>
-
-                                <button className="bg-transparent rounded-full p-1" onClick={() => onCopyBrew(brew)}>
+                                <button className="bg-transparent rounded-full p-1" onClick={() => setShowConfirmCopyModal(true)}>
                                     <CopyActionIcon strokeColor='var(--color-fg1)' fillColor="var(--color-bg1)" /></button>
-                                <button className="bg-transparent rounded-full p-1" onClick={() => onEditBrew(brew)}>
+                                <button className="bg-transparent rounded-full p-1" onClick={() => setShowConfirmEditModal(true)}>
                                     <EditActionIcon strokeColor='var(--color-fg1)' fillColor="var(--color-bg1)" /></button>
-
                             </div>
                         }
                         <button className={"rounded-full p-1" + (showOptionButtons ? " bg-fg1" : " bg-transparent")} onClick={() => setShowOptionButtons(!showOptionButtons)}>
@@ -918,7 +961,7 @@ export const BrewDetailsDialog = ({
                             {formatLastUsed(brew.lastUsedTimestamp)}
                         </div>}
                 </div>
-                <div className="flex justify-start items-center gap-1">
+                <div className="flex justify-center items-center gap-1">
                     <SmallItemCard
                         item={brewer}
                         type="brewer"
@@ -968,44 +1011,32 @@ export const BrewDetailsDialog = ({
                                 }}
                     /> */}
                 </div>
+                <div className="flex justify-center">
+                    <MediumRecipeCard
+                        recipe={recipe}
+                        onItemSelected={() => {
+                            setDetailsItem(recipe);
+                            setDetailsItemType("recipe");
+                        }}
+                        onDetails={() => {
+                            setDetailsItem(recipe);
+                            setDetailsItemType("recipe");
+                        }}
+                    />
+                </div>
                 {brew.dialIns.length > 0 &&
-                    <>
+                    <div className="flex justify-center">
                         {showDialIns ? (
-                            <>
+                            <div className="flex flex-col items-stretch gap-1">
                                 <button className="sm my-1" onClick={() => setShowDialIns(false)}>Hide Dial-Ins</button>
-                                {brew.dialIns.map((dialIn, index) => (
-                                    <>
-                                        <div key={index} className="">
-                                            <DialInCard
-                                                dialIn={dialIn}
-                                                recipe={recipe}
-                                                grinder={grinder}
-                                            />
-                                            {index === brew.dialIns.length - 1 && dialIn.evaluations.length === 0 &&
-                                                <button className="xs" onClick={() => setShowConfirmDeleteDialInDialog(true)}
-                                                >Delete Dial-In</button>
-                                            }
-                                        </div>
-                                        {dialIn.evaluations.length > 0 &&
-                                            <div className="pl-2">
-                                                {dialIn.evaluations.map((evaluation, evalIndex) => (
-                                                    <div key={`eval-${evalIndex}`} className="mb-1">
-                                                        <EvaluationCard
-                                                            evaluation={evaluation}
-                                                            showNotes={true}
-                                                        />
-                                                        {index === brew.dialIns.length - 1 && evalIndex === dialIn.evaluations.length - 1 &&
-                                                            <button className="xs"
-                                                                onClick={() => setShowConfirmDeleteEvaluationDialog(true)}
-                                                            >Delete Evaluation</button>
-                                                        }
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        }
-                                    </>
-                                ))}
-                            </>
+                                <DialInDetailsBlock
+                                    brew={brew}
+                                    recipe={recipe}
+                                    grinder={grinder}
+                                    onDeleteLastEvaluation={onDeleteLastEvaluation}
+                                    onDeleteLastDialIn={onDeleteLastDialIn}
+                                />
+                            </div>
                         ) : (
                             <div className="mt-2 relative cursor-pointer"
                                 onClick={() => setShowDialIns(!showDialIns)}>
@@ -1015,26 +1046,25 @@ export const BrewDetailsDialog = ({
                                     grinder={grinder}
                                 />
                                 {brew.dialIns.length > 0 && brew.dialIns[brew.dialIns.length - 1].evaluations.length > 0 &&
-                                    <div className="pt-1 pl-2">
-                                        <EvaluationCard
-                                            evaluation={brew.dialIns[brew.dialIns.length - 1].evaluations[brew.dialIns[brew.dialIns.length - 1].evaluations.length - 1]}
+                                    <div className="">
+                                        <EvaluationAverageCard
+                                            evaluations={brew.dialIns[brew.dialIns.length - 1].evaluations}
                                         />
                                     </div>
-
                                 }
                             </div>
                         )}
-                    </>
+                    </div>
                 }
-                <div className="flex items-end justify-end gap-1">
-                    {!bag.isBase && bag.dateOpened && !bag.isFinished && <button className="sm" onClick={() => setShowBagFinishedModal(true)}>Finish Bag</button>}
-                    {!bag.isBase && !bag.dateOpened && <button className="sm" onClick={() => onBagOpened(bag)}>Open Bag</button>}
-                    <button className="sm" onClick={() => setShowNewEvaluationDialog(true)}>Evaluate</button>
-                    <button className="sm" onClick={() => setShowNewDialInDialog(true)}>Dial In</button>
+                <div className="flex items-end gap-1">
+                    {!bag.isBase && bag.dateOpened && !bag.isFinished && <button className="sm flex-1" onClick={() => setShowBagFinishedModal(true)}>Finish Bag</button>}
+                    {!bag.isBase && !bag.dateOpened && <button className="sm flex-1" onClick={() => onBagOpened(bag)}>Open Bag</button>}
+                    <button className="sm flex-1" onClick={() => setShowNewEvaluationDialog(true)}>Evaluate</button>
+                    <button className="sm flex-1" onClick={() => setShowNewDialInDialog(true)}>Dial In</button>
                 </div>
 
             </div>
-        </div>
+        </div >
     );
 }
 
@@ -1130,32 +1160,78 @@ export const NewEvaluationDialog = ({ brew, onSaveEvaluation, onClose }:
     )
 }
 
-export const NewDialInDialog = ({ brew, recipe, grinder, onSaveDialIn, onClose }:
+export const NewDialInDialog = ({ brew, recipe, grinder, bag, onSaveDialIn, onClose }:
     {
         brew: Brew;
         recipe: Recipe;
         grinder: Grinder;
+        bag: Bag;
         onSaveDialIn: (dialIn: DialIn) => void;
         onClose: () => void;
     }) => {
 
+    console.log(brew, recipe, grinder, bag);
+
+    const requestSuggestion = useMemo(() => suggestRequest(brew, recipe, grinder, bag), [brew, recipe, grinder, bag]);
+    const suggestedDialIn = useMemo(() => {
+        if (requestSuggestion.request) {
+            return suggestDialIn({ brew, recipe, grinder, bag, request: requestSuggestion.request });
+        }
+        return null;
+    }, [brew, recipe, grinder, requestSuggestion.request]);
 
     const lastDialIn = brew.dialIns.length > 0 ? brew.dialIns[brew.dialIns.length - 1] : null;
-    const lastEvaluation = lastDialIn && lastDialIn.evaluations.length > 0 ? lastDialIn.evaluations[lastDialIn.evaluations.length - 1] : null;
     const evaluationAvailable = lastDialIn && lastDialIn.evaluations.length > 1 ? true : false;
     const [showEvaluations, setShowEvaluations] = useState<boolean>(false)
-    const [showSuggestRequests, setShowSuggestRequests] = useState<boolean>(false);
+    const [optimizationUsed, setOptimizationUsed] = useState<boolean>(true);
 
-    const [doseDelta, setDoseDelta] = useState<number>(lastDialIn ? lastDialIn.doseDelta : 0);
-    const [tempDelta, setTempDelta] = useState<number>(lastDialIn ? lastDialIn.tempDelta : 0);
-    const [grinderDelta, setGrinderDelta] = useState<number>(lastDialIn ? lastDialIn.grinderDelta : 0);
+    const [request, setRequest] = useState<DialInRequest | null>(requestSuggestion.request);
+    const [doseDelta, setDoseDelta] = useState<number>(suggestedDialIn ? suggestedDialIn.doseDelta : (lastDialIn ? lastDialIn.doseDelta : 0));
+    const [tempDelta, setTempDelta] = useState<number>(suggestedDialIn ? suggestedDialIn.tempDelta : (lastDialIn ? lastDialIn.tempDelta : 0));
+    const [grinderDelta, setGrinderDelta] = useState<number>(suggestedDialIn ? suggestedDialIn.grinderDelta : (lastDialIn ? lastDialIn.grinderDelta : 0));
 
-    const handleSuggest = (request: DialInRequest) => {
-        const suggestedDialIn = suggestDialIn({ brew, recipe, grinder, request });
+    const recipeGrind = getGrind(grinder, recipe);
+    const grindPrecision = getGrindPrecision(grinder);
+
+    const handleSetRequest = (newRequest: DialInRequest) => {
+        setRequest(newRequest);
+        setOptimizationUsed(false);
+    }
+
+    const handleOptimize = () => {
+        setOptimizationUsed(true);
+        if (!request) return;
+        const suggestedDialIn = suggestDialIn({ brew, recipe, grinder, bag, request });
         setDoseDelta(suggestedDialIn.doseDelta);
         setTempDelta(suggestedDialIn.tempDelta);
         setGrinderDelta(suggestedDialIn.grinderDelta);
     }
+
+    const handleSaveDialIn = () => {
+        // 
+    }
+
+    const handleManualAdjust = (deltaType: 'dose' | 'temp' | 'grinder', direction: 'up' | 'down') => {
+        switch (deltaType) {
+            case 'dose':
+                setDoseDelta(prev => direction === 'up' ? prev + 1 : prev - 1);
+                break;
+            case 'temp':
+                setTempDelta(prev => direction === 'up' ? prev + 1 : prev - 1);
+                break;
+            case 'grinder':
+                setGrinderDelta(prev => direction === 'up' ? prev + 1 : prev - 1);
+                break;
+        }
+    }
+
+    const requestMatchesSuggestion = request === requestSuggestion.request;
+
+    const baseOptimizationStyle = "xs p-2";
+    const upOpStyle = baseOptimizationStyle + " inverse";
+    const activeUpOpStyle = baseOptimizationStyle + " ";
+    const downOpStyle = baseOptimizationStyle + " inverse";
+    const activeDownOpStyle = baseOptimizationStyle + " ";
 
     return (
         <div className="dialog">
@@ -1170,61 +1246,267 @@ export const NewDialInDialog = ({ brew, recipe, grinder, onSaveDialIn, onClose }
                             recipe={recipe}
                             grinder={grinder}
                         />
-                        {lastEvaluation && (
-                            showEvaluations && evaluationAvailable ? (
-                                <div>
-                                    {lastDialIn.evaluations.map((evaluation, index) => (
-                                        <div key={index} className="mb-1">
-                                            <EvaluationCard evaluation={evaluation} showNotes={true} />
+                        {(lastDialIn.evaluations.length > 0) ? (
+                            showEvaluations ? (
+                                <div className="border-l border-fg3 pl-1 ml-3">
+                                    {lastDialIn.evaluations.map((evaluation, evalIndex) => (
+                                        <div key={`eval-${evalIndex}`} className="">
+                                            <EvaluationCard
+                                                evaluation={evaluation}
+                                                showNotes={true}
+                                            />
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <EvaluationCard evaluation={lastEvaluation} showNotes={true} />
-                            )
-                        )}
+                                <EvaluationAverageCard
+                                    evaluations={lastDialIn.evaluations} />
+                            )) : <div className="text-xs">No Evaluations</div>}
                     </div>
                 }
-                <div>
-                    <button onClick={() => setShowSuggestRequests(!showSuggestRequests)}>Suggest</button>
-                    {showSuggestRequests &&
-                        <div className="flex gap-1">
-                            <div className="flex flex-col">
-                                <SweetIcon />
-                                <button onClick={() => handleSuggest('More Sweet')} className="xs"><UpActionIcon /></button>
-                                <button onClick={() => handleSuggest('Less Sweet')} className="xs inverse"><DownActionIcon /></button>
-                            </div>
-                            <div className="flex flex-col">
-                                <AcidityIcon />
-                                <button onClick={() => handleSuggest('More Acidic')} className="xs"><UpActionIcon /></button>
-                                <button onClick={() => handleSuggest('Less Acidic')} className="xs inverse"><DownActionIcon /></button>
-                            </div>
-                            <div className="flex flex-col">
-                                <BitterIcon />
-                                <button onClick={() => handleSuggest('More Bitter')} className="xs"><UpActionIcon /></button>
-                                <button onClick={() => handleSuggest('Less Bitter')} className="xs inverse"><DownActionIcon /></button>
-                            </div>
-                            <div className="flex flex-col">
-                                <BodyIcon />
-                                <button onClick={() => handleSuggest('More Body')} className="xs"><UpActionIcon /></button>
-                                <button onClick={() => handleSuggest('Less Body')} className="xs inverse"><DownActionIcon /></button>
-                            </div>
-                            <div className="flex flex-col">
-                                <StrengthIcon />
-                                <button onClick={() => handleSuggest('More Strength')} className="xs"><UpActionIcon /></button>
-                                <button onClick={() => handleSuggest('Less Strength')} className="xs inverse"><DownActionIcon /></button>
-                            </div>
+                <div className="flex flex-col">
+                    <div className="text-xs">Suggestion: </div>
+                    <div className="flex justify-between items-end gap-1">
+                        <div className="">
+                            {requestSuggestion.comment}
+                            {" => "}
+                            {requestSuggestion.request ? requestSuggestion.request : "No Suggestion"}
                         </div>
-                    }
+                        <button className='xs'
+                            style={{ visibility: requestMatchesSuggestion ? 'hidden' : 'visible' }}
+                            onClick={() => setRequest(requestSuggestion.request)}
+                        >Use</button>
+                    </div>
+
+                    <div className="text-xs">Optimisation request: </div>
+                    <div className="flex justify-center gap-2">
+                        <div className="flex flex-col gap-2 items-center justify-start">
+                            <SweetIcon style={{ width: '32px', height: '32px' }} />
+                            <button onClick={() => handleSetRequest('More Sweet')} className={request === 'More Sweet' ? activeUpOpStyle : upOpStyle}><UpActionIcon /></button>
+                            <button onClick={() => handleSetRequest('Less Sweet')} className={request === 'Less Sweet' ? activeDownOpStyle : downOpStyle}><DownActionIcon /></button>
+                        </div>
+                        <div className="flex flex-col gap-2 items-center justify-start">
+                            <AcidityIcon style={{ width: '32px', height: '32px' }} />
+                            <button onClick={() => handleSetRequest('More Acidic')} className={request === 'More Acidic' ? activeUpOpStyle : upOpStyle}><UpActionIcon /></button>
+                            <button onClick={() => handleSetRequest('Less Acidic')} className={request === 'Less Acidic' ? activeDownOpStyle : downOpStyle}><DownActionIcon /></button>
+                        </div>
+                        <div className="flex flex-col gap-2 items-center justify-start">
+                            <BitterIcon style={{ width: '32px', height: '32px' }} />
+                            <button onClick={() => handleSetRequest('More Bitter')} className={request === 'More Bitter' ? activeUpOpStyle : upOpStyle}><UpActionIcon /></button>
+                            <button onClick={() => handleSetRequest('Less Bitter')} className={request === 'Less Bitter' ? activeDownOpStyle : downOpStyle}><DownActionIcon /></button>
+                        </div>
+                        <div className="flex flex-col gap-2 items-center justify-start">
+                            <BodyIcon style={{ width: '32px', height: '32px' }} />
+                            <button onClick={() => handleSetRequest('More Body')} className={request === 'More Body' ? activeUpOpStyle : upOpStyle}><UpActionIcon /></button>
+                            <button onClick={() => handleSetRequest('Less Body')} className={request === 'Less Body' ? activeDownOpStyle : downOpStyle}><DownActionIcon /></button>
+                        </div>
+                        <div className="flex flex-col gap-2 items-center justify-start">
+                            <StrengthIcon style={{ width: '32px', height: '32px' }} />
+                            <button onClick={() => handleSetRequest('More Strength')} className={request === 'More Strength' ? activeUpOpStyle : upOpStyle}><UpActionIcon /></button>
+                            <button onClick={() => handleSetRequest('Less Strength')} className={request === 'Less Strength' ? activeDownOpStyle : downOpStyle}><DownActionIcon /></button>
+                        </div>
+                    </div>
+                    <button className={"sm self-end mt-2" + (optimizationUsed ? " opacity-50" : "")}
+                        onClick={handleOptimize}>
+                        {request ? ((optimizationUsed ? "Optimized: " : "Optimize: ") + request) : "Select to Optimize"}
+                    </button>
                 </div>
-                <div>
-                    <div className="flex"><WeightIcon /> {doseDelta}</div>
-                    <div className="flex"><TemperatureIcon /> {tempDelta}</div>
-                    <div className="flex"><GrindIcon /> {grinderDelta}</div>
+                <div className="grid grid-cols-[auto_auto_auto_auto_auto] gap-2 place-items-center">
+                    <div className="row-1 col-2 text-sm">Recipe:</div>
+                    <div className="row-1 col-3 text-sm">Last:</div>
+                    <div className="row-1 col-4 text-sm">New:</div>
+                    <div className="row-2 col-1">
+                        <GrindIcon style={{ width: '32px', height: '32px' }} />
+                    </div>
+                    <div className={"row-2 col-2" +
+                        ((grinderDelta !== 0) ? " line-through" : "")}
+                    >
+                        {(recipeGrind.toFixed(grindPrecision))}
+                    </div>
+                    <div className={"row-2 col-3" +
+                        (grinderDelta !== 0 ? " line-through" : "")}
+                    >
+                        {
+                            lastDialIn?.grinderDelta !== 0 ?
+                                (recipeGrind + (lastDialIn?.grinderDelta ?? 0)).toFixed(grindPrecision)
+                                :
+                                "-"
+                        }
+                    </div>
+                    <div className="row-2 col-4">
+                        {grinderDelta !== 0 ? (recipeGrind + grinderDelta).toFixed(grindPrecision) : "-"}
+                    </div>
+                    <div className="row-2 col-5">
+                        <div className="flex gap-2 ml-2">
+                            <button className="sm p-2"
+                                onClick={() => handleManualAdjust('grinder', 'down')}>
+                                <MinusActionIcon />
+                            </button>
+                            <button className="sm p-2"
+                                onClick={() => handleManualAdjust('grinder', 'up')}>
+                                <PlusActionIcon />
+                            </button>
+                        </div>
+                    </div>
+                    <div className="row-3 col-1">
+                        <TemperatureIcon style={{ width: '32px', height: '32px' }} />
+                    </div>
+                    <div className={"row-3 col-2" +
+                        ((tempDelta !== 0) ? " line-through" : "")}
+                    >
+                        {(recipe.tempC).toFixed(0)}°C
+                    </div>
+                    <div className={"row-3 col-3" +
+                        (lastDialIn?.tempDelta !== 0 ? " line-through" : "")}
+                    >
+                        {
+                            lastDialIn?.tempDelta !== 0 ?
+                                ((recipe.tempC + (lastDialIn?.tempDelta ?? 0)).toFixed(0) + "°C")
+                                :
+                                "-"
+                        }
+                    </div>
+                    <div className="row-3 col-4">
+                        {tempDelta !== 0 ? ((recipe.tempC + tempDelta).toFixed(0) + "°C") : "-"}
+                    </div>
+                    <div className="row-3 col-5">
+                        <div className="flex gap-2 ml-2">
+                            <button className="sm p-2"
+                                onClick={() => handleManualAdjust('temp', 'down')}>
+                                <MinusActionIcon />
+                            </button>
+                            <button className="sm p-2"
+                                onClick={() => handleManualAdjust('temp', 'up')}>
+                                <PlusActionIcon />
+                            </button>
+                        </div>
+                    </div>
+                    <div className="row-4 col-1">
+                        <WeightIcon style={{ width: '32px', height: '32px' }} />
+                    </div>
+                    <div className={"row-4 col-2" +
+                        ((doseDelta !== 0) ? " line-through" : "")}
+                    >
+                        {(recipe.doseGrams).toFixed(1)}g
+                    </div>
+                    <div className={"row-4 col-3" +
+                        (lastDialIn?.doseDelta !== 0 ? " line-through" : "")}
+                    >
+                        {
+                            lastDialIn?.doseDelta !== 0 ?
+                                (recipe.doseGrams + (lastDialIn?.doseDelta ?? 0)).toFixed(1) + "g"
+                                :
+                                "-"
+                        }
+                    </div>
+                    <div className="row-4 col-4">
+                        {doseDelta !== 0 ? (recipe.doseGrams + doseDelta).toFixed(1) + "g" : "-"}
+                    </div>
+                    <div className="row-4 col-5">
+                        <div className="flex ml-2 gap-2">
+                            <button className="sm p-2"
+                                onClick={() => handleManualAdjust('dose', 'down')}>
+                                <MinusActionIcon />
+                            </button>
+                            <button className="sm p-2"
+                                onClick={() => handleManualAdjust('dose', 'up')}>
+                                <PlusActionIcon />
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <button className="" onClick={() => onSaveDialIn({ /* fill in dial-in details here */ })}>Save Dial-In</button>
+                <button className="" onClick={handleSaveDialIn}>Save Dial-In</button>
                 <button className='bg-transparent absolute top-2 right-2 p-1 rounded-full' onClick={onClose}><XActionIcon strokeColor='var(--color-fg3)' /></button>
             </div>
         </div>
     )
+}
+
+export const DialInDetailsBlock = ({ brew, recipe, grinder, onDeleteLastEvaluation, onDeleteLastDialIn }:
+    {
+        brew: Brew;
+        recipe: Recipe;
+        grinder: Grinder;
+        onDeleteLastEvaluation: (brew: Brew) => void;
+        onDeleteLastDialIn: (brew: Brew) => void;
+    }) => {
+    const [showConfirmDeleteEvaluationDialog, setShowConfirmDeleteEvaluationDialog] = useState<boolean>(false);
+    const [showConfirmDeleteDialInDialog, setShowConfirmDeleteDialInDialog] = useState<boolean>(false);
+
+    const [showDetailsIndex, setShowDetailsIndex] = useState<number | null>(null);
+
+    return (
+        <>
+            {showConfirmDeleteEvaluationDialog && (
+                <ConfirmDeleteEvaluationModal
+                    onConfirm={() => {
+                        const lastDialIn = brew.dialIns[brew.dialIns.length - 1];
+                        const lastEvaluation = lastDialIn?.evaluations[lastDialIn.evaluations.length - 1];
+                        if (lastEvaluation) {
+                            onDeleteLastEvaluation(brew);
+                            setShowConfirmDeleteEvaluationDialog(false);
+                        }
+                        else {
+                            throw new Error("No evaluation to delete");
+                        }
+                    }}
+                    onCancel={() => setShowConfirmDeleteEvaluationDialog(false)}
+                />
+            )}
+            {showConfirmDeleteDialInDialog && (
+                <ConfirmDeleteDialInModal
+                    onConfirm={() => {
+                        onDeleteLastDialIn(brew);
+                        setShowConfirmDeleteDialInDialog(false);
+                    }}
+                    onCancel={() => setShowConfirmDeleteDialInDialog(false)}
+                />
+            )}
+            {brew.dialIns.map((dialIn, index) => (
+                <div key={index} className="cursor-pointer" onClick={() => {
+                    if (showDetailsIndex === index) {
+                        setShowDetailsIndex(null);
+                    } else {
+                        setShowDetailsIndex(index);
+                    }
+                }}>
+                    <DialInCard
+                        dialIn={dialIn}
+                        recipe={recipe}
+                        grinder={grinder}
+                    />
+
+                    {(dialIn.evaluations.length > 0) ? (
+                        showDetailsIndex === index ? (
+                            <div className="border-l border-fg3 pl-1 ml-3">
+                                {dialIn.evaluations.map((evaluation, evalIndex) => (
+                                    <div key={`eval-${evalIndex}`} className="">
+                                        <EvaluationCard
+                                            evaluation={evaluation}
+                                            showNotes={true}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <EvaluationAverageCard
+                                evaluations={dialIn.evaluations} />
+                        )) : <div className="text-xs">No Evaluations</div>}
+                </div>
+            ))}
+            {brew.dialIns.length > 0 && (
+                brew.dialIns[brew.dialIns.length - 1].evaluations.length === 0 ? (
+                    <button className="sm mb-2" onClick={() => setShowConfirmDeleteDialInDialog(true)}
+                    >Delete Last Dial-In
+                    </button>
+                ) : ((showDetailsIndex !== null && showDetailsIndex === brew.dialIns.length - 1) && (
+                    <button className="sm mb-2"
+                        onClick={() => setShowConfirmDeleteEvaluationDialog(true)}
+                    >Delete Last Evaluation
+                    </button>
+                ))
+            )}
+        </>
+    )
+
 }

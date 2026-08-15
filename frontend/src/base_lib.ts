@@ -1,4 +1,4 @@
-import type { Brewer, Recipe, Grinder, Bag } from './types';
+import type { Brewer, Recipe, Grinder, Bag, Brew } from './types';
 
 export const bags: Bag[] = [
     {
@@ -221,6 +221,18 @@ export const recipes: Recipe[] = [
         instructions: 'Use a medium grind and pour in 3 stages.',
         isBase: true,
         usedInBrew: true
+    },
+    {
+        id: '2',
+        name: 'Strong V60',
+        type: 'V60',
+        waterMl: 300,
+        doseGrams: 18,
+        tempC: 93,
+        grindPct: 45,
+        instructions: '-Bloom 60 seconds 40 ml \n-Pour 1 60 ml 60 seconds \n-Pour 2 60 ml 60 seconds',
+        isBase: false,
+        usedInBrew: true
     }
 ];
 
@@ -248,7 +260,7 @@ export const brews: Brew[] = [
         bagId: "6",
         brewerId: "1",
         grinderId: "1",
-        recipeId: "1",
+        recipeId: "2",
         timestamp: new Date().toISOString(),
         lastUsedTimestamp: new Date().toISOString(),
         dialIns: [
@@ -258,7 +270,6 @@ export const brews: Brew[] = [
                 grinderDelta: 0,
                 evaluations: [
                     {
-                        id: "1",
                         timestamp: new Date().toISOString(),
                         sweetness: 3,
                         acidity: 3,
@@ -268,7 +279,6 @@ export const brews: Brew[] = [
                         notes: "Tasted good."
                     },
                     {
-                        id: "2",
                         timestamp: new Date().toISOString(),
                         sweetness: 4,
                         acidity: 3,
@@ -286,7 +296,6 @@ export const brews: Brew[] = [
                 grinderDelta: 0,
                 evaluations: [
                     {
-                        id: "1",
                         timestamp: new Date().toISOString(),
                         sweetness: 3,
                         acidity: 3,
@@ -295,7 +304,6 @@ export const brews: Brew[] = [
                         strength: 3,
                     },
                     {
-                        id: "2",
                         timestamp: new Date().toISOString(),
                         sweetness: 4,
                         acidity: 3,

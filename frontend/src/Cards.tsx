@@ -12,11 +12,13 @@ import {
     BodyIcon,
     StrengthIcon,
     EvaluationIcon,
+    EvaluationAverageIcon,
     DialIcon,
     WaterIcon,
     GrindIcon,
     TemperatureIcon,
     WeightIcon,
+    EvaluationSingleIcon,
 } from "./icons";
 
 import {
@@ -27,6 +29,7 @@ import {
 
 import type { Bag, Brew, Brewer, DialIn, Evaluation, Grinder, ItemType, Recipe } from './types';
 import { createElement } from 'react';
+import { calculateAverageEvaluation, getDecimals, getGrind, getGrindPrecision } from './brain';
 
 
 
@@ -101,7 +104,7 @@ export const SmallItemCard = ({ item, type, isSelected = false, onItemSelected =
                 </button>
             )}
             <div className="flex-1 max-w-full inline-flex items-center justify-center flex-col text-xs">
-                <div className="text-center line-clamp-4 text-ellipsis overflow-hidden max-w-full">
+                <div className="text-center line-clamp-4 text-ellipsis overflow-hidden max-w-full font-hand font-bold">
                     {item.name}
                 </div>
             </div>
@@ -154,7 +157,7 @@ export const TinyItemCard = ({ item, type, isSelected = false, onItemSelected = 
             ref={itemRef}
             onClick={() => onItemSelected?.(item)}>
             <div className="flex-1 max-w-full inline-flex items-center justify-center flex-col text-sm">
-                <div className="line-clamp-1 text-sm overflow-hidden max-w-full">
+                <div className="line-clamp-1 text-sm overflow-hidden max-w-full font-hand font-bold">
                     {item.name.split(" ").map((word) => (word.slice(0, 1))).join("")}
                 </div>
             </div>
@@ -172,46 +175,41 @@ export const TinyItemCard = ({ item, type, isSelected = false, onItemSelected = 
     )
 }
 
-export const LargeItemCard = ({ item, type, isSelected, onItemSelected, itemRef = null }: {
-    item: ItemType;
-    type: 'brewer' | 'grinder' | 'bag' | 'recipe';
-    isSelected: boolean;
-    onItemSelected: (item: ItemType) => void;
+
+export const MediumRecipeCard = ({ recipe, isSelected, onItemSelected, itemRef = null, onDetails = null }: {
+    recipe: Recipe;
+    isSelected?: boolean;
+    onItemSelected: (recipe: Recipe) => void;
     itemRef?: React.Ref<HTMLDivElement> | null;
+    onDetails?: (recipe: Recipe) => void;
 }) => {
-    const icon = getItemIcon(item, type);
-
     return (
-        type === "recipe" ?
-            (
-                <div key={item.id}
-                    className={"bg-yellow-200 w-50 min-w-50 h-50 min-h-50 cursor-pointer flex flex-col items-center justify-stretch text-center p-1 gap-1 overflow-hidden" +
-                        (isSelected ? " inset-ring-2 inset-ring-blue-500" : "")}
-                    ref={itemRef}
-                    onClick={() => onItemSelected(item)}>
-                    <div className="flex-1 max-w-full inline-flex items-center justify-center flex-col text-sm">
-                        <div className="line-clamp-4">
-                            {item.name}
-                        </div>
-                    </div>
-                </div>
-            ) :
-            (
-                <div key={item.id}
-                    className={"bg-gray-200 w-18 min-w-18 h-24 min-h-24 rounded-lg cursor-pointer flex flex-col items-center justify-stretch text-center p-1 gap-1 overflow-hidden" +
-                        (isSelected ? " inset-ring-2 inset-ring-blue-500" : "")}
-                    ref={itemRef}
-                    onClick={() => onItemSelected(item)}>
-                    {icon && createElement(icon, { style: { width: "32px", height: "32px", minWidth: "32px", minHeight: "32px" } })}
-                    <div className="flex-1 max-w-full inline-flex items-center justify-center flex-col text-sm">
-                        <div className="line-clamp-2 text-ellipsis overflow-hidden max-w-full">
-                            {item.name}
-                        </div>
-                    </div>
-                </div>
-            ))
+        <div
+            className={"bg-bgrec min-w-30 min-h-30 flex flex-col items-start justify-stretch text-center px-2 pt-3 pb-2 gap-1 overflow-hidden relative" +
+                (onItemSelected !== null ? " cursor-pointer hover:inset-ring-1 hover:inset-ring-fg3" : "") +
+                (isSelected ? " inset-ring-fg3 inset-ring-2 hover:inset-ring-2" : "")
+            }
+            ref={itemRef}
+            onClick={() => onItemSelected?.(recipe)}>
+            {onDetails && (
+                <button
+                    className="absolute top-0 right-0 bg-transparent rounded-full p-[2px]"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onDetails(recipe);
+                    }} >
+                    <InfoActionIcon size="12" strokeColor="var(--color-fg1)" />
+                </button>
+            )}
+            <div className="line-clamp-2 text-ellipsis overflow-hidden font-hand font-bold">
+                {recipe.name}
+            </div>
+            <div className="text-sm whitespace-pre-wrap font-hand">
+                {recipe.instructions}
+            </div>
+        </div >
+    )
 }
-
 
 export const EvaluationCard = ({ evaluation, showNotes = false }: {
     evaluation: Evaluation,
@@ -220,7 +218,7 @@ export const EvaluationCard = ({ evaluation, showNotes = false }: {
     return (
         <div className="flex justify-start gap-1 items-center text-sm">
             <div className="self-start">
-                <EvaluationIcon style={{ width: "24px", height: "24px" }} />
+                <EvaluationSingleIcon style={{ width: "24px", height: "24px" }} />
             </div>
             <div className="flex flex-col">
                 <div className="flex gap-1 items-center justify-start">
@@ -265,14 +263,64 @@ export const EvaluationCard = ({ evaluation, showNotes = false }: {
     )
 }
 
+export const EvaluationAverageCard = ({ evaluations }: {
+    evaluations: Evaluation[],
+}) => {
+    const averageEvaluation = calculateAverageEvaluation(evaluations);
+    if (!averageEvaluation) {
+        throw new Error("No evaluations provided for average calculation.");
+    }
+    return (
+        <div className="flex justify-start gap-1 items-center text-sm">
+            <div className="self-start">
+                <EvaluationIcon style={{ width: "24px", height: "24px" }} />
+            </div>
+            <div className="flex flex-col">
+                <div className="flex gap-1 items-center justify-start">
+                    <div className="flex justify-start items-center gap-[2px]">
+                        <SweetIcon />
+                        <span>
+                            {(averageEvaluation.sweetness).toFixed(getDecimals(averageEvaluation.sweetness))}
+                        </span>
+                    </div>
+                    <div className="flex justify-start gap-[2px] items-center">
+                        <AcidityIcon />
+                        <span>
+                            {(averageEvaluation.acidity).toFixed(getDecimals(averageEvaluation.acidity))}
+                        </span>
+                    </div>
+                    <div className="flex justify-start gap-[2px] items-center">
+                        <BitterIcon />
+                        <span>
+                            {(averageEvaluation.bitterness).toFixed(getDecimals(averageEvaluation.bitterness))}
+                        </span>
+                    </div>
+                    <div className="flex justify-start gap-[2px] items-center">
+                        <BodyIcon />
+                        <span>
+                            {(averageEvaluation.body).toFixed(getDecimals(averageEvaluation.body))}
+                        </span>
+                    </div>
+                    <div className="flex justify-start gap-[2px] items-center">
+                        <StrengthIcon />
+                        <span>
+                            {(averageEvaluation.strength).toFixed(getDecimals(averageEvaluation.strength))}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
 
 export const DialInCard = ({ dialIn, recipe, grinder }: {
     dialIn: DialIn,
     recipe: Recipe,
-    grinder: Grinder
+    grinder: Grinder,
 }) => {
-    const baseGrind = grinder.scaleMin + (grinder.scaleMax - grinder.scaleMin) * (recipe.grindPct / 100);
-    const grindPrecision = grinder.stepSize < 1 ? (grinder.stepSize < 10 ? (grinder.stepSize < 100 ? (3) : 2) : 1) : 0;
+    const recipeGrind = getGrind(grinder, recipe);
+    const grindPrecision = getGrindPrecision(grinder);
     return (
         <div className="flex justify-start gap-1 items-center text-sm">
             <div className="flex justify-start items-center">
@@ -293,12 +341,12 @@ export const DialInCard = ({ dialIn, recipe, grinder }: {
                 <GrindIcon />
                 {dialIn.grinderDelta === 0 ? (
                     <>
-                        <span>{baseGrind.toFixed(grindPrecision)}</span>
+                        <span>{recipeGrind.toFixed(grindPrecision)}</span>
                     </>
                 ) : (
                     <>
-                        <span className="line-through">{baseGrind.toFixed(grindPrecision)}</span>
-                        <span>{(baseGrind + dialIn.grinderDelta).toFixed(grindPrecision)}</span>
+                        <span className="line-through">{recipeGrind.toFixed(grindPrecision)}</span>
+                        <span>{(getGrind(grinder, recipe, dialIn.grinderDelta)).toFixed(grindPrecision)}</span>
                     </>
                 )}
             </div>
@@ -324,7 +372,7 @@ export const DialInCard = ({ dialIn, recipe, grinder }: {
                     </>
                 )}
             </div>
-        </div>
+        </div >
     )
 }
 
@@ -369,8 +417,8 @@ export const BrewCard = ({ brew, bag, brewer, grinder, recipe, onSelected = null
                         />
                     </div>
                     <div>
-                        {brew.dialIns.length > 0 && brew.dialIns[0].evaluations.length > 0 ? (
-                            <EvaluationCard evaluation={brew.dialIns[0].evaluations[brew.dialIns[0].evaluations.length - 1]} />
+                        {brew.dialIns.length > 0 && brew.dialIns[brew.dialIns.length - 1].evaluations.length > 0 ? (
+                            <EvaluationAverageCard evaluations={brew.dialIns[brew.dialIns.length - 1].evaluations} />
                         ) : <div className="text-sm h-5">No evaluations yet</div>}
                     </div>
                 </div>

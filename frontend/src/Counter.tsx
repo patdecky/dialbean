@@ -10,7 +10,7 @@ import { ConfirmDeleteBrewModal } from './modals';
 const Counter = () => {
     const { data, newBrew, addBag, addBrewer, addGrinder, addRecipe,
         removeBag, removeBrewer, removeGrinder, removeRecipe, markBagFinished,
-        markBagOpened, addEvaluation, removeEvaluation
+        markBagOpened, addEvaluation, removeEvaluation, removeDialIn
     } = useDialBean();
     const activeBrews: Brew[] = data.brews.filter(brew => data.bags.find(bag => bag.id === brew.bagId)?.isFinished === false);
     const finishedBrews: Brew[] = data.brews.filter(brew => data.bags.find(bag => bag.id === brew.bagId)?.isFinished === true);
@@ -26,7 +26,6 @@ const Counter = () => {
     const [newBrewActive, setNewBrewActive] = useState(false);
     const [toCopyBrew, setToCopyBrew] = useState<Brew | null>(null);
     const [toEditBrew, setToEditBrew] = useState<Brew | null>(null);
-    const [toDeleteBrew, setToDeleteBrew] = useState<Brew | null>(null);
     const [showFinishedBrews, setShowFinishedBrews] = useState<boolean>(false);
 
     return (
@@ -130,7 +129,7 @@ const Counter = () => {
                             setSelectedBrew(null);
                         }}
                         onDeleteBrew={(brew) => {
-                            setToDeleteBrew(brew);
+                            setSelectedBrew(null);
                         }}
                         onAddBrewer={addBrewer}
                         onAddGrinder={addGrinder}
@@ -148,24 +147,17 @@ const Counter = () => {
                             const newBrew = addEvaluation(brew.id, evaluation);
                             setSelectedBrew(newBrew);
                         }}
-                        onDeleteEvaluation={(brew) => {
+                        onDeleteLastEvaluation={(brew) => {
                             const newBrew = removeEvaluation(brew.id);
+                            setSelectedBrew(newBrew);
+                        }}
+                        onDeleteLastDialIn={(brew) => {
+                            const newBrew = removeDialIn(brew.id);
                             setSelectedBrew(newBrew);
                         }}
                         onSaveDialIn={(brew, dialIn) => {
                             alert("Saved dial-in for brew: " + brew.name);
                         }}
-                    />
-                )}
-                {toDeleteBrew && (
-                    <ConfirmDeleteBrewModal
-                        brew={toDeleteBrew}
-                        onConfirm={() => {
-                            alert("Removed brew: " + toDeleteBrew.name);
-                            setToDeleteBrew(null);
-                            setSelectedBrew(null);
-                        }}
-                        onCancel={() => setToDeleteBrew(null)}
                     />
                 )}
             </div>

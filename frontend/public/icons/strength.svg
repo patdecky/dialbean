@@ -15,7 +15,7 @@
      id="layer1"
      transform="translate(-196.12329,-50)">
     <path
-       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+       style="fill:#fbc521;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
        d="m 210.49999,59.234375 c -1.02083,-1.505208 -3.37667,-1.505208 -4.21874,0.140625 -1.15793,-1.984416 -3.61497,-1.11189 -5.5798,0.21875 1.08333,-1.604167 1.78125,-4.052083 2.03125,-5.53125 0.75985,0.188759 1.34375,0.704384 2.17187,0.5 0.36101,-0.201916 0.38263,-1.38332 -0.0856,-2.194657 -0.38088,-0.660027 -2.0863,-0.425135 -3.0863,-0.414718 -2.2333,2.282983 -3.50717,6.625 -3.82645,9.625 2.52957,1.291849 6.40169,1.99569 8.02957,1.421875 0.79442,0.892384 2.1875,1.439156 4.1875,0.40625 0.57645,-0.875 0.75168,-3.40625 0.37667,-4.171875 z"
        id="path125" />
     <path
@@ -98,6 +98,22 @@
          style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
          d="m 469.12334,54.999987 h 10"
          id="path151" />
+      <g
+         id="g80-8-9-0-1-0-9-2"
+         transform="matrix(0.38617197,-0.54620873,0.54342199,0.38815235,-213.46435,545.20981)"
+         style="display:none;fill:#ffffff;stroke-width:1.49618;stroke-dasharray:none">
+        <ellipse
+           style="fill:#cd853f;stroke:#000000;stroke-width:1.49618;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+           id="path79-9-6-5-2-3-5-4"
+           cx="874.55389"
+           cy="27.333109"
+           rx="7.2925954"
+           ry="4.6249294" />
+        <path
+           style="fill:#cd853f;stroke:#000000;stroke-width:1.49618;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+           d="m 867.98321,25.326726 c 1.86132,1.901221 4.10613,2.534962 6.73443,1.901221 2.50019,-0.664974 4.66426,0 6.49224,1.994924 v 0"
+           id="path80-3-3-96-5-8-6-5" />
+      </g>
     </g>
   </g>
 </svg>

@@ -9,4 +9,8 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  test: {
+    globals: true, // Enables describe, test, expect globally
+    environment: 'node', // Pure JS/TS runtime environment (fastest)
+  }
 })

@@ -1,9 +1,11 @@
 // --- ENUMS & SCALARS ---
-export type RoastLevel = | 'Light'
+export type RoastLevel = 
+    | 'Light'
     | 'Light-Medium'
     | 'Medium'
     | 'Medium-Dark'
-    | 'Dark';
+    | 'Dark'
+    | 'Custom';
 export type BrewerType =
     | 'V60'
     | 'Flat-Bottom'
@@ -31,7 +33,17 @@ export type DialInRequest =
     | 'More Body'
     | 'Less Strength'
     | 'More Strength'
-    
+
+export type DialInSuggestion = {
+    request: DialInRequest | null;
+    comment: string;
+}
+export type BrewerCategory = 
+    | 'Pour-Over / Drip'
+    | 'Espresso'
+    | 'Immersion / Hybrid'
+    | 'Custom';
+
 // --- DOMAIN ENTITIES ---
 export interface Bag {
     id: string;
