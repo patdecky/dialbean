@@ -131,7 +131,7 @@ export const suggestRequest = (
     const lastDialIn = brew.dialIns[brew.dialIns.length - 1];
 
     if (!lastDialIn?.evaluations || lastDialIn.evaluations.length === 0) {
-        return { request: null, comment: "Dial-In has no evaluations." };
+        return { request: null, comment: "Last Dial-In has no evaluations." };
     }
 
     // Calculate Average Evaluation (Will equal exact values if length === 1)

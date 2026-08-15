@@ -1,7 +1,7 @@
-import { useEffect, useState, useRef, Fragment, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo, createElement } from 'react';
 import type { Brew, Brewer, Recipe, Grinder, Bag, ItemType, MachineType, DialIn, Evaluation, BrewerType, DialInRequest, DialInSuggestion } from './types';
 import { useDialBean } from './DialBeanContext';
-import { SmallItemCard, DialInCard, EvaluationCard, SingleRatingCard, EvaluationAverageCard, MediumRecipeCard } from './cards';
+import { SmallItemCard, DialInCard, EvaluationCard, SingleRatingCard, EvaluationAverageCard, MediumRecipeCard, getItemIcon, RecipeValuesCard } from './cards';
 import {
     brewer_icons,
     grinder_icons,
@@ -30,8 +30,8 @@ import {
 } from "./action_icons";
 
 import { MdClose, MdVisibility } from "react-icons/md";
-import { formatLastUsed } from './formating';
-import { BrewRatingInfo, ConfirmBagFinishedModal, ConfirmCloseEvaluation, ConfirmCopyBrewModal, ConfirmDeleteBrewModal, ConfirmDeleteDialInModal, ConfirmDeleteEvaluationModal, ConfirmEditBrewModal } from './modals';
+import { formatDateOpened, formatLastCleaned, formatLastUsed } from './formating';
+import { BrewRatingInfo, ConfirmBagFinishedModal, ConfirmCloseDialInModal, ConfirmCloseEvaluation, ConfirmCopyBrewModal, ConfirmDeleteBrewModal, ConfirmDeleteDialInModal, ConfirmDeleteEvaluationModal, ConfirmEditBrewModal } from './modals';
 import { getGrind, getGrindPrecision, suggestDialIn, suggestRequest } from './brain';
 
 export const ConfirmDialog = ({ message, onConfirm, onCancel }:
@@ -89,7 +89,17 @@ export const PickTypeDialog = ({ type, onIconSelected, onClose, selectedIconId }
     );
 };
 
-export const ItemDetailsDialog = ({ item, type, onClose, onCopyItem, onRemoveItem, onEditItem }:
+export const ItemDetailsDialog = ({ item,
+    type,
+    onClose,
+    onCopyItem,
+    onRemoveItem,
+    onEditItem,
+    onMarkCleaned,
+    onMarkOpened,
+    onMarkFinished,
+    onMarkRestocked
+}:
     {
         item: ItemType;
         type: 'brewer' | 'grinder' | 'bag' | 'recipe';
@@ -97,130 +107,145 @@ export const ItemDetailsDialog = ({ item, type, onClose, onCopyItem, onRemoveIte
         onCopyItem?: ((item: ItemType) => void) | null;
         onRemoveItem?: ((item: ItemType) => void) | null;
         onEditItem?: ((item: ItemType) => void) | null;
+        onMarkCleaned?: ((item: ItemType) => void) | null;
+        onMarkOpened?: ((item: ItemType) => void) | null;
+        onMarkFinished?: ((item: ItemType) => void) | null;
+        onMarkRestocked?: ((item: ItemType) => void) | null;
     }) => {
-    const Icon = type === "brewer" ? ((item as Brewer).iconId ? brewer_icons[(item as Brewer).iconId!]?.icon : brewer_icons["1"].icon) :
-        type === "grinder" ? ((item as Grinder).iconId ? grinder_icons[(item as Grinder).iconId!]?.icon : grinder_icons["1"].icon) :
-            type === "bag" ? ((item as Bag).iconId ? bag_icons[(item as Bag).iconId!]?.icon : bag_icons["1"].icon) : undefined;
+    const icon = getItemIcon(item, type);
 
     const [showOptionButtons, setShowOptionButtons] = useState(false);
 
     return (
-        type === "recipe" ? (
-            <div className="dialog">
-                <div className="backdrop" onClick={onClose}></div>
-                <div className="recipe">
-                    <div className="absolute top-2 right-2 flex gap-2">
-                        {(onRemoveItem || onCopyItem || onEditItem) &&
-                            (
-                                showOptionButtons ?
-                                    (<div className="flex gap-2">
-                                        {onRemoveItem && <button onClick={() => onRemoveItem(item)}
-                                            className="p-1 bg-transparent rounded-full" >
-                                            <DeleteActionIcon strokeColor="var(--color-fg1)" fillColor="white" />
-                                        </button>}
-                                        {onCopyItem && <button onClick={() => onCopyItem(item)}
-                                            className="p-1 bg-transparent rounded-full" >
-                                            <CopyActionIcon strokeColor="var(--color-fg1)" fillColor="white" />
-                                        </button>}
-                                        {onEditItem && <button onClick={() => onEditItem(item)}
-                                            className="p-1 bg-transparent rounded-full" >
-                                            <EditActionIcon strokeColor="var(--color-fg1)" fillColor="white" />
-                                        </button>}
-                                        <button onClick={() => { setShowOptionButtons(false) }}
-                                            className="p-1 rounded-full" >
-                                            <RightActionIcon strokeColor="var(--color-bg1)" />
-                                        </button>
-                                    </div>
-                                    ) : (
-                                        <button onClick={() => setShowOptionButtons(true)}
-                                            className="p-1 bg-transparent rounded-full"
-                                        >
-                                            <EllipsisActionIcon fillColor="var(--color-fg1)" />
-                                        </button>
-                                    )
-                            )
+        <div className="dialog">
+            <div className="backdrop" onClick={onClose}></div>
+            <div className={"flex flex-col gap-2" + (type === "recipe" ? " recipe" : " item")}>
+                <div className="absolute top-2 right-2 flex gap-2">
+                    {(onRemoveItem || onCopyItem || onEditItem) &&
+                        (
+                            showOptionButtons ?
+                                (<div className="flex gap-2">
+                                    {onRemoveItem && <button onClick={() => onRemoveItem(item)}
+                                        className="p-1 bg-transparent rounded-full" >
+                                        <DeleteActionIcon strokeColor="var(--color-fg1)" fillColor="white" />
+                                    </button>}
+                                    {onCopyItem && <button onClick={() => onCopyItem(item)}
+                                        className="p-1 bg-transparent rounded-full" >
+                                        <CopyActionIcon strokeColor="var(--color-fg1)" fillColor="white" />
+                                    </button>}
+                                    {onEditItem && <button onClick={() => onEditItem(item)}
+                                        className="p-1 bg-transparent rounded-full" >
+                                        <EditActionIcon strokeColor="var(--color-fg1)" fillColor="white" />
+                                    </button>}
+                                    <button onClick={() => { setShowOptionButtons(false) }}
+                                        className="p-1 rounded-full" >
+                                        <RightActionIcon strokeColor="var(--color-bg1)" />
+                                    </button>
+                                </div>
+                                ) : (
+                                    <button onClick={() => setShowOptionButtons(true)}
+                                        className="p-1 bg-transparent rounded-full"
+                                    >
+                                        <EllipsisActionIcon fillColor="var(--color-fg1)" />
+                                    </button>
+                                )
+                        )
+                    }
+                    <button onClick={onClose} className="p-1 bg-transparent rounded-full">
+                        <XActionIcon strokeColor="var(--color-fg1)" />
+                    </button>
+                </div>
+                {type === "brewer" &&
+                    <>
+                        <h2 className="">{item.name}</h2>
+                        {(item as Brewer).cleanedDate && <div className="text-xs text-fg3">
+                            <div>{formatLastCleaned((item as Brewer).cleanedDate ?? "")}</div>
+                        </div>
                         }
-                        <button onClick={onClose} className="p-1 bg-transparent rounded-full">
-                            <XActionIcon strokeColor="var(--color-fg1)" />
-                        </button>
-                    </div>
-                    <div>Name: {item.name}</div>
-                    <div>Method: {(item as Recipe).type}</div>
-                    <div>Instructions: {(item as Recipe).instructions}</div>
-                    <div className="flex gap-1">
-                        {onRemoveItem && <button className="border px-2 py-1 rounded-md hover:bg-yellow-300" onClick={() => onRemoveItem(item)}>Remove</button>}
-                    </div>
-                </div>
-            </div >
-        ) : (
-
-            <div className="dialog">
-                <div className="backdrop"></div>
-                <div className="item">
-                    <div className="flex items-center justify-center w-full mt-6">
-                        {Icon && <Icon style={{ width: "40px", height: "40px", minWidth: "40px", minHeight: "40px" }} />}
-                    </div>
-                    {type === "brewer" &&
-                        <>
-                            <div>{item.name}</div>
-                            <div>{(item as Brewer).type}</div>
-                        </>
-                    }
-                    {type === "grinder" &&
-                        <>
-                            <div>{item.name}</div>
+                        {onMarkCleaned && <button onClick={() => onMarkCleaned(item)}>Mark Cleaned</button>}
+                        <div>
+                            <div className="text-xs">Brewer Type:</div>
+                            <div className="flex flex-col items-center justify-center">
+                                {icon && createElement(icon, { style: { width: "48px", height: "48px", minWidth: "48px", minHeight: "48px" } })}
+                                <div>{(item as Brewer).type}</div>
+                            </div>
+                        </div>
+                    </>
+                }
+                {type === "grinder" &&
+                    <>
+                        <h2 className="">{item.name}</h2>
+                        {(item as Grinder).cleanedDate && <div className="text-xs text-fg3">
+                            <div>{formatLastCleaned((item as Grinder).cleanedDate ?? "")}</div>
+                        </div>
+                        }
+                        {onMarkCleaned && <button onClick={() => onMarkCleaned(item)}>Mark Cleaned</button>}
+                        <div>
+                            <div className="flex flex-col items-center justify-center">
+                                {icon && createElement(icon, { style: { width: "48px", height: "48px", minWidth: "48px", minHeight: "48px" } })}
+                            </div>
+                        </div>
+                        <div>
+                            <div className="text-xs text-fg3">Scale:</div>
                             <div>{(item as Grinder).scaleMin} - {(item as Grinder).scaleMax}</div>
-                        </>
-                    }
-                    {type === "bag" &&
-                        <>
-                            <div>{item.name}</div>
-                            <div>{(item as Bag).roaster}</div>
-                        </>
-                    }
-                    <button
-                        className="absolute top-2 right-2 hover:bg-gray-300 rounded-full p-1"
-                        onClick={onClose}><MdClose /></button>
-                    <div className="flex gap-1">
-                        {onCopyItem && <button className="border px-2 py-1 rounded-md hover:bg-gray-300" onClick={() => onCopyItem(item)}>Copy</button>}
-                        {onRemoveItem && <button className="border px-2 py-1 rounded-md hover:bg-gray-300" onClick={() => onRemoveItem(item)}>Remove</button>}
-                    </div>
-                </div>
+                        </div>
+                        <div>
+                            <div className="text-xs text-fg3">Step Size:</div>
+                            <div>{(item as Grinder).stepSize}</div>
+                        </div>
+                    </>
+                }
+                {type === "bag" &&
+                    <>
+                        <h2 className="">{item.name}</h2>
+                        {(item as Bag).dateOpened && <div className="text-xs text-fg3">
+                            <div>{formatDateOpened((item as Bag).dateOpened ?? "")}</div>
+                        </div>
+                        }
+                        {onMarkOpened && <button onClick={() => onMarkOpened(item)}>Mark Opened</button>}
+                        {onMarkFinished && <button onClick={() => onMarkFinished(item)}>Mark Finished</button>}
+                        {onMarkRestocked && <button onClick={() => onMarkRestocked(item)}>Mark Restocked</button>}
+                        <div>
+                            <div className="flex flex-col items-center justify-center">
+                                {icon && createElement(icon, { style: { width: "48px", height: "48px", minWidth: "48px", minHeight: "48px" } })}
+                            </div>
+                        </div>
+                        {(item as Bag).roaster && <div className="text-xs text-fg3">Roaster: {(item as Bag).roaster}</div>}
+                        <div>
+                            <div className="text-xs text-fg3">Roast Level:</div>
+                            <div>{(item as Bag).roastLevel}</div>
+                        </div>
+                        {(item as Bag).roastDate && <div className="text-xs text-fg3">
+                            Roast Date: {(item as Bag).roastDate && new Date((item as Bag).roastDate).toLocaleString()}</div>}
+                    </>
+                }
+                {type === "recipe" &&
+                    <>
+                        <h2 className="font-hand font-bold">{item.name}</h2>
+                        <div className="font-hand">
+                            <RecipeValuesCard recipe={item as Recipe} />
+                        </div>
+                        <div>
+                            <div className="text-xs font-hand">Intended brewer type:</div>
+                            <div className="flex justify-center">
+                                <div className="flex flex-col items-center justify-center">
+                                    {icon && createElement(icon, { style: { width: "48px", height: "48px", minWidth: "48px", minHeight: "48px" } })}
+                                    <div className="font-hand">{(item as Recipe).type}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="whitespace-pre-wrap font-hand">{(item as Recipe).instructions}</div>
+                    </>
+                }
             </div>
-
-        )
+        </div >
     );
 }
 
-
-export const NewRecipeDialog = ({ recipe, onClose, onSave }:
-    {
-        recipe?: Recipe | null;
-        onClose: () => void;
-        onSave: (recipe: Recipe) => void;
-    }) => {
-    return (
-
-        <div className="fixed top-0 left-0 w-full h-full z-100 flex items-center justify-center">
-            <div className="fixed top-0 left-0 w-full h-full backdrop-blur-sm bg-gray-200 opacity-50"></div>
-            <div className="bg-yellow-200 shadow-xl z-60 p-4 rounded shadow-md min-w-64 relative z-1 max-h-[90dvh] overflow-y-auto shadow-md w-96">
-                <div>
-                    New Recipe
-                </div>
-                <button
-                    className="hover:bg-yellow-300 rounded-full p-1"
-                    onClick={() => onSave(recipe!)}>Save</button>
-                <button
-                    className="absolute top-2 right-2 hover:bg-yellow-300 rounded-full p-1"
-                    onClick={onClose}><MdClose /></button>
-            </div>
-        </div>
-    );
-}
 
 export const NewItemDialog = ({ item, type, onClose, onSave }:
     {
-        item?: MachineType | null;
+        item?: ItemType | null;
         type: 'brewer' | 'grinder' | 'bag';
         onClose: () => void;
         onSave: (item: ItemType) => void;
@@ -333,33 +358,34 @@ export const ItemLibraryDialog = ({ onItemSelected,
         )
         && (type !== "recipe" || !matchFilter || !brewerType || (item as Recipe).type === brewerType)
     ));
-    const [detailsItem, setDetailsItem] = useState<ItemType | null>(null);
+    const [detailsItemId, setDetailsItemId] = useState<string | null>(null);
     const [newItemDialogActive, setNewItemDialogActive] = useState(false);
-    const [newItemCopy, setNewItemCopy] = useState<ItemType | null>(null);
-    const [toRemoveItem, setToRemoveItem] = useState<ItemType | null>(null);
+    const [newItemCopyId, setNewItemCopyId] = useState<string | null>(null);
+    const [toRemoveItemId, setToRemoveItemId] = useState<string | null>(null);
     return (
         <div className="fixed top-0 left-0 w-full h-full z-50 flex items-center justify-center">
             <div className="fixed top-0 left-0 w-full h-full backdrop-blur-sm bg-gray-200 opacity-50"></div>
             <div className="bg-white z-60 p-4 rounded shadow-md min-w-64 relative z-1">
-                {detailsItem && (
+                {detailsItemId && (
                     <ItemDetailsDialog
-                        item={detailsItem}
+                        item={items.find(item => item.id === detailsItemId)!}
                         type={type}
-                        onClose={() => setDetailsItem(null)}
+                        onClose={() => setDetailsItemId(null)}
                         onCopyItem={onNewItem ? (item: ItemType) => {
-                            setNewItemCopy(item);
+                            setNewItemCopyId(item.id);
                             setNewItemDialogActive(true);
-                            setDetailsItem(null);
+                            setDetailsItemId(null);
                         } : undefined}
                         onRemoveItem={
                             onRemoveItem ? (item: ItemType) => {
-                                setToRemoveItem(item);
+                                setToRemoveItemId(item.id);
+                                setDetailsItemId(null);
                             } : undefined}
                     />
                 )}
                 {newItemDialogActive && (
                     <NewItemDialog
-                        item={newItemCopy!}
+                        item={items.find(item => item.id === newItemCopyId)!}
                         onClose={() => setNewItemDialogActive(false)}
                         type={type}
                         onSave={(item) => {
@@ -368,20 +394,20 @@ export const ItemLibraryDialog = ({ onItemSelected,
                         }}
                     />
                 )}
-                {toRemoveItem && (
+                {toRemoveItemId && (
                     <ConfirmDialog
-                        message={`Are you sure you want to remove ${toRemoveItem.name}?`}
+                        message={`Are you sure you want to remove ${items.find(item => item.id === toRemoveItemId)!.name}?`}
                         onConfirm={() => {
                             try {
-                                onRemoveItem?.(toRemoveItem);
-                                setToRemoveItem(null);
+                                onRemoveItem?.(items.find(item => item.id === toRemoveItemId)!);
+                                setToRemoveItemId(null);
                             }
                             catch (error) {
                                 alert((error as Error).message);
-                                setToRemoveItem(null);
+                                setToRemoveItemId(null);
                             }
                         }}
-                        onCancel={() => setToRemoveItem(null)}
+                        onCancel={() => setToRemoveItemId(null)}
                     />
                 )}
                 <div>{type.charAt(0).toUpperCase() + type.slice(1)} Gallery:</div>
@@ -407,8 +433,8 @@ export const ItemLibraryDialog = ({ onItemSelected,
                                         item={item}
                                         type={type}
                                         isSelected={false}
-                                        onItemSelected={onItemSelected ? onItemSelected : (onSelectedDetails ? (item) => setDetailsItem(item) : undefined)}
-                                        onDetails={(item) => setDetailsItem(item)}
+                                        onItemSelected={onItemSelected ? onItemSelected : (onSelectedDetails ? (item) => setDetailsItemId(item.id) : undefined)}
+                                        onDetails={(item) => setDetailsItemId(item.id)}
                                         itemRef={null}
                                     />
                                 ))
@@ -463,10 +489,10 @@ export const PickItemCarousel = (
     const [canScrollRight, setCanScrollRight] = useState(false);
 
     const [selectDialogActive, setSelectDialogActive] = useState(false);
-    const [detailsItem, setDetailsItem] = useState<ItemType | null>(null);
+    const [detailsItemId, setDetailsItemId] = useState<string | null>(null);
     const [newItemDialogActive, setNewItemDialogActive] = useState(false);
-    const [newItemCopy, setNewItemCopy] = useState<ItemType | null>(null);
-    const [toRemoveItem, setToRemoveItem] = useState<ItemType | null>(null);
+    const [newItemCopyId, setNewItemCopyId] = useState<string | null>(null);
+    const [toRemoveItemId, setToRemoveItemId] = useState<string | null>(null);
 
     useEffect(() => {
         if (selectedItem) {
@@ -511,18 +537,18 @@ export const PickItemCarousel = (
     };
     return (
         <div className="relative w-full min-w-0">
-            {detailsItem && (
+            {detailsItemId && (
                 <ItemDetailsDialog
-                    item={detailsItem}
+                    item={items.find(item => item.id === detailsItemId)!}
                     type={type}
-                    onClose={() => setDetailsItem(null)}
+                    onClose={() => setDetailsItemId(null)}
                     onCopyItem={onNewItem ? (item: ItemType) => {
-                        setNewItemCopy(item);
+                        setNewItemCopyId(item.id);
                         setNewItemDialogActive(true);
-                        setDetailsItem(null);
+                        setDetailsItemId(null);
                     } : undefined}
                     onRemoveItem={onRemoveItem ? (item: ItemType) => {
-                        setToRemoveItem(item);
+                        setToRemoveItemId(item.id);
                     } : undefined}
                 />
             )}
@@ -543,7 +569,7 @@ export const PickItemCarousel = (
             )}
             {newItemDialogActive && (
                 <NewItemDialog
-                    item={newItemCopy!}
+                    item={items.find(item => item.id === newItemCopyId)!}
                     onClose={() => setNewItemDialogActive(false)}
                     type={type}
                     onSave={(item) => {
@@ -552,20 +578,20 @@ export const PickItemCarousel = (
                     }}
                 />
             )}
-            {toRemoveItem && (
+            {toRemoveItemId && (
                 <ConfirmDialog
-                    message={`Are you sure you want to remove ${toRemoveItem.name}?`}
+                    message={`Are you sure you want to remove ${items.find(item => item.id === toRemoveItemId)!.name}?`}
                     onConfirm={() => {
                         try {
-                            onRemoveItem?.(toRemoveItem);
-                            setToRemoveItem(null);
+                            onRemoveItem?.(items.find(item => item.id === toRemoveItemId)!);
+                            setToRemoveItemId(null);
                         }
                         catch (error) {
                             alert((error as Error).message);
-                            setToRemoveItem(null);
+                            setToRemoveItemId(null);
                         }
                     }}
-                    onCancel={() => setToRemoveItem(null)}
+                    onCancel={() => setToRemoveItemId(null)}
                 />
             )}
             {canScrollLeft && (
@@ -598,8 +624,8 @@ export const PickItemCarousel = (
                                 item={item}
                                 type={type}
                                 isSelected={selectedItem?.id === item.id}
-                                onItemSelected={onItemSelected ? onItemSelected : (onSelectDetails ? (item) => setDetailsItem(item) : undefined)}
-                                onDetails={(item) => setDetailsItem(item)}
+                                onItemSelected={onItemSelected ? onItemSelected : (onSelectDetails ? (item) => setDetailsItemId(item.id) : undefined)}
+                                onDetails={(item) => setDetailsItemId(item.id)}
                                 itemRef={selectedItem?.id === item.id ? selectedItemRef : null}
                             />
                         ))
@@ -616,17 +642,13 @@ export const PickItemCarousel = (
 };
 
 
-export const NewBrewDialog = ({ brew, edit = false, brewerId, grinderId, bagId, recipeId, onSaveBrew, onCancel,
+export const NewBrewDialog = ({ brew, edit = false, onSaveBrew, onCancel,
     onAddBag, onAddBrewer, onAddGrinder, onAddRecipe, bags, brewers, grinders, recipes, brews,
     onRemoveBag, onRemoveBrewer, onRemoveGrinder, onRemoveRecipe
 }:
     {
         edit?: boolean;
         brew?: Brew;
-        brewerId?: string;
-        grinderId?: string;
-        bagId?: string;
-        recipeId?: string;
         onSaveBrew: (brew: Brew) => void;
         onCancel: () => void;
         onAddBag: (bag: Bag) => void;
@@ -644,34 +666,34 @@ export const NewBrewDialog = ({ brew, edit = false, brewerId, grinderId, bagId, 
         onRemoveRecipe: (recipe: Recipe) => void;
     }) => {
     const [name, setName] = useState(brew?.name || `Brew ${brews.length + 1}`);
-    const [brewer, setBrewer] = useState(
-        (
-            brew?.brewerId && brewers.find((b) => b.id === brew.brewerId)) ||
-        brewers.find((b) => b.id === brewerId
-        ) ||
-        null
-    );
-    const [grinder, setGrinder] = useState(
-        (
-            brew?.grinderId && grinders.find((g) => g.id === brew.grinderId)) ||
-        grinders.find((g) => g.id === grinderId
-        ) ||
-        null
-    );
-    const [bag, setBag] = useState(
-        (
-            brew?.bagId && bags.find((b) => b.id === brew.bagId)) ||
-        bags.find((b) => b.id === bagId
-        ) ||
-        null
-    );
-    const [recipe, setRecipe] = useState(
-        (
-            brew?.recipeId && recipes.find((r) => r.id === brew.recipeId)) ||
-        recipes.find((r) => r.id === recipeId
-        ) ||
-        null
-    );
+    const [brewerId, setBrewerId] = useState<string | undefined>(brew?.brewerId);
+    const getBrewer = (brewerId: string | undefined) => {
+        return (brew?.brewerId && brewers.find((b) => b.id === brew.brewerId)) ||
+            brewers.find((b) => b.id === brewerId) ||
+            null;
+    };
+    const brewer = getBrewer(brewerId);
+    const [grinderId, setGrinderId] = useState<string | undefined>(brew?.grinderId);
+    const getGrinder = (grinderId: string | undefined) => {
+        return (brew?.grinderId && grinders.find((g) => g.id === brew.grinderId)) ||
+            grinders.find((g) => g.id === grinderId) ||
+            null;
+    }
+    const grinder = getGrinder(grinderId);
+    const [bagId, setBagId] = useState<string | undefined>(brew?.bagId);
+    const getBag = (bagId: string | undefined) => {
+        return (brew?.bagId && bags.find((b) => b.id === brew.bagId)) ||
+            bags.find((b) => b.id === bagId) ||
+            null;
+    }
+    const bag = getBag(bagId);
+    const [recipeId, setRecipeId] = useState<string | undefined>(brew?.recipeId);
+    const getRecipe = (recipeId: string | undefined) => {
+        return (brew?.recipeId && recipes.find((r) => r.id === brew.recipeId)) ||
+            recipes.find((r) => r.id === recipeId) ||
+            null;
+    }
+    const recipe = getRecipe(recipeId);
 
     const [showErrors, setShowErrors] = useState(false);
 
@@ -697,7 +719,7 @@ export const NewBrewDialog = ({ brew, edit = false, brewerId, grinderId, bagId, 
                         <PickItemCarousel
                             selectedItem={bag}
                             onItemSelected={(item) => {
-                                setBag(item as Bag);
+                                setBagId(item?.id);
                             }}
                             items={bags}
                             type="bag"
@@ -710,7 +732,7 @@ export const NewBrewDialog = ({ brew, edit = false, brewerId, grinderId, bagId, 
                         <PickItemCarousel
                             selectedItem={grinder}
                             onItemSelected={(item) => {
-                                setGrinder(item as Grinder);
+                                setGrinderId(item?.id);
                             }}
                             items={grinders}
                             type="grinder"
@@ -723,7 +745,7 @@ export const NewBrewDialog = ({ brew, edit = false, brewerId, grinderId, bagId, 
                         <PickItemCarousel
                             selectedItem={brewer}
                             onItemSelected={(item) => {
-                                setBrewer(item as Brewer);
+                                setBrewerId(item?.id);
                             }}
                             items={brewers}
                             type="brewer"
@@ -737,7 +759,7 @@ export const NewBrewDialog = ({ brew, edit = false, brewerId, grinderId, bagId, 
                             items={recipes}
                             selectedItem={recipe}
                             onItemSelected={(item) => {
-                                setRecipe(item as Recipe);
+                                setRecipeId(item?.id);
                             }}
                             type="recipe"
                             brewerType={brewer?.type}
@@ -790,7 +812,9 @@ export const BrewDetailsDialog = ({
     onSaveEvaluation,
     onSaveDialIn,
     onDeleteLastEvaluation,
-    onDeleteLastDialIn
+    onDeleteLastDialIn,
+    onMarkBrewerCleaned,
+    onMarkGrinderCleaned
 }:
     {
         brew: Brew;
@@ -809,19 +833,21 @@ export const BrewDetailsDialog = ({
         onBagOpened: (bag: Bag) => void;
         onBagFinished: (bag: Bag) => void;
         onSaveEvaluation: (brew: Brew, evaluation: Omit<Evaluation, 'timestamp'>) => void;
-        onSaveDialIn: (brew: Brew, dialIn: DialIn) => void;
+        onSaveDialIn: (brew: Brew, dialIn: Omit<DialIn, 'id' | 'timestamp' | 'evaluations'>) => void;
         onDeleteLastEvaluation: (brew: Brew) => void;
         onDeleteLastDialIn: (brew: Brew) => void;
+        onMarkBrewerCleaned: (brewer: Brewer) => void;
+        onMarkGrinderCleaned: (grinder: Grinder) => void;
     }) => {
     const brewer: Brewer | undefined = brewers.find((b) => b.id === brew.brewerId);
     const grinder: Grinder | undefined = grinders.find((g) => g.id === brew.grinderId);
     const bag: Bag | undefined = bags.find((b) => b.id === brew.bagId);
     const recipe: Recipe | undefined = recipes.find((r) => r.id === brew.recipeId);
     //dialogs
-    const [detailsItem, setDetailsItem] = useState<ItemType | null>(null);
+    const [detailsItemId, setDetailsItemId] = useState<string | null>(null);
     const [detailsItemType, setDetailsItemType] = useState<'brewer' | 'grinder' | 'bag' | 'recipe' | null>('recipe');
     const [newItemDialogActive, setNewItemDialogActive] = useState(false);
-    const [newItemCopy, setNewItemCopy] = useState<ItemType | null>(null);
+    const [newItemCopyId, setNewItemCopyId] = useState<string | null>(null);
     const [showBagFinishedModal, setShowBagFinishedModal] = useState<boolean>(false);
     const [showNewEvaluationDialog, setShowNewEvaluationDialog] = useState<boolean>(false);
     const [showNewDialInDialog, setShowNewDialInDialog] = useState<boolean>(false);
@@ -834,24 +860,47 @@ export const BrewDetailsDialog = ({
     const [showOptionButtons, setShowOptionButtons] = useState<boolean>(false);
     if (!brewer || !grinder || !bag || !recipe) return;
 
+    const getItem = (itemId: string | null, itemType: 'brewer' | 'grinder' | 'bag' | 'recipe' | null) => {
+        if (!itemId || !itemType) return null;
+        if (itemType === 'brewer') {
+            return brewers.find((b) => b.id === itemId) ?? null;
+        }
+        else if (itemType === 'grinder') {
+            return grinders.find((g) => g.id === itemId) ?? null;
+        }
+        else if (itemType === 'bag') {
+            return bags.find((b) => b.id === itemId) ?? null;
+        }
+        else if (itemType === 'recipe') {
+            return recipes.find((r) => r.id === itemId) ?? null;
+        }
+        return null;
+    }
+    const detailsItem = getItem(detailsItemId, detailsItemType)
+    const newItemCopy = getItem(newItemCopyId, detailsItemType)
     return (
         <div className="dialog">
-            {detailsItem && detailsItemType && (
+            {detailsItem && (
                 <ItemDetailsDialog
                     item={detailsItem}
-                    type={detailsItemType}
-                    onClose={() => setDetailsItem(null)}
+                    type={detailsItemType!}
+                    onClose={() => setDetailsItemId(null)}
                     onCopyItem={
                         (item) => {
-                            setNewItemCopy(item);
+                            setNewItemCopyId(item?.id ?? null);
                             setNewItemDialogActive(true);
                         }
                     }
+                    onMarkCleaned={(detailsItemType === "brewer" ? (item) => {
+                        onMarkBrewerCleaned(item as Brewer);
+                    } : detailsItemType === "grinder" ? (item) => {
+                        onMarkGrinderCleaned(item as Grinder);
+                    } : undefined)}
                 />
             )}
-            {newItemDialogActive && detailsItemType && (
+            {newItemDialogActive && detailsItemType && newItemCopy && (
                 <NewItemDialog
-                    item={newItemCopy!}
+                    item={newItemCopy}
                     onClose={() => setNewItemDialogActive(false)}
                     type={detailsItemType}
                     onSave={(item) => {
@@ -893,7 +942,8 @@ export const BrewDetailsDialog = ({
                     bag={bag}
                     onClose={() => setShowNewDialInDialog(false)}
                     onSaveDialIn={(dialIn) => {
-                        console.log("Saving dial-in", dialIn);
+                        onSaveDialIn(brew, dialIn);
+                        setShowNewDialInDialog(false);
                     }}
                 />
             )}
@@ -966,11 +1016,11 @@ export const BrewDetailsDialog = ({
                         item={brewer}
                         type="brewer"
                         onDetails={(item) => {
-                            setDetailsItem(item);
+                            setDetailsItemId(item.id);
                             setDetailsItemType("brewer");
                         }}
                         onItemSelected={(item) => {
-                            setDetailsItem(item);
+                            setDetailsItemId(item.id);
                             setDetailsItemType("brewer");
                         }}
                     />
@@ -978,11 +1028,11 @@ export const BrewDetailsDialog = ({
                         item={grinder}
                         type="grinder"
                         onDetails={(item) => {
-                            setDetailsItem(item);
+                            setDetailsItemId(item.id);
                             setDetailsItemType("grinder");
                         }}
                         onItemSelected={(item) => {
-                            setDetailsItem(item);
+                            setDetailsItemId(item.id);
                             setDetailsItemType("grinder");
                         }}
                     />
@@ -990,36 +1040,24 @@ export const BrewDetailsDialog = ({
                         item={bag}
                         type="bag"
                         onDetails={(item) => {
-                            setDetailsItem(item);
+                            setDetailsItemId(item.id);
                             setDetailsItemType("bag");
                         }}
                         onItemSelected={(item) => {
-                            setDetailsItem(item);
+                            setDetailsItemId(item.id);
                             setDetailsItemType("bag");
                         }}
                     />
-                    {/* <SmallItemCard
-                        item={recipe}
-                        type="recipe"
-                        onDetails={(item) => {
-                            setDetailsItem(item);
-                            setDetailsItemType("recipe");
-                            }}
-                            onItemSelected={(item) => {
-                                setDetailsItem(item);
-                                setDetailsItemType("recipe");
-                                }}
-                    /> */}
                 </div>
                 <div className="flex justify-center">
                     <MediumRecipeCard
                         recipe={recipe}
                         onItemSelected={() => {
-                            setDetailsItem(recipe);
+                            setDetailsItemId(recipe.id);
                             setDetailsItemType("recipe");
                         }}
                         onDetails={() => {
-                            setDetailsItem(recipe);
+                            setDetailsItemId(recipe.id);
                             setDetailsItemType("recipe");
                         }}
                     />
@@ -1166,7 +1204,7 @@ export const NewDialInDialog = ({ brew, recipe, grinder, bag, onSaveDialIn, onCl
         recipe: Recipe;
         grinder: Grinder;
         bag: Bag;
-        onSaveDialIn: (dialIn: DialIn) => void;
+        onSaveDialIn: (dialIn: Omit<DialIn, 'id' | 'timestamp' | 'evaluations'>) => void;
         onClose: () => void;
     }) => {
 
@@ -1178,12 +1216,14 @@ export const NewDialInDialog = ({ brew, recipe, grinder, bag, onSaveDialIn, onCl
             return suggestDialIn({ brew, recipe, grinder, bag, request: requestSuggestion.request });
         }
         return null;
-    }, [brew, recipe, grinder, requestSuggestion.request]);
+    }, [brew, recipe, grinder, bag, requestSuggestion.request]);
 
     const lastDialIn = brew.dialIns.length > 0 ? brew.dialIns[brew.dialIns.length - 1] : null;
     const evaluationAvailable = lastDialIn && lastDialIn.evaluations.length > 1 ? true : false;
     const [showEvaluations, setShowEvaluations] = useState<boolean>(false)
     const [optimizationUsed, setOptimizationUsed] = useState<boolean>(true);
+
+    const [showConfirmClose, setShowConfirmClose] = useState(false);
 
     const [request, setRequest] = useState<DialInRequest | null>(requestSuggestion.request);
     const [doseDelta, setDoseDelta] = useState<number>(suggestedDialIn ? suggestedDialIn.doseDelta : (lastDialIn ? lastDialIn.doseDelta : 0));
@@ -1208,7 +1248,11 @@ export const NewDialInDialog = ({ brew, recipe, grinder, bag, onSaveDialIn, onCl
     }
 
     const handleSaveDialIn = () => {
-        // 
+        onSaveDialIn({
+            doseDelta,
+            tempDelta,
+            grinderDelta,
+        })
     }
 
     const handleManualAdjust = (deltaType: 'dose' | 'temp' | 'grinder', direction: 'up' | 'down') => {
@@ -1223,9 +1267,10 @@ export const NewDialInDialog = ({ brew, recipe, grinder, bag, onSaveDialIn, onCl
                 setGrinderDelta(prev => direction === 'up' ? prev + 1 : prev - 1);
                 break;
         }
+        setOptimizationUsed(false);
     }
 
-    const requestMatchesSuggestion = request === requestSuggestion.request;
+    const requestMatchesSuggestion = request === requestSuggestion.request || !requestSuggestion.request;
 
     const baseOptimizationStyle = "xs p-2";
     const upOpStyle = baseOptimizationStyle + " inverse";
@@ -1235,7 +1280,16 @@ export const NewDialInDialog = ({ brew, recipe, grinder, bag, onSaveDialIn, onCl
 
     return (
         <div className="dialog">
-            <div className="backdrop"></div>
+            {showConfirmClose && (
+                <ConfirmCloseDialInModal
+                    onConfirm={() => {
+                        setShowConfirmClose(false);
+                        onClose();
+                    }}
+                    onCancel={() => setShowConfirmClose(false)}
+                />
+            )}
+            <div className="backdrop" onClick={() => setShowConfirmClose(true)}></div>
             <div className="details flex flex-col gap-2">
                 <h2>New Dial-In</h2>
                 {lastDialIn &&
@@ -1268,9 +1322,13 @@ export const NewDialInDialog = ({ brew, recipe, grinder, bag, onSaveDialIn, onCl
                     <div className="text-xs">Suggestion: </div>
                     <div className="flex justify-between items-end gap-1">
                         <div className="">
-                            {requestSuggestion.comment}
-                            {" => "}
-                            {requestSuggestion.request ? requestSuggestion.request : "No Suggestion"}
+                            <div>
+                                {requestSuggestion.comment}
+                            </div>
+                            <div>
+                                {" => "}
+                                {requestSuggestion.request ? requestSuggestion.request : "No Suggestion"}
+                            </div>
                         </div>
                         <button className='xs'
                             style={{ visibility: requestMatchesSuggestion ? 'hidden' : 'visible' }}
@@ -1306,12 +1364,12 @@ export const NewDialInDialog = ({ brew, recipe, grinder, bag, onSaveDialIn, onCl
                             <button onClick={() => handleSetRequest('Less Strength')} className={request === 'Less Strength' ? activeDownOpStyle : downOpStyle}><DownActionIcon /></button>
                         </div>
                     </div>
-                    <button className={"sm self-end mt-2" + (optimizationUsed ? " opacity-50" : "")}
+                    <button className={"sm self-end mt-2" + ((!request || optimizationUsed) ? " opacity-50" : "")}
                         onClick={handleOptimize}>
                         {request ? ((optimizationUsed ? "Optimized: " : "Optimize: ") + request) : "Select to Optimize"}
                     </button>
                 </div>
-                <div className="grid grid-cols-[auto_auto_auto_auto_auto] gap-2 place-items-center">
+                <div className="grid grid-cols-[auto_auto_auto_50px_auto] gap-2 place-items-center">
                     <div className="row-1 col-2 text-sm">Recipe:</div>
                     <div className="row-1 col-3 text-sm">Last:</div>
                     <div className="row-1 col-4 text-sm">New:</div>
@@ -1416,7 +1474,7 @@ export const NewDialInDialog = ({ brew, recipe, grinder, bag, onSaveDialIn, onCl
                     </div>
                 </div>
                 <button className="" onClick={handleSaveDialIn}>Save Dial-In</button>
-                <button className='bg-transparent absolute top-2 right-2 p-1 rounded-full' onClick={onClose}><XActionIcon strokeColor='var(--color-fg3)' /></button>
+                <button className='bg-transparent absolute top-2 right-2 p-1 rounded-full' onClick={() => setShowConfirmClose(true)}><XActionIcon strokeColor='var(--color-fg3)' /></button>
             </div>
         </div>
     )

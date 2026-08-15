@@ -5,12 +5,12 @@ import { useDialBean } from './DialBeanContext';
 import { NewBrewDialog, BrewDetailsDialog } from './components';
 import { DialBeanLargeIcon } from "./icons";
 import { BrewCard } from './cards';
-import { ConfirmDeleteBrewModal } from './modals';
 
 const Counter = () => {
     const { data, newBrew, addBag, addBrewer, addGrinder, addRecipe,
         removeBag, removeBrewer, removeGrinder, removeRecipe, markBagFinished,
-        markBagOpened, addEvaluation, removeEvaluation, removeDialIn
+        markBagOpened, addEvaluation, removeEvaluation, removeDialIn, addDialIn,
+        markGrinderCleaned, markBrewerCleaned
     } = useDialBean();
     const activeBrews: Brew[] = data.brews.filter(brew => data.bags.find(bag => bag.id === brew.bagId)?.isFinished === false);
     const finishedBrews: Brew[] = data.brews.filter(brew => data.bags.find(bag => bag.id === brew.bagId)?.isFinished === true);
@@ -155,8 +155,16 @@ const Counter = () => {
                             const newBrew = removeDialIn(brew.id);
                             setSelectedBrew(newBrew);
                         }}
-                        onSaveDialIn={(brew, dialIn) => {
-                            alert("Saved dial-in for brew: " + brew.name);
+                        onSaveDialIn={(brew, dialInObject) => {
+                            const newBrew = addDialIn(brew.id, dialInObject);
+                            setSelectedBrew(newBrew);
+                        }}
+                        onMarkBrewerCleaned={(brewer) => {
+                            const newBrewer = markBrewerCleaned(brewer.id);
+
+                        }}
+                        onMarkGrinderCleaned={(grinder) => {
+                            markGrinderCleaned(grinder.id);
                         }}
                     />
                 )}

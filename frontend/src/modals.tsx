@@ -204,6 +204,36 @@ export const ConfirmCloseEvaluation = ({ onConfirm, onCancel }:
 }
 
 
+export const ConfirmCloseDialInModal = ({ onConfirm, onCancel }:
+    {
+        onConfirm: () => void;
+        onCancel: () => void;
+    }) => {
+    return (
+        <div className="dialog z-500">
+            <div className="backdrop" onClick={onCancel}></div>
+            <div className="modal">
+                <div className="message">
+                    <p>
+                        Are you sure you want to close the Dial-In dialog?
+                    </p>
+                </div>
+                <div className="options">
+                    <button
+                        onClick={onConfirm}>Yes Close</button>
+                    <button
+                        className="inverse"
+                        onClick={onCancel}>Cancel</button>
+                    <button
+                        className="absolute top-2 right-2 bg-transparent rounded-full p-1"
+                        onClick={onCancel}><XActionIcon strokeColor="var(--color-fg1)" /></button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+
 
 export const BrewRatingInfo = ({ onClose }:
     {

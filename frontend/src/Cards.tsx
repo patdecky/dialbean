@@ -33,14 +33,16 @@ import { calculateAverageEvaluation, getDecimals, getGrind, getGrindPrecision } 
 
 
 
-const getItemIcon = (item: ItemType, type: 'brewer' | 'grinder' | 'bag' | 'recipe'): Icon | undefined => {
+// eslint-disable-next-line react-refresh/only-export-components
+export const getItemIcon = (item: ItemType, type: 'brewer' | 'grinder' | 'bag' | 'recipe'): Icon | undefined => {
     const iconId = type === "brewer" ? (item as Brewer).iconId :
         type === "grinder" ? (item as Grinder).iconId :
             type === "bag" ? (item as Bag).iconId : undefined;
 
+    const brewerType = type === "recipe" ? (item as Recipe).type : undefined;
     const Icon = type === "recipe"
         ?
-        undefined
+        Object.values(brewer_icons).find(entry => entry.type === brewerType)?.icon
         : (
             type === "brewer"
                 ?
@@ -375,6 +377,32 @@ export const DialInCard = ({ dialIn, recipe, grinder }: {
         </div >
     )
 }
+
+export const RecipeValuesCard = ({ recipe }: {
+    recipe: Recipe,
+}) => {
+    return (
+        <div className="flex justify-start gap-1 items-center">
+            <div className="flex justify-start gap-1 items-center">
+                <WaterIcon />
+                <span>{(recipe.waterMl).toFixed(0)}ml</span>
+            </div>
+            <div className="flex justify-start gap-[2px] items-center">
+                <GrindIcon />
+                <span>{(recipe.grindPct).toFixed(0)}%</span>
+            </div>
+            <div className="flex justify-start gap-[2px] items-center">
+                <TemperatureIcon />
+                <span>{(recipe.tempC).toFixed(0)}°C</span>
+            </div>
+            <div className="flex justify-start gap-[2px] items-center">
+                <WeightIcon />
+                <span>{(recipe.doseGrams).toFixed(1)}g</span>
+            </div>
+        </div >
+    )
+}
+
 
 export const BrewCard = ({ brew, bag, brewer, grinder, recipe, onSelected = null }: {
     brew: Brew,

@@ -206,6 +206,15 @@ export const brewers: Brewer[] = [
         iconId: "12",
         isBase: true,
         usedInBrew: false
+    },
+    {
+        id: '13',
+        name: 'AeroPress Travel',
+        type: 'AeroPress',
+        iconId: "1",
+        isBase: false,
+        usedInBrew: true,
+        cleanedDate: '2026-08-06'
     }
 ];
 
@@ -242,7 +251,7 @@ export const brews: Brew[] = [
         id: "1",
         name: "Brew 1",
         bagId: "6",
-        brewerId: "1",
+        brewerId: "13",
         grinderId: "1",
         recipeId: "1",
         timestamp: new Date().toISOString(),

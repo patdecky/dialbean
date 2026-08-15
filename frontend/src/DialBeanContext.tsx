@@ -24,9 +24,11 @@ interface DialBeanContextType {
     addGrinder: (grinder: Omit<Grinder, 'id' | 'isBase' | 'usedInBrew'>) => Grinder;
     removeGrinder: (grinderId: string) => void;
     editGrinder: (grinderId: string, grinderData: Partial<Omit<Grinder, 'id' | 'isBase' | 'usedInBrew'>>) => void;
+    markGrinderCleaned: (grinderId: string) => Grinder;
     addBrewer: (brewer: Omit<Brewer, 'id' | 'isBase' | 'usedInBrew'>) => Brewer;
     removeBrewer: (brewerId: string) => void;
     editBrewer: (brewerId: string, brewerData: Partial<Omit<Brewer, 'id' | 'isBase' | 'usedInBrew'>>) => void;
+    markBrewerCleaned: (brewerId: string) => Brewer;
     addRecipe: (recipe: Omit<Recipe, 'id' | 'isBase' | 'usedInBrew'>) => Recipe;
     removeRecipe: (recipeId: string) => void;
     editRecipe: (recipeId: string, recipeData: Partial<Omit<Recipe, 'id' | 'isBase' | 'usedInBrew'>>) => void;
@@ -34,7 +36,7 @@ interface DialBeanContextType {
     markBrewUsed: (brewId: string) => Brew;
     removeBrew: (brewId: string) => void;
     editBrew: (brewId: string, brewData: Partial<Omit<Brew, 'id' | 'dialIns'>>) => Brew;
-    dialIn: (brewId: string, dialIn: Omit<DialIn, 'timestamp' | 'evaluations'>) => Brew;
+    addDialIn: (brewId: string, dialIn: Omit<DialIn, 'timestamp' | 'evaluations'>) => Brew;
     removeDialIn: (brewId: string) => Brew;
     setDialInDisgusting: (brewId: string, isDisgusting: boolean) => Brew;
     addEvaluation: (brewId: string, evaluation: Omit<Evaluation, 'timestamp'>) => Brew;
@@ -185,6 +187,22 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }));
     };
 
+    const markGrinderCleaned = (grinderId: string): Grinder => {
+        const grinder = data.grinders.find((g) => g.id === grinderId);
+        if (!grinder) {
+            throw new Error(`Grinder with ID ${grinderId} not found`);
+        }
+        const newGrinder: Grinder = { ...grinder, cleanedDate: new Date().toISOString() };
+        setData((prev) => ({
+            ...prev,
+            grinders: prev.grinders.map((grinder) => {
+                if (grinder.id !== grinderId) return grinder;
+                return newGrinder;
+            })
+        }));
+        return newGrinder;
+    };
+
     const addBrewer = (brewerData: Omit<Brewer, 'id' | 'isBase' | 'usedInBrew'>): Brewer => {
         const newBrewer: Brewer = { ...brewerData, id: crypto.randomUUID(), isBase: false, usedInBrew: false };
         setData((prev) => ({ ...prev, brewers: [...prev.brewers, newBrewer] }));
@@ -224,6 +242,22 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             ...prev,
             brewers: prev.brewers.filter((brewer) => brewer.id !== brewerId)
         }));
+    };
+
+    const markBrewerCleaned = (brewerId: string): Brewer => {
+        const brewer = data.brewers.find((b) => b.id === brewerId);
+        if (!brewer) {
+            throw new Error(`Brewer with ID ${brewerId} not found`);
+        }
+        const newBrewer: Brewer = { ...brewer, cleanedDate: new Date().toISOString() };
+        setData((prev) => ({
+            ...prev,
+            brewers: prev.brewers.map((brewer) => {
+                if (brewer.id !== brewerId) return brewer;
+                return newBrewer;
+            })
+        }));
+        return newBrewer;
     };
 
     const addRecipe = (recipeData: Omit<Recipe, 'id' | 'isBase' | 'usedInBrew'>): Recipe => {
@@ -608,7 +642,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return newBrew;
     };
 
-    const dialIn = (
+    const addDialIn = (
         brewId: string, dialIn: Omit<DialIn, 'timestamp' | 'evaluations'>
     ): Brew => {
         const brew = data.brews.find((d) => d.id === brewId);
@@ -662,7 +696,9 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 removeBrew,
                 addEvaluation,
                 removeEvaluation,
-                dialIn
+                addDialIn,
+                markGrinderCleaned,
+                markBrewerCleaned
             }}
         >
             {children}
