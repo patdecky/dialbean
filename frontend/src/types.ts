@@ -21,6 +21,7 @@ export type BrewerType =
     | 'Siphon'
     | 'Custom';
 export type ItemType = Brewer | Bag | Grinder | Recipe;
+export type ItemTypeName = 'brewer' | 'bag' | 'grinder' | 'recipe';
 export type MachineType = Brewer | Bag | Grinder;
 export type DialInRequest = 
     | 'Less Bitter'
@@ -53,6 +54,7 @@ export interface Bag {
     roaster?: string;
     roastLevel: RoastLevel;
     roastDate?: string; // ISO String
+    notes?: string;
     dateOpened?: string; // ISO String
     isFinished: boolean;
     isBase: boolean; // true for base bags, false for user-defined bags
@@ -67,6 +69,7 @@ export interface Grinder {
     scaleMin: number;
     scaleMax: number;
     stepSize: number; // e.g., 0.5 or 1.0
+    notes?: string;
     cleanedDate?: string;
     isBase: boolean; // true for base grinders, false for user-defined grinders
     usedInBrew: boolean;
@@ -78,6 +81,7 @@ export interface Brewer {
     name: string;
     iconId: string;
     type: BrewerType;
+    notes?: string;
     cleanedDate?: string;
     isBase: boolean; // true for base brewers, false for user-defined brewers
     usedInBrew: boolean;
@@ -91,6 +95,7 @@ export interface Recipe {
     waterMl: number;
     doseGrams: number;
     tempC: number;
+    notes?: string;
     grindPct: number; // 0% to 100% relative scale
     instructions: string; // Free-text instructions or markdown
     isBase: boolean; // true for base recipes, false for user-defined recipes
@@ -121,6 +126,7 @@ export interface DialIn {
 export interface Brew {
     id: string;
     name: string;
+    notes?: string;
     bagId: string;
     brewerId: string;
     grinderId: string;

@@ -1,5 +1,5 @@
 import type { JSX } from "react/jsx-runtime";
-import type { BrewerType } from "./types";
+import type { BrewerType, RoastLevel } from "./types";
 
 export type Icon = (props: React.ComponentProps<"img">) => JSX.Element;
 
@@ -64,7 +64,7 @@ export const VintageGrinderIcon = makeIcon("vintage_grinder.svg", "Vintage Grind
 export const WaterIcon = makeIcon("water.svg", "Water");
 export const WeightIcon = makeIcon("weight.svg", "Weight");
 type IconRegistryEntry = { id: string; icon: Icon; name: string; };
-type BagIconRegistryEntry = { id: string; icon_new: Icon; icon_open: Icon; icon_done: Icon; name: string; };
+type BagIconRegistryEntry = { id: string; icon_new: Icon; icon_open: Icon; icon_done: Icon; name: string; roast_level: RoastLevel };
 type BrewerIconRegistryEntry = { id: string; icon: Icon; name: string; type: BrewerType };
 
 export const brewer_icons: Record<string, BrewerIconRegistryEntry> = {
@@ -177,42 +177,49 @@ export const bag_icons: Record<string, BagIconRegistryEntry> = {
         icon_new: BagNewLightIcon,
         icon_open: BagOpenLightIcon,
         icon_done: BagDoneLightIcon,
-        name: "Light Roast Bag"
+        name: "Light Roast Bag",
+        roast_level: "Light"
     },
     "2": {
         id: "2",
         icon_new: BagNewLightMidIcon,
         icon_open: BagOpenLightMidIcon,
         icon_done: BagDoneLightMidIcon,
-        name: "Light-Medium Roast Bag"
+        name: "Light-Medium Roast Bag",
+        roast_level: "Light-Medium"
+
     },
     "3": {
         id: "3",
         icon_new: BagNewMidIcon,
         icon_open: BagOpenMidIcon,
         icon_done: BagDoneMidIcon,
-        name: "Medium Roast Bag"
+        name: "Medium Roast Bag",
+        roast_level: "Medium"
     },
     "4": {
         id: "4",
         icon_new: BagNewMidDarkIcon,
         icon_open: BagOpenMidDarkIcon,
         icon_done: BagDoneMidDarkIcon,
-        name: "Medium-Dark Roast Bag"
+        name: "Medium-Dark Roast Bag",
+        roast_level: "Medium-Dark"
     },
     "5": {
         id: "5",
         icon_new: BagNewDarkIcon,
         icon_open: BagOpenDarkIcon,
         icon_done: BagDoneDarkIcon,
-        name: "Dark Roast Bag"
+        name: "Dark Roast Bag",
+        roast_level: "Dark"
     },
     "6": {
         id: "6",
         icon_new: BagNewCustomIcon,
         icon_open: BagOpenCustomIcon,
         icon_done: BagDoneCustomIcon,
-        name: "Custom Roast Bag"
+        name: "Custom Roast Bag",
+        roast_level: "Custom"
     }
 };
 

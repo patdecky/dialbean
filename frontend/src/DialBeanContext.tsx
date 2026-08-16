@@ -20,22 +20,22 @@ interface DialBeanContextType {
     markBagFinished: (bagId: string) => Bag;
     markBagRestocked: (bagId: string) => Bag;
     markBagOpened: (bagId: string) => Bag;
-    editBag: (bagId: string, bagData: Partial<Omit<Bag, 'id' | 'isBase' | 'usedInBrew'>>) => void;
+    editBag: (bagId: string, bagData: Omit<Bag, 'id' | 'isBase' | 'usedInBrew'>) => void;
     addGrinder: (grinder: Omit<Grinder, 'id' | 'isBase' | 'usedInBrew'>) => Grinder;
     removeGrinder: (grinderId: string) => void;
-    editGrinder: (grinderId: string, grinderData: Partial<Omit<Grinder, 'id' | 'isBase' | 'usedInBrew'>>) => void;
+    editGrinder: (grinderId: string, grinderData: Omit<Grinder, 'id' | 'isBase' | 'usedInBrew'>) => void;
     markGrinderCleaned: (grinderId: string) => Grinder;
     addBrewer: (brewer: Omit<Brewer, 'id' | 'isBase' | 'usedInBrew'>) => Brewer;
     removeBrewer: (brewerId: string) => void;
-    editBrewer: (brewerId: string, brewerData: Partial<Omit<Brewer, 'id' | 'isBase' | 'usedInBrew'>>) => void;
+    editBrewer: (brewerId: string, brewerData: Omit<Brewer, 'id' | 'isBase' | 'usedInBrew'>) => void;
     markBrewerCleaned: (brewerId: string) => Brewer;
     addRecipe: (recipe: Omit<Recipe, 'id' | 'isBase' | 'usedInBrew'>) => Recipe;
     removeRecipe: (recipeId: string) => void;
-    editRecipe: (recipeId: string, recipeData: Partial<Omit<Recipe, 'id' | 'isBase' | 'usedInBrew'>>) => void;
-    newBrew: (name: string, bagId: string, brewerId: string, grinderId: string, recipeId: string) => Brew;
+    editRecipe: (recipeId: string, recipeData: Omit<Recipe, 'id' | 'isBase' | 'usedInBrew'>) => void;
+    newBrew: (brew: Omit<Brew, 'id' | 'dialIns'>) => Brew;
     markBrewUsed: (brewId: string) => Brew;
     removeBrew: (brewId: string) => void;
-    editBrew: (brewId: string, brewData: Partial<Omit<Brew, 'id' | 'dialIns'>>) => Brew;
+    editBrew: (brewId: string, brewData: Omit<Brew, 'id' | 'dialIns'>) => Brew;
     addDialIn: (brewId: string, dialIn: Omit<DialIn, 'timestamp' | 'evaluations'>) => Brew;
     removeDialIn: (brewId: string) => Brew;
     setDialInDisgusting: (brewId: string, isDisgusting: boolean) => Brew;
@@ -83,7 +83,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }));
     };
 
-    const editBag = (bagId: string, bagData: Partial<Omit<Bag, 'id' | 'isBase' | 'usedInBrew'>>): Bag => {
+    const editBag = (bagId: string, bagData: Omit<Bag, 'id' | 'isBase' | 'usedInBrew'>): Bag => {
         const bag = data.bags.find((b) => b.id === bagId);
         if (!bag) {
             throw new Error(`Bag with ID ${bagId} not found`);
@@ -153,7 +153,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return newGrinder;
     };
 
-    const editGrinder = (grinderId: string, grinderData: Partial<Omit<Grinder, 'id' | 'isBase' | 'usedInBrew'>>): Grinder => {
+    const editGrinder = (grinderId: string, grinderData: Omit<Grinder, 'id' | 'isBase' | 'usedInBrew'>): Grinder => {
         const grinder = data.grinders.find((g) => g.id === grinderId);
         if (!grinder) {
             throw new Error(`Grinder with ID ${grinderId} not found`);
@@ -209,7 +209,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return newBrewer;
     };
 
-    const editBrewer = (brewerId: string, brewerData: Partial<Omit<Brewer, 'id' | 'isBase' | 'usedInBrew'>>): Brewer => {
+    const editBrewer = (brewerId: string, brewerData: Omit<Brewer, 'id' | 'isBase' | 'usedInBrew'>): Brewer => {
         const brewer = data.brewers.find((b) => b.id === brewerId);
         if (!brewer) {
             throw new Error(`Brewer with ID ${brewerId} not found`);
@@ -266,7 +266,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return newRecipe;
     };
 
-    const editRecipe = (recipeId: string, recipeData: Partial<Omit<Recipe, 'id' | 'isBase' | 'usedInBrew'>>):Recipe => {
+    const editRecipe = (recipeId: string, recipeData: Omit<Recipe, 'id' | 'isBase' | 'usedInBrew'>):Recipe => {
         const recipe = data.recipes.find((r) => r.id === recipeId);
         if (!recipe) {
             throw new Error(`Recipe with ID ${recipeId} not found`);
@@ -301,13 +301,8 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }));
     };
 
-    const newBrew = (
-        name: string,
-        bagId: string,
-        brewerId: string,
-        grinderId: string,
-        recipeId: string,
-    ): Brew => {
+    const newBrew = (brewData: Omit<Brew, 'id' | 'dialIns'>): Brew => {
+        const { name, notes, bagId, brewerId, grinderId, recipeId } = brewData;
         const bag = data.bags.find((b) => b.id === bagId);
         const recipe = data.recipes.find((r) => r.id === recipeId);
         const grinder = data.grinders.find((g) => g.id === grinderId);
@@ -334,6 +329,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             id: crypto.randomUUID(),
             bagId,
             name: name,
+            notes: notes,
             brewerId,
             grinderId,
             recipeId,
@@ -475,7 +471,8 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }));
     }
 
-    const editBrew = (brewId: string, brewData: Partial<Omit<Brew, 'id' | 'dialIns'>>): Brew => {
+    const editBrew = (brewId: string, brewData: Omit<Brew, 'id' | 'dialIns'>): Brew => {
+        console.log("editBrew called with brewId:", brewId, "brewData:", brewData);
         const brew = data.brews.find((d) => d.id === brewId);
         if (!brew) {
             throw new Error(`Brew with ID ${brewId} not found`);
@@ -533,7 +530,10 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const newNewBrewer: Brewer = { ...newBrewer, usedInBrew: true };
         setData((prev) => ({
             ...prev,
-            brews: prev.brews.filter((d) => d.id !== brewId),
+            brews: prev.brews.map((d) => {
+                if (d.id !== brewId) return d;
+                return newBrew;
+            }),
             bags: prev.bags.map((d) => {
                 if (d.id !== oldBag?.id && d.id !== newBag?.id) return d;
                 if (d.id === newBag?.id) return newNewBag ?? d;

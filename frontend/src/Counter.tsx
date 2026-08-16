@@ -2,15 +2,30 @@ import { useState } from 'react';
 
 import type { Bag, Brew, Brewer, Grinder, Recipe } from './types';
 import { useDialBean } from './DialBeanContext';
-import { NewBrewDialog, BrewDetailsDialog } from './components';
+import { NewBrewDialog, BrewDetailsDialog, BrewCard } from './components';
 import { DialBeanLargeIcon } from "./icons";
-import { BrewCard } from './cards';
 
 const Counter = () => {
-    const { data, newBrew, addBag, addBrewer, addGrinder, addRecipe,
-        removeBag, removeBrewer, removeGrinder, removeRecipe, markBagFinished,
-        markBagOpened, addEvaluation, removeEvaluation, removeDialIn, addDialIn,
-        markGrinderCleaned, markBrewerCleaned
+    const { data, 
+        newBrew, 
+        addBag, 
+        addBrewer,
+        addGrinder, 
+        addRecipe,
+        removeBag, 
+        removeBrewer, 
+        removeGrinder, 
+        removeRecipe,
+        editBrewer,
+        editGrinder,
+        editBag,
+        editRecipe,
+        addEvaluation, 
+        removeEvaluation, 
+        removeDialIn,
+        addDialIn,
+        editBrew, 
+        removeBrew
     } = useDialBean();
     const activeBrews: Brew[] = data.brews.filter(brew => data.bags.find(bag => bag.id === brew.bagId)?.isFinished === false);
     const finishedBrews: Brew[] = data.brews.filter(brew => data.bags.find(bag => bag.id === brew.bagId)?.isFinished === true);
@@ -22,12 +37,14 @@ const Counter = () => {
     const finishedBrewBrewers: Brewer[] = finishedBrews.map(brew => data.brewers.find(brewer => brewer.id === brew.brewerId)) as Brewer[];
     const finishedBrewRecipes: Recipe[] = finishedBrews.map(brew => data.recipes.find(recipe => recipe.id === brew.recipeId)) as Recipe[];
     const finishedBrewBags: Bag[] = finishedBrews.map(brew => data.bags.find(bag => bag.id === brew.bagId)) as Bag[];
-    const [selectedBrew, setSelectedBrew] = useState<Brew | null>(null);
+    const [selectedBrewId, setSelectedBrewId] = useState<string | null>(null);
     const [newBrewActive, setNewBrewActive] = useState(false);
-    const [toCopyBrew, setToCopyBrew] = useState<Brew | null>(null);
-    const [toEditBrew, setToEditBrew] = useState<Brew | null>(null);
+    const [toCopyBrewId, setToCopyBrewId] = useState<string | null>(null);
+    const [toEditBrewId, setToEditBrewId] = useState<string | null>(null);
     const [showFinishedBrews, setShowFinishedBrews] = useState<boolean>(false);
 
+    const selectedBrew = selectedBrewId ? data.brews.find(brew => brew.id === selectedBrewId) : null;
+    console.log("Counter render: selectedBrewId:", selectedBrewId, "selectedBrew:", selectedBrew);
     return (
         <div className="flex flex-col items-center justify-start w-full h-full">
             <div className="w-full h-full p-4 flex flex-col">
@@ -47,7 +64,7 @@ const Counter = () => {
                                 brewer={activeBrewBrewers[index]}
                                 grinder={activeBrewGrinders[index]}
                                 recipe={activeBrewRecipes[index]}
-                                onSelected={() => setSelectedBrew(brew)} />
+                                onSelected={() => setSelectedBrewId(brew.id)} />
                         )
                     )}
                     {finishedBrews.length > 0 && (showFinishedBrews ? (
@@ -60,7 +77,7 @@ const Counter = () => {
                                     brewer={finishedBrewBrewers[index]}
                                     grinder={finishedBrewGrinders[index]}
                                     recipe={finishedBrewRecipes[index]}
-                                    onSelected={() => setSelectedBrew(brew)} />
+                                    onSelected={() => setSelectedBrewId(brew.id)} />
                             )}
                         </>
                     ) : <button onClick={() => setShowFinishedBrews(true)}>Show Finished Brews</button>
@@ -70,34 +87,40 @@ const Counter = () => {
                 {newBrewActive && (
                     <NewBrewDialog
                         onSaveBrew={(brew) => {
-                            if (toEditBrew) {
+                            if (toEditBrewId) {
                                 // Update existing brew
-                                alert("Updated brew: " + brew.name);
-                                setSelectedBrew(brew);
+                                const updatedBrew = editBrew(toEditBrewId, brew);
+                                console.log("Updated brew:", updatedBrew);
+                                setSelectedBrewId(updatedBrew.id);
                             } else {
-                                newBrew(brew.name, brew.bagId, brew.brewerId, brew.grinderId, brew.recipeId);
+                                const newBrewObject = newBrew(brew);
+                                setSelectedBrewId(newBrewObject.id);
                             }
                             setNewBrewActive(false);
-                            setToCopyBrew(null);
-                            setToEditBrew(null);
+                            setToCopyBrewId(null);
+                            setToEditBrewId(null);
                         }}
                         onCancel={() => {
-                            if (toCopyBrew) {
-                                setSelectedBrew(toCopyBrew);
+                            if (toCopyBrewId) {
+                                setSelectedBrewId(toCopyBrewId);
                             }
-                            if (toEditBrew) {
-                                setSelectedBrew(toEditBrew);
+                            if (toEditBrewId) {
+                                setSelectedBrewId(toEditBrewId);
                             }
                             setNewBrewActive(false);
-                            setToCopyBrew(null);
-                            setToEditBrew(null);
+                            setToCopyBrewId(null);
+                            setToEditBrewId(null);
                         }}
                         onAddBrewer={addBrewer}
                         onAddGrinder={addGrinder}
                         onAddBag={addBag}
                         onAddRecipe={addRecipe}
-                        edit={toEditBrew !== null}
-                        brew={toCopyBrew || toEditBrew || undefined}
+                        onEditBrewer={(id, brewer) => editBrewer(id, brewer)}
+                        onEditGrinder={(id, grinder) => editGrinder(id, grinder)}
+                        onEditBag={(id, bag) => editBag(id, bag)}
+                        onEditRecipe={(id, recipe) => editRecipe(id, recipe)}
+                        edit={toEditBrewId !== null}
+                        brew={toCopyBrewId || toEditBrewId ? data.brews.find((b) => b.id === (toCopyBrewId || toEditBrewId)) : undefined}
                         bags={data.bags}
                         brewers={data.brewers}
                         grinders={data.grinders}
@@ -113,58 +136,50 @@ const Counter = () => {
                     <BrewDetailsDialog
                         key={selectedBrew.id}
                         brew={selectedBrew}
-                        onClose={() => setSelectedBrew(null)}
+                        onClose={() => setSelectedBrewId(null)}
                         brewers={data.brewers}
                         bags={data.bags}
                         grinders={data.grinders}
                         recipes={data.recipes}
+                        brews={data.brews}
                         onCopyBrew={(brew) => {
-                            setToCopyBrew(brew);
-                            setNewBrewActive(true);
-                            setSelectedBrew(null);
+                            const newBrewObject = newBrew(brew);
+                            setSelectedBrewId(newBrewObject.id);
                         }}
                         onEditBrew={(brew) => {
-                            setToEditBrew(brew);
-                            setNewBrewActive(true);
-                            setSelectedBrew(null);
+                            editBrew(selectedBrew.id, brew);
                         }}
                         onDeleteBrew={(brew) => {
-                            setSelectedBrew(null);
+                            removeBrew(brew.id);
+                            setSelectedBrewId(null);
                         }}
                         onAddBrewer={addBrewer}
                         onAddGrinder={addGrinder}
                         onAddBag={addBag}
                         onAddRecipe={addRecipe}
-                        onBagFinished={(bag) => {
-                            markBagFinished(bag.id);
-                            setSelectedBrew(null);
-                        }}
-                        onBagOpened={(bag) => {
-                            console.log("Bag opened: " + bag.name);
-                            markBagOpened(bag.id);
-                        }}
+                        onRemoveBag={(bag) => removeBag((bag as Bag).id)}
+                        onRemoveBrewer={(brewer) => removeBrewer((brewer as Brewer).id)}
+                        onRemoveGrinder={(grinder) => removeGrinder((grinder as Grinder).id)}
+                        onRemoveRecipe={(recipe) => removeRecipe((recipe as Recipe).id)}
+                        onEditBrewer={(id, brewer) => editBrewer(id, brewer)}
+                        onEditGrinder={(id, grinder) => editGrinder(id, grinder)}
+                        onEditBag={(id, bag) => editBag(id, bag)}
+                        onEditRecipe={(id, recipe) => editRecipe(id, recipe)}
                         onSaveEvaluation={(brew, evaluation) => {
                             const newBrew = addEvaluation(brew.id, evaluation);
-                            setSelectedBrew(newBrew);
+                            setSelectedBrewId(newBrew.id);
                         }}
                         onDeleteLastEvaluation={(brew) => {
                             const newBrew = removeEvaluation(brew.id);
-                            setSelectedBrew(newBrew);
+                            setSelectedBrewId(newBrew.id);
                         }}
                         onDeleteLastDialIn={(brew) => {
                             const newBrew = removeDialIn(brew.id);
-                            setSelectedBrew(newBrew);
+                            setSelectedBrewId(newBrew.id);
                         }}
                         onSaveDialIn={(brew, dialInObject) => {
                             const newBrew = addDialIn(brew.id, dialInObject);
-                            setSelectedBrew(newBrew);
-                        }}
-                        onMarkBrewerCleaned={(brewer) => {
-                            const newBrewer = markBrewerCleaned(brewer.id);
-
-                        }}
-                        onMarkGrinderCleaned={(grinder) => {
-                            markGrinderCleaned(grinder.id);
+                            setSelectedBrewId(newBrew.id);
                         }}
                     />
                 )}

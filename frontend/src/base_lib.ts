@@ -108,7 +108,9 @@ export const grinders: Grinder[] = [
         scaleMax: 30,
         stepSize: 1,
         isBase: false,
-        usedInBrew: true
+        usedInBrew: true,
+        notes: "Something reasonable might come here.\nAnd a new line.\nAnd another line."
+
     }
 ];
 
@@ -214,7 +216,9 @@ export const brewers: Brewer[] = [
         iconId: "1",
         isBase: false,
         usedInBrew: true,
-        cleanedDate: '2026-08-06'
+        cleanedDate: '2026-08-06',
+        notes: "Something reasonable might come here.\nAnd a new line.\nAnd another line."
+
     }
 ];
 
@@ -229,7 +233,8 @@ export const recipes: Recipe[] = [
         grindPct: 45,
         instructions: 'Use a medium grind and pour in 3 stages.',
         isBase: true,
-        usedInBrew: true
+        usedInBrew: true,
+        notes: "Something reasonable might come here.\nAnd a new line.\nAnd another line."
     },
     {
         id: '2',
@@ -268,8 +273,9 @@ export const brews: Brew[] = [
         name: "Brew 2",
         bagId: "6",
         brewerId: "1",
-        grinderId: "1",
+        grinderId: "5",
         recipeId: "2",
+        notes: "This brew was a bit too bitter for my taste. \nI will try adjusting the grind size next time.\nBut also this should be good.",
         timestamp: new Date().toISOString(),
         lastUsedTimestamp: new Date().toISOString(),
         dialIns: [

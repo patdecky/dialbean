@@ -1,8 +1,78 @@
+import { useState } from "react";
 import { XActionIcon } from "./action_icons";
 import { AcidityIcon, SweetIcon, BitterIcon, BodyIcon, StrengthIcon } from "./icons";
-import type { Brew, Bag, Evaluation } from "./types";
+import type { Brew, Bag, Evaluation, ItemTypeName, ItemType } from "./types";
 
+export const ConfirmModal = ({ title, okButton, onConfirm, onCancel }:
+    {
+        title: string;
+        okButton: string;
+        onConfirm: () => void;
+        onCancel: () => void;
+    }) => {
+    return (
+        <div className="dialog z-500">
+            <div className="backdrop" onClick={onCancel}></div>
+            <div className="modal">
+                <div className="message">
+                    {title}
+                </div>
+                <div className="options">
+                    <button
+                        onClick={onConfirm}>{okButton}</button>
+                    <button
+                        className="inverse"
+                        onClick={onCancel}>Cancel</button>
+                    <button
+                        className="absolute top-2 right-2 bg-transparent rounded-full p-1"
+                        onClick={onCancel}><XActionIcon strokeColor="var(--color-fg1)" /></button>
+                </div>
+            </div>
+        </div>
+    );
+}
 
+export const ConfirmRemoveItemModal = ({ item, type, onConfirm, onCancel }:
+    {
+        item: ItemType;
+        type: ItemTypeName;
+        onConfirm: () => void;
+        onCancel: () => void;
+    }) => {
+    const [understand, setUnderstand] = useState(false);
+    return (
+        <div className="dialog z-500">
+            <div className="backdrop" onClick={onCancel}></div>
+            <div className="modal flex flex-col gap-2">
+                <div className="message">
+                    Are you sure you want to remove the {type} {item.name}?
+                </div>
+                {item.usedInBrew &&
+                    <div>
+                        <div className="error">This {type} has been used in a brew. Removing it will also remove all associated brews and evaluations.</div>
+                        <div className="flex items-center gap-1">
+                            <input type="checkbox" id="understand" checked={understand} onChange={(e) => setUnderstand(e.target.checked)} />
+                            <label htmlFor="understand">Remove all associated brews and evaluations.</label>
+                        </div>
+                    </div>
+                }
+                <div className="options">
+                    <button
+                        className={item.usedInBrew && !understand ? "opacity-50 cursor-not-allowed" : ""}
+                        onClick={onConfirm}
+                        disabled={item.usedInBrew && !understand}
+                        >Yes Remove</button>
+                    <button
+                        className="inverse"
+                        onClick={onCancel}>Cancel</button>
+                    <button
+                        className="absolute top-2 right-2 bg-transparent rounded-full p-1"
+                        onClick={onCancel}><XActionIcon strokeColor="var(--color-fg1)" /></button>
+                </div>
+            </div>
+        </div>
+    );
+}
 
 export const ConfirmDeleteBrewModal = ({ brew, onConfirm, onCancel }:
     {

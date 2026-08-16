@@ -44,8 +44,6 @@
   --color-fg2: #54321D;
   --color-fg3: #6F5139;
   --color-copper: #BB7746;
-  --color-text1: #361B16;
-  --color-text2: #54321D;
 }
 
 @layer base {
@@ -54,7 +52,7 @@
   }
 
   input[type="text"]:focus,
-  input[type="number"]:focus, 
+  input[type="number"]:focus,
   textarea:focus {
     outline: none !important;
     box-shadow: 0 0 0 2px #FAB47F !important;
@@ -108,6 +106,38 @@
     font-weight: 400;
     letter-spacing: -0.05em;
     @apply text-fg2;
+  }
+
+  .label {
+    @apply text-fg3 text-xs italic;
+  }
+
+  .timestamp {
+    @apply text-fg3 text-xs;
+  }
+
+  .notes {
+    @apply text-fg2 text-sm italic whitespace-pre-wrap;
+  }
+
+  .notes.short {
+    @apply line-clamp-2 text-ellipsis overflow-hidden max-w-full;
+  }
+
+  textarea.notes {
+    @apply border rounded-sm border-fg3 text-fg1 p-1 text-sm;
+  }
+
+  input[type="text"].name {
+    @apply border rounded-sm border-fg3 text-fg1 p-1 text-sm;
+  }
+
+  input[type="number"].value {
+    @apply border rounded-sm border-fg3 text-fg1 p-1 text-sm w-20;
+  }
+
+  .error {
+    @apply text-red-500 text-sm;
   }
 
   .font-hand {
@@ -168,6 +198,10 @@
     @apply bg-bg2 border border-bg3 px-4 pt-7 pb-4 rounded-xl shadow-2xl/40 relative z-1 min-w-50 w-100 min-h-50 max-w-[90dvw] max-h-[90dvh] overflow-y-auto;
   }
 
+  .dialog .library {
+    @apply bg-bg2 border border-bg3 px-4 pt-7 pb-4 rounded-xl shadow-2xl/40 relative z-1 min-w-50 w-100 min-h-50 max-w-[90dvw] max-h-[90dvh] overflow-y-auto;
+  }
+
   .dialog .item {
     @apply bg-bg3 border border-bg4 px-4 pt-7 pb-4 rounded-xl shadow-2xl/40 relative z-1 min-w-50 w-60 min-h-50 max-w-[90dvw] max-h-[90dvh] overflow-y-auto;
   }
@@ -179,11 +213,12 @@
   .dialog .modal .message {
     @apply mt-2 mb-4 text-center flex-1 flex items-center justify-center;
   }
+
   .dialog .modal .options {
     @apply flex justify-center gap-4;
   }
 
-  p { 
+  p {
     min-height: 1.5rem;
   }
 
