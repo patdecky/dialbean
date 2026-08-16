@@ -1335,156 +1335,162 @@ export const NewItemDialog = ({
                                 </div>
                             </div>
                         </div>
-                        <div className="flex gap-2">
-                            <div>
-                                {showErrors && waterMl === null && <div className="error">Water (ml) is required</div>}
-                                <div className="label">Water (ml):</div>
-                                <input type="number"
-                                    value={waterMl !== null ? waterMl : ''}
-                                    step="1"
-                                    min="0"
-                                    className="value"
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        // Allow clearing the field without forcing a 0 or NaN
-                                        if (val === '') {
-                                            setWaterMl(null); // or null / undefined depending on your state type
-                                            return;
-                                        }
-                                        // Parse directly as integer (discarding decimals)
-                                        const parsed = parseInt(val, 10);
-                                        if (!isNaN(parsed)) {
-                                            setWaterMl(parsed);
-                                        }
-                                    }}
-                                    onKeyDown={(e) => {
-                                        // Prevent typing decimal points '.', ',', or exponent 'e'/'E'
-                                        if (['.', ',', 'e', 'E', '-'].includes(e.key)) {
-                                            e.preventDefault();
-                                        }
-                                    }}
-                                    placeholder="e.g. 300" />
-                            </div>
-                            <div>
-                                {showErrors && grindPct === null && <div className="error">Grind (%) is required</div>}
-                                <div className="label">Grind (%):</div>
-                                <input
-                                    type="number"
-                                    value={grindPct !== null ? grindPct : ''}
-                                    step="1"
-                                    min="0"
-                                    max="100"
-                                    className="value"
-                                    onChange={(e) => {
-                                        const val = e.target.value;
+                        <div>
+                            {showErrors && waterMl === null && <div className="error">Water (ml) is required</div>}
+                            {showErrors && grindPct === null && <div className="error">Grind (%) is required</div>}
 
-                                        if (val === '') {
-                                            setGrindPct(null);
-                                            return;
-                                        }
 
-                                        const parsed = parseInt(val, 10);
-                                        if (!isNaN(parsed)) {
-                                            // Clamp percentage between 0% and 100%
-                                            const clamped = Math.min(100, Math.max(0, parsed));
-                                            setGrindPct(clamped);
-                                        }
-                                    }}
-                                    onKeyDown={(e) => {
-                                        // Prevent typing decimals, exponents, or negative signs
-                                        if (['.', ',', 'e', 'E', '-'].includes(e.key)) {
-                                            e.preventDefault();
-                                        }
-                                    }}
-                                    placeholder="e.g. 45"
-                                />
+                            <div className="flex gap-2">
+                                <div>
+                                    <div className="label">Water (ml):</div>
+                                    <input type="number"
+                                        value={waterMl !== null ? waterMl : ''}
+                                        step="1"
+                                        min="0"
+                                        className="value"
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            // Allow clearing the field without forcing a 0 or NaN
+                                            if (val === '') {
+                                                setWaterMl(null); // or null / undefined depending on your state type
+                                                return;
+                                            }
+                                            // Parse directly as integer (discarding decimals)
+                                            const parsed = parseInt(val, 10);
+                                            if (!isNaN(parsed)) {
+                                                setWaterMl(parsed);
+                                            }
+                                        }}
+                                        onKeyDown={(e) => {
+                                            // Prevent typing decimal points '.', ',', or exponent 'e'/'E'
+                                            if (['.', ',', 'e', 'E', '-'].includes(e.key)) {
+                                                e.preventDefault();
+                                            }
+                                        }}
+                                        placeholder="e.g. 300" />
+                                </div>
+                                <div>
+                                    <div className="label">Grind (%):</div>
+                                    <input
+                                        type="number"
+                                        value={grindPct !== null ? grindPct : ''}
+                                        step="1"
+                                        min="0"
+                                        max="100"
+                                        className="value"
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+
+                                            if (val === '') {
+                                                setGrindPct(null);
+                                                return;
+                                            }
+
+                                            const parsed = parseInt(val, 10);
+                                            if (!isNaN(parsed)) {
+                                                // Clamp percentage between 0% and 100%
+                                                const clamped = Math.min(100, Math.max(0, parsed));
+                                                setGrindPct(clamped);
+                                            }
+                                        }}
+                                        onKeyDown={(e) => {
+                                            // Prevent typing decimals, exponents, or negative signs
+                                            if (['.', ',', 'e', 'E', '-'].includes(e.key)) {
+                                                e.preventDefault();
+                                            }
+                                        }}
+                                        placeholder="e.g. 45"
+                                    />
+                                </div>
                             </div>
                         </div>
-                        <div className="flex gap-2">
-                            <div>
-                                {showErrors && doseG === null && <div className="error">Dose (g) is required</div>}
-                                <div className="label">Dose (g):</div>
-                                <input
-                                    type="number"
-                                    step="0.1"
-                                    min="0"
-                                    className="value"
-                                    value={doseG !== null ? doseG : ''}
-                                    placeholder="e.g. 18.5"
-                                    onChange={(e) => {
-                                        const val = e.target.value;
+                        <div>
+                            {showErrors && doseG === null && <div className="error">Dose (g) is required</div>}
+                            {showErrors && tempC === null && <div className="error">Temperature (°C) is required</div>}
+                            <div className="flex gap-2">
+                                <div>
+                                    <div className="label">Dose (g):</div>
+                                    <input
+                                        type="number"
+                                        step="0.1"
+                                        min="0"
+                                        className="value"
+                                        value={doseG !== null ? doseG : ''}
+                                        placeholder="e.g. 18.5"
+                                        onChange={(e) => {
+                                            const val = e.target.value;
 
-                                        if (val === '') {
-                                            setdoseG(null);
-                                            return;
-                                        }
+                                            if (val === '') {
+                                                setdoseG(null);
+                                                return;
+                                            }
 
-                                        // If user is actively typing a trailing decimal point (e.g. "18."),
-                                        // keep state unchanged or don't block typing
-                                        if (val.endsWith('.') || val.endsWith(',')) {
-                                            return;
-                                        }
+                                            // If user is actively typing a trailing decimal point (e.g. "18."),
+                                            // keep state unchanged or don't block typing
+                                            if (val.endsWith('.') || val.endsWith(',')) {
+                                                return;
+                                            }
 
-                                        // Limit input to max 1 decimal place string-wise
-                                        const parts = val.split(/[.,]/);
-                                        if (parts[1] && parts[1].length > 1) {
-                                            return; // Ignores typing a 2nd decimal place
-                                        }
+                                            // Limit input to max 1 decimal place string-wise
+                                            const parts = val.split(/[.,]/);
+                                            if (parts[1] && parts[1].length > 1) {
+                                                return; // Ignores typing a 2nd decimal place
+                                            }
 
-                                        const parsed = parseFloat(val);
-                                        if (!isNaN(parsed)) {
-                                            // Clean JS floating point noise to 1 decimal
-                                            setdoseG(Math.round(parsed * 10) / 10);
-                                        }
-                                    }}
-                                    onKeyDown={(e) => {
-                                        // Block e/E/minus, but allow decimal separator
-                                        if (['e', 'E', '-'].includes(e.key)) {
-                                            e.preventDefault();
-                                        }
-                                        // Prevent typing a second decimal point if one already exists
-                                        if (
-                                            (e.key === '.' || e.key === ',') &&
-                                            e.currentTarget.value.includes('.')
-                                        ) {
-                                            e.preventDefault();
-                                        }
-                                    }}
-                                />
-                            </div>
-                            <div>
-                                {showErrors && tempC === null && <div className="error">Temperature (°C) is required</div>}
-                                <div className="label">Temperature (°C):</div>
-                                <input
-                                    type="number"
-                                    value={tempC !== null ? tempC : ''}
-                                    step="1"
-                                    min="0"
-                                    max="100"
-                                    className="value"
-                                    onChange={(e) => {
-                                        const val = e.target.value;
+                                            const parsed = parseFloat(val);
+                                            if (!isNaN(parsed)) {
+                                                // Clean JS floating point noise to 1 decimal
+                                                setdoseG(Math.round(parsed * 10) / 10);
+                                            }
+                                        }}
+                                        onKeyDown={(e) => {
+                                            // Block e/E/minus, but allow decimal separator
+                                            if (['e', 'E', '-'].includes(e.key)) {
+                                                e.preventDefault();
+                                            }
+                                            // Prevent typing a second decimal point if one already exists
+                                            if (
+                                                (e.key === '.' || e.key === ',') &&
+                                                e.currentTarget.value.includes('.')
+                                            ) {
+                                                e.preventDefault();
+                                            }
+                                        }}
+                                    />
+                                </div>
+                                <div>
+                                    <div className="label">Temperature (°C):</div>
+                                    <input
+                                        type="number"
+                                        value={tempC !== null ? tempC : ''}
+                                        step="1"
+                                        min="0"
+                                        max="100"
+                                        className="value"
+                                        onChange={(e) => {
+                                            const val = e.target.value;
 
-                                        if (val === '') {
-                                            setTempC(null);
-                                            return;
-                                        }
+                                            if (val === '') {
+                                                setTempC(null);
+                                                return;
+                                            }
 
-                                        const parsed = parseInt(val, 10);
-                                        if (!isNaN(parsed)) {
-                                            // Clamp value between min (0) and max (100)
-                                            const clamped = Math.min(100, Math.max(0, parsed));
-                                            setTempC(clamped);
-                                        }
-                                    }}
-                                    onKeyDown={(e) => {
-                                        // Prevent typing decimals, exponents, or negative signs
-                                        if (['.', ',', 'e', 'E', '-'].includes(e.key)) {
-                                            e.preventDefault();
-                                        }
-                                    }}
-                                    placeholder="e.g. 93"
-                                />
+                                            const parsed = parseInt(val, 10);
+                                            if (!isNaN(parsed)) {
+                                                // Clamp value between min (0) and max (100)
+                                                const clamped = Math.min(100, Math.max(0, parsed));
+                                                setTempC(clamped);
+                                            }
+                                        }}
+                                        onKeyDown={(e) => {
+                                            // Prevent typing decimals, exponents, or negative signs
+                                            if (['.', ',', 'e', 'E', '-'].includes(e.key)) {
+                                                e.preventDefault();
+                                            }
+                                        }}
+                                        placeholder="e.g. 93"
+                                    />
+                                </div>
                             </div>
                         </div>
                         <div>
