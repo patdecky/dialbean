@@ -39,6 +39,7 @@
   --color-bg4: #F0D8CC;
   --color-bgrec: #fffda2;
   --color-bgrec2: #fffd80;
+  --color-fgrec: #fd991e;
   --color-mid: #FAB47F;
   --color-fg1: #361B16;
   --color-fg2: #54321D;
@@ -125,15 +126,19 @@
   }
 
   textarea.notes {
-    @apply border rounded-sm border-fg3 text-fg1 p-1 text-sm;
+    @apply border rounded-sm border-fg3 text-fg1 p-1 text-sm w-full;
   }
 
   input[type="text"].name {
-    @apply border rounded-sm border-fg3 text-fg1 p-1 text-sm;
+    @apply border rounded-sm border-fg3 text-fg1 p-1 text-sm w-full;
   }
 
   input[type="number"].value {
     @apply border rounded-sm border-fg3 text-fg1 p-1 text-sm w-20;
+  }
+
+  input[type="date"].date {
+    @apply border rounded-sm border-fg3 text-fg1 p-1 text-sm w-full;
   }
 
   .error {
@@ -203,7 +208,7 @@
   }
 
   .dialog .item {
-    @apply bg-bg3 border border-bg4 px-4 pt-7 pb-4 rounded-xl shadow-2xl/40 relative z-1 min-w-50 w-60 min-h-50 max-w-[90dvw] max-h-[90dvh] overflow-y-auto;
+    @apply bg-bg3 border border-bg4 px-4 pt-7 pb-4 rounded-xl shadow-2xl/40 relative z-1 min-w-50 w-70 min-h-50 max-w-[90dvw] max-h-[90dvh] overflow-y-auto;
   }
 
   .dialog .recipe {
@@ -218,8 +223,24 @@
     @apply flex justify-center gap-4;
   }
 
-  p {
-    min-height: 1.5rem;
+
+  .library-mark {
+    width: 20px;
+    height: 20px;
+    background-color: var(--color-fg1);
+    /* Corners: Top-Left (0 0), Top-Right (100% 0), Bottom-Left (0 100%) */
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+    @apply absolute top-0 left-0;
+  }
+
+  .library-mark.small {
+    width: 15px;
+    height: 15px;
+  }
+
+  .recipe .library-mark,
+  .library-mark.rec {
+    background-color: var(--color-fgrec);
   }
 
 }

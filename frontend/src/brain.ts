@@ -270,7 +270,7 @@ export const suggestDialIn = ({
     const currentGrinderDelta = lastDialIn ? lastDialIn.grinderDelta : 0;
 
     // Calculate physical starting points for this iteration
-    const currentPhysicalDose = recipe.doseGrams + currentDoseDelta;
+    const currentPhysicalDose = recipe.doseG + currentDoseDelta;
     const currentPhysicalTemp = recipe.tempC + currentTempDelta;
     const currentPhysicalGrind = getGrind(grinder, recipe, currentGrinderDelta);
     const baseRecipeGrind = getGrind(grinder, recipe, 0);
@@ -409,7 +409,7 @@ export const suggestDialIn = ({
     const clampedGrind = roundToStep(targetGrind, grinder);
 
     // 7. Re-calculate Output Deltas Relative to Immutable Base Recipe
-    const finalDoseDelta = Math.round((clampedDose - recipe.doseGrams) * 10) / 10;
+    const finalDoseDelta = Math.round((clampedDose - recipe.doseG) * 10) / 10;
     const finalTempDelta = Math.round(clampedTemp - recipe.tempC);
     const finalGrinderDelta = Math.round((clampedGrind - baseRecipeGrind) * 100) / 100;
 

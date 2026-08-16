@@ -142,12 +142,12 @@ const Counter = () => {
                         grinders={data.grinders}
                         recipes={data.recipes}
                         brews={data.brews}
-                        onCopyBrew={(brew) => {
+                        onNewBrew={(brew) => {
                             const newBrewObject = newBrew(brew);
                             setSelectedBrewId(newBrewObject.id);
                         }}
-                        onEditBrew={(brew) => {
-                            editBrew(selectedBrew.id, brew);
+                        onEditBrew={(id, brew) => {
+                            editBrew(id, brew);
                         }}
                         onDeleteBrew={(brew) => {
                             removeBrew(brew.id);

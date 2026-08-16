@@ -78,7 +78,7 @@ import {
 
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const getItemIcon = (item: ItemType, type: 'brewer' | 'grinder' | 'bag' | 'recipe'): Icon | undefined => {
+export const getItemIcon = (item: ItemType, type: ItemTypeName): Icon | undefined => {
     const iconId = type === "brewer" ? (item as Brewer).iconId :
         type === "grinder" ? (item as Grinder).iconId :
             type === "bag" ? (item as Bag).iconId : undefined;
@@ -135,6 +135,26 @@ export const getTypeIcon = (iconId: string, type: ItemTypeName): Icon | undefine
     return undefined;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
+export const getNameIcon = (iconId: string, type: ItemTypeName): { name: string, icon: Icon, id: string } | undefined => {
+    if (type === "recipe") {
+        const entry = Object.values(brewer_icons).find(entry => entry.id === iconId);
+        return entry ? { name: entry.type, icon: entry.icon, id: entry.id } : undefined;
+    }
+    if (type === "brewer") {
+        const entry = Object.values(brewer_icons).find(entry => entry.id === iconId);
+        return entry ? { name: entry.type, icon: entry.icon, id: entry.id } : undefined;
+    }
+    if (type === "grinder") {
+        const entry = Object.values(grinder_icons).find(entry => entry.id === iconId);
+        return entry ? { name: entry.name, icon: entry.icon, id: entry.id } : undefined;
+    }
+    if (type === "bag") {
+        const entry = Object.values(bag_icons).find(entry => entry.id === iconId);
+        return entry ? { name: entry.roast_level, icon: entry.icon_new, id: entry.id } : undefined;
+    }
+    return undefined;
+};
 
 
 export const SmallItemCard = ({
@@ -156,7 +176,7 @@ export const SmallItemCard = ({
     allowDetails?: boolean;
     onSelectDetails?: boolean;
     itemRef?: React.Ref<HTMLDivElement>;
-    onEditItem?: (id:string, item: ItemType) => void;
+    onEditItem?: (id: string, item: ItemType) => void;
     onRemoveItem?: (item: ItemType) => void;
     onNewItem?: (item: ItemType) => void;
 }) => {
@@ -188,6 +208,7 @@ export const SmallItemCard = ({
                             onItemSelected?.(item);
                         }
                     }}>
+                    {item.isBase && <div className="library-mark small rec"></div>}
                     {allowDetails && (
                         <button
                             className="absolute top-0 right-0 bg-transparent rounded-full p-[2px]"
@@ -217,6 +238,7 @@ export const SmallItemCard = ({
                             onItemSelected?.(item);
                         }
                     }}>
+                    {item.isBase && <div className="library-mark small"></div>}
                     {allowDetails && (
                         <button
                             className="bg-transparent absolute top-0 right-0 rounded-full p-[2px]"
@@ -294,7 +316,7 @@ export const MediumRecipeCard = ({
     allowDetails?: boolean;
     onSelectDetails?: boolean;
     itemRef?: React.Ref<HTMLDivElement>;
-    onEditItem?: (id:string, recipe: Recipe) => void;
+    onEditItem?: (id: string, recipe: Recipe) => void;
     onRemoveItem?: (recipe: Recipe) => void;
     onNewItem?: (recipe: Recipe) => void;
 }) => {
@@ -325,6 +347,7 @@ export const MediumRecipeCard = ({
                     }
                 }}
             >
+                {recipe.isBase && <div className="library-mark small rec"></div>}
                 {allowDetails && (
                     <button
                         className="absolute top-0 right-0 bg-transparent rounded-full p-[2px]"
@@ -499,11 +522,11 @@ export const DialInCard = ({ dialIn, recipe, grinder }: {
             <div className="flex justify-start gap-[2px] items-center">
                 <WeightIcon />
                 {dialIn.doseDelta === 0 ? (
-                    <span>{recipe.doseGrams}g</span>
+                    <span>{recipe.doseG}g</span>
                 ) : (
                     <>
-                        <span className="line-through">{(recipe.doseGrams).toFixed(1)}</span>
-                        <span>{(recipe.doseGrams + dialIn.doseDelta).toFixed(1)}g</span>
+                        <span className="line-through">{(recipe.doseG).toFixed(1)}</span>
+                        <span>{(recipe.doseG + dialIn.doseDelta).toFixed(1)}g</span>
                     </>
                 )}
             </div>
@@ -530,7 +553,7 @@ export const RecipeValuesCard = ({ recipe }: {
             </div>
             <div className="flex justify-start gap-[2px] items-center">
                 <WeightIcon />
-                <span>{(recipe.doseGrams).toFixed(1)}g</span>
+                <span>{(recipe.doseG).toFixed(1)}g</span>
             </div>
         </div >
     )
@@ -719,7 +742,7 @@ export const ItemDetailsDialog = ({
         onClose: () => void;
         onNewItem?: ((item: ItemType) => void) | undefined;
         onRemoveItem?: ((item: ItemType) => void) | undefined;
-        onEditItem?: ((id:string, item: ItemType) => void) | undefined;
+        onEditItem?: ((id: string, item: ItemType) => void) | undefined;
     }) => {
     const icon = getItemIcon(item, type);
     const { markBrewerCleaned, markGrinderCleaned, markBagOpened, markBagFinished, markBagRestocked } = useDialBean();
@@ -793,8 +816,9 @@ export const ItemDetailsDialog = ({
             )}
             <div className="backdrop" onClick={onClose}></div>
             <div className={"flex flex-col gap-2" + (type === "recipe" ? " recipe" : " item")}>
+                {isBase && <div className="library-mark"></div>}
                 <div className="absolute top-2 right-2 flex gap-2">
-                    {((onRemoveItem && !isBase) || onNewItem || (onEditItem && !isBase)) && 
+                    {((onRemoveItem && !isBase) || onNewItem || (onEditItem && !isBase)) &&
                         (
                             showOptionButtons ?
                                 (<div className="flex gap-2">
@@ -855,15 +879,20 @@ export const ItemDetailsDialog = ({
                             <div className="notes text-sm">{item.notes}</div>
                         </div>}
                         {!isBase && <button onClick={() => markBrewerCleaned(item.id)}>Mark Cleaned</button>}
+                        <button onClick={onClose}>Close</button>
                     </>
                 }
                 {type === "grinder" &&
                     <>
-                        <h2 className="">{item.name}</h2>
-                        {(item as Grinder).cleanedDate && <div className="timestamp">
-                            <div>{formatLastCleaned((item as Grinder).cleanedDate ?? "")}</div>
+                        <div>
+
+                            <h2 className="">{item.name}</h2>
+                            {isBase && <div className="label">System Grinder - copy to edit</div>}
+                            {(item as Grinder).cleanedDate && <div className="timestamp">
+                                <div>{formatLastCleaned((item as Grinder).cleanedDate ?? "")}</div>
+                            </div>
+                            }
                         </div>
-                        }
                         <div>
                             <div className="flex flex-col items-center justify-center">
                                 {icon && createElement(icon, { style: { width: "48px", height: "48px", minWidth: "48px", minHeight: "48px" } })}
@@ -882,15 +911,19 @@ export const ItemDetailsDialog = ({
                             <div className="notes text-sm">{item.notes}</div>
                         </div>}
                         {!isBase && <button onClick={() => markGrinderCleaned(item.id)}>Mark Cleaned</button>}
+                        <button onClick={onClose}>Close</button>
                     </>
                 }
                 {type === "bag" &&
                     <>
-                        <h2 className="">{item.name}</h2>
-                        {dateOpened && <div className="timestamp">
-                            <div>{formatDateOpened(dateOpened)}</div>
+                        <div>
+                            <h2 className="">{item.name}</h2>
+                            {isBase && <div className="label">System Bag - copy to edit</div>}
+                            {dateOpened && <div className="timestamp">
+                                <div>{formatDateOpened(dateOpened)}</div>
+                            </div>
+                            }
                         </div>
-                        }
                         <div>
                             <div className="flex flex-col items-center justify-center">
                                 {icon && createElement(icon, { style: { width: "48px", height: "48px", minWidth: "48px", minHeight: "48px" } })}
@@ -913,11 +946,15 @@ export const ItemDetailsDialog = ({
                         {!dateOpened && <button onClick={() => markBagOpened(item.id)}>Opened</button>}
                         {dateOpened && !isFinished && <button onClick={() => markBagFinished(item.id)}>Finished</button>}
                         {dateOpened && isFinished && <button onClick={() => markBagRestocked(item.id)}>Restocked</button>}
+                        <button onClick={onClose}>Close</button>
                     </>
                 }
                 {type === "recipe" &&
                     <>
-                        <h2 className="font-hand font-bold">{item.name}</h2>
+                        <div>
+                            <h2 className="font-hand font-bold">{item.name}</h2>
+                            {isBase && <div className="label">System Recipe - copy to edit</div>}
+                        </div>
                         <div>
 
                             <div className="label font-hand">Parameters:</div>
@@ -942,6 +979,7 @@ export const ItemDetailsDialog = ({
                             <div className="label font-hand">Notes:</div>
                             <div className="notes text-sm font-hand">{item.notes}</div>
                         </div>}
+                        <button onClick={onClose}>Close</button>
                     </>
                 }
             </div>
@@ -963,27 +1001,51 @@ export const NewItemDialog = ({
         onClose: () => void;
         onSave: (item: ItemType) => void;
     }) => {
-    const [iconId, setIconId] = useState<string>((type === "recipe" ? (item as Recipe)?.type : ((item as Bag | Brewer | Grinder)?.iconId ?? "1")) ?? "1");
+    const [iconId, setIconId] = useState<string>((type === "recipe" ? (getNameIcon((item as Recipe)?.type ?? "1", "recipe")?.id) : ((item as Bag | Brewer | Grinder)?.iconId ?? "1")) ?? "1");
     const [iconDialogActive, setIconDialogActive] = useState<boolean>(false);
     const [name, setName] = useState<string>(item?.name ?? (type === "brewer" ? "Brewer" : type === "grinder" ? "Grinder" : type === "recipe" ? "Recipe" : "Bag"));
     const [notes, setNotes] = useState<string>(item?.notes ?? "");
-    const [brewerType, setBrewerType] = useState<BrewerType>((item as Brewer)?.type ?? "Pour-Over");
-    const [scaleMin, setScaleMin] = useState<number>((item as Grinder)?.scaleMin ?? 0);
-    const [scaleMax, setScaleMax] = useState<number>((item as Grinder)?.scaleMax ?? 10);
-    const [stepSize, setStepSize] = useState<number>((item as Grinder)?.stepSize ?? 1);
+    const [brewerType, setBrewerType] = useState<BrewerType>((item as Brewer)?.type ?? (getNameIcon(iconId, "brewer")?.name ?? "Unknown"));
+    const [recipeBrewerType, setRecipeBrewerType] = useState<BrewerType>((item as Recipe)?.type ?? (getNameIcon(iconId, "recipe")?.name ?? "Unknown"));
+    const [grinderType, setGrinderType] = useState<string>((getNameIcon(iconId, "grinder")?.name ?? "Unknown"));
+    const [scaleMin, setScaleMin] = useState<number | null>((item as Grinder)?.scaleMin ?? 0);
+    const [scaleMax, setScaleMax] = useState<number | null>((item as Grinder)?.scaleMax ?? 10);
+    const [stepSize, setStepSize] = useState<number | null>((item as Grinder)?.stepSize ?? 1);
     const [roaster, setRoaster] = useState<string>((item as Bag)?.roaster ?? "Roaster");
     const [roastLevel, setRoastLevel] = useState<RoastLevel>((item as Bag)?.roastLevel ?? "Medium");
-    const [roastDate, setRoastDate] = useState<Date>(new Date((item as Bag)?.roastDate ?? new Date()));
-    const [waterMl, setWaterMl] = useState<number>((item as Recipe)?.waterMl ?? 200);
-    const [grindPct, setGrindPct] = useState<number>((item as Recipe)?.grindPct ?? 20);
-    const [tempC, setTempC] = useState<number>((item as Recipe)?.tempC ?? 90);
-    const [doseGrams, setDoseGrams] = useState<number>((item as Recipe)?.doseGrams ?? 18);
+    const [roastDate, setRoastDate] = useState<string | undefined>((item as Bag)?.roastDate ?? undefined); //ISO string
+    const [dateOpened, setDateOpened] = useState<string | undefined>((item as Bag)?.dateOpened ?? undefined); //ISO string
+    const [waterMl, setWaterMl] = useState<number | null>((item as Recipe)?.waterMl ?? 200);
+    const [grindPct, setGrindPct] = useState<number | null>((item as Recipe)?.grindPct ?? 20);
+    const [tempC, setTempC] = useState<number | null>((item as Recipe)?.tempC ?? 90);
+    const [doseG, setdoseG] = useState<number | null>((item as Recipe)?.doseG ?? 18);
     const [instructions, setInstructions] = useState<string>((item as Recipe)?.instructions ?? "Instructions");
     const icon = getTypeIcon(iconId, type);
+
+
+    const [showErrors, setShowErrors] = useState(false);
+    const [showConfirmClose, setShowConfirmClose] = useState(false);
+
     const handleSave = () => {
         if (type === "bag") {
-            onSave({ ...(item as Bag), name, iconId } as Bag);
+            if (roastLevel.trim() === "") {
+                setShowErrors(true);
+                return;
+            }
+            onSave({
+                name: name,
+                iconId: iconId,
+                roaster: roaster.trim() === "" ? undefined : roaster,
+                roastLevel: roastLevel,
+                roastDate: roastDate ?? undefined,
+                notes: notes.trim() === "" ? undefined : notes,
+                dateOpened: dateOpened ?? undefined
+            } as Bag);
         } else if (type === "brewer") {
+            if (brewerType.trim() === "") {
+                setShowErrors(true);
+                return;
+            }
             onSave({
                 name: name,
                 iconId: iconId,
@@ -991,12 +1053,48 @@ export const NewItemDialog = ({
                 notes: notes.trim() === "" ? undefined : notes,
             } as Brewer);
         } else if (type === "grinder") {
-            onSave({ ...(item as Grinder), name, iconId } as Grinder);
+            if (grinderType.trim() === "" || scaleMin === null || scaleMax === null || stepSize === null) {
+                setShowErrors(true);
+                return;
+            }
+            onSave({
+                name: name,
+                iconId: iconId,
+                scaleMin: scaleMin,
+                scaleMax: scaleMax,
+                stepSize: stepSize,
+                notes: notes.trim() === "" ? undefined : notes,
+            } as Grinder);
+        }
+        else if (type === "recipe") {
+            if (recipeBrewerType.trim() === "" || waterMl === null || grindPct === null || tempC === null || doseG === null) {
+                setShowErrors(true);
+                return;
+            }
+            onSave({
+                name: name,
+                notes: notes.trim() === "" ? undefined : notes,
+                type: recipeBrewerType,
+                waterMl: waterMl,
+                doseG: doseG,
+                tempC: tempC,
+                grindPct: grindPct,
+                instructions: instructions.trim() === "" ? undefined : instructions,
+            } as Recipe);
         }
     }
+
     return (
         <div className="dialog">
-            <div className="backdrop"></div>
+            {showConfirmClose && (
+                <ConfirmModal
+                    title="Are you sure you want to close the new brew dialog?"
+                    okButton="Yes Close"
+                    onConfirm={onClose}
+                    onCancel={() => setShowConfirmClose(false)}
+                />
+            )}
+            <div className="backdrop" onClick={() => setShowConfirmClose(true)}></div>
             <div className={"flex flex-col gap-2" + (type === "recipe" ? " recipe" : " item")}>
                 {iconDialogActive && (
                     <PickTypeDialog
@@ -1006,6 +1104,15 @@ export const NewItemDialog = ({
                             if (type === "brewer") {
                                 setBrewerType(selectedType as BrewerType);
                             }
+                            if (type === "grinder") {
+                                setGrinderType(selectedType);
+                            }
+                            if (type === "bag") {
+                                setRoastLevel(selectedType as RoastLevel);
+                            }
+                            if (type === "recipe") {
+                                setRecipeBrewerType(selectedType as BrewerType);
+                            }
                             setIconDialogActive(false);
                         }}
                         onClose={() => setIconDialogActive(false)}
@@ -1013,47 +1120,384 @@ export const NewItemDialog = ({
                 )}
                 <button
                     className="absolute top-2 right-2 bg-transparent rounded-full p-1"
-                    onClick={onClose}><XActionIcon strokeColor="var(--color-fg1)" /></button>
+                    onClick={() => setShowConfirmClose(true)}><XActionIcon strokeColor="var(--color-fg1)" /></button>
                 {type === "brewer" &&
                     <>
                         <h2>{edit ? "Edit" : "New"} {type.charAt(0).toUpperCase() + type.slice(1)}</h2>
                         <div>
                             <div className="label">Name:</div>
-                            <input type="text" value={name} className="name" onChange={(e) => setName(e.target.value)} placeholder="Item Name" />
+                            <input type="text" value={name} className="name" onChange={(e) => setName(e.target.value)} placeholder="e.g. Chemex" />
                         </div>
-                        <div className="label">Brewer Type:</div>
-                        <div className="flex justify-center">
-                            <div
-                                className={"bg-bg3 w-18 min-w-18 h-24 min-h-24 rounded-lg flex flex-col items-center justify-stretch text-center p-1 gap-1 overflow-hidden cursor-pointer inset-ring-1 inset-ring-fg3"}
-                                onClick={() => {
-                                    setIconDialogActive(true);
-                                }}>
-                                {icon && createElement(icon, { style: { width: "48px", height: "48px", minWidth: "48px", minHeight: "48px" } })}
-                                <div className="flex-1 max-w-full inline-flex items-center justify-center flex-col text-xs">
-                                    <div className="text-center line-clamp-2 text-ellipsis overflow-hidden max-w-full">
-                                        {brewerType}
+                        <div>
+                            {showErrors && brewerType.trim() === "" && <div className="error">Brewer type is required</div>}
+                            <div className="label">Brewer Type:</div>
+                            <div className="flex justify-center">
+                                <div
+                                    className={"bg-bg3 w-18 min-w-18 h-24 min-h-24 rounded-lg flex flex-col items-center justify-stretch text-center p-1 gap-1 overflow-hidden cursor-pointer inset-ring-1 inset-ring-fg3"}
+                                    onClick={() => {
+                                        setIconDialogActive(true);
+                                    }}>
+                                    {icon && createElement(icon, { style: { width: "48px", height: "48px", minWidth: "48px", minHeight: "48px" } })}
+                                    <div className="flex-1 max-w-full inline-flex items-center justify-center flex-col text-xs">
+                                        <div className="text-center line-clamp-2 text-ellipsis overflow-hidden max-w-full">
+                                            {brewerType}
+                                        </div>
                                     </div>
                                 </div>
-                            </div >
+                            </div>
                         </div>
                         <div>
-                            <div className="label">Scale Min:</div>
-                            <input type="number" className="value" value={scaleMin} onChange={(e) => setScaleMin(Number(e.target.value))} placeholder="Scale Min" />
+                            <div className="label">Notes:</div>
+                            <textarea className="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes" />
                         </div>
-                        <div>
-                            <div className="label">Scale Max:</div>
-                            <input type="number" className="value" value={scaleMax} onChange={(e) => setScaleMax(Number(e.target.value))} placeholder="Scale Max" />
-                        </div>
-                        <div>
-                            <div className="label text-nowrap">Scale Step Size:</div>
-                            <input type="number" className="value" value={stepSize} onChange={(e) => setStepSize(Number(e.target.value))} placeholder="Scale Step" />
-                        </div>
-                        <textarea className="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes" />
                         <button onClick={handleSave}>Save</button>
-
                     </>
                 }
+                {type === "grinder" &&
+                    <>
+                        <h2>{edit ? "Edit" : "New"} {type.charAt(0).toUpperCase() + type.slice(1)}</h2>
+                        <div>
+                            <div className="label">Name:</div>
+                            <input type="text" value={name} className="name" onChange={(e) => setName(e.target.value)} placeholder="e.g. Caffia Barista" />
+                        </div>
+                        <div>
+                            {showErrors && grinderType.trim() === "" && <div className="error">Grinder type is required</div>}
+                            <div className="label">Grinder Type:</div>
+                            <div className="flex justify-center">
+                                <div
+                                    className={"bg-bg3 w-18 min-w-18 h-24 min-h-24 rounded-lg flex flex-col items-center justify-stretch text-center p-1 gap-1 overflow-hidden cursor-pointer inset-ring-1 inset-ring-fg3"}
+                                    onClick={() => {
+                                        setIconDialogActive(true);
+                                    }}>
+                                    {icon && createElement(icon, { style: { width: "48px", height: "48px", minWidth: "48px", minHeight: "48px" } })}
+                                    <div className="flex-1 max-w-full inline-flex items-center justify-center flex-col text-xs">
+                                        <div className="text-center line-clamp-2 text-ellipsis overflow-hidden max-w-full">
+                                            {grinderType}
+                                        </div>
+                                    </div>
+                                </div >
+                            </div>
+                        </div>
+                        <div>
+                            {showErrors && scaleMin === null && <div className="error">Scale Min is required</div>}
+                            <div className="label">Scale Min:</div>
+                            <input
+                                type="number"
+                                step="any"
+                                className="value"
+                                value={scaleMin ?? ''}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === '') {
+                                        setScaleMin(null); // Allows clearing the field cleanly
+                                        return;
+                                    }
+                                    const parsed = parseFloat(val);
+                                    if (!isNaN(parsed)) {
+                                        setScaleMin(parsed);
+                                    }
+                                }}
+                                placeholder="Scale Min"
+                            />
+                        </div>
+                        <div>
+                            {showErrors && scaleMax === null && <div className="error">Scale Max is required</div>}
+                            <div className="label">Scale Max:</div>
+                            <input
+                                type="number"
+                                step="any"
+                                className="value"
+                                value={scaleMax ?? ''}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === '') {
+                                        setScaleMax(null);
+                                        return;
+                                    }
+                                    const parsed = parseFloat(val);
+                                    if (!isNaN(parsed)) {
+                                        setScaleMax(parsed);
+                                    }
+                                }}
+                                placeholder="Scale Max"
+                            />
+                        </div>
+                        <div>
+                            {showErrors && stepSize === null && <div className="error">Scale Step Size is required</div>}
+                            <div className="label text-nowrap">Scale Step Size:</div>
+                            <input
+                                type="number"
+                                step="any"
+                                min="0"
+                                className="value"
+                                value={stepSize ?? ''}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === '') {
+                                        setStepSize(null);
+                                        return;
+                                    }
+                                    const parsed = parseFloat(val);
+                                    if (!isNaN(parsed)) {
+                                        setStepSize(parsed);
+                                    }
+                                }}
+                                placeholder="Scale Step"
+                            />
+                        </div>
+                        <div>
+                            <div className="label">Notes:</div>
+                            <textarea className="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes" />
+                        </div>
+                        <button onClick={handleSave}>Save</button>
+                    </>
+                }
+                {type === "bag" &&
+                    <>
+                        <h2>{edit ? "Edit" : "New"} {type.charAt(0).toUpperCase() + type.slice(1)}</h2>
+                        <div>
+                            <div className="label">Name:</div>
+                            <input type="text" value={name} className="name" onChange={(e) => setName(e.target.value)} placeholder="e.g. Brasil Semante" />
+                        </div>
+                        <div>
+                            {showErrors && roastLevel.trim() === "" && <div className="error">Roast Level is required</div>}
+                            <div className="label">Roast Level:</div>
+                            <div className="flex justify-center">
+                                <div
+                                    className={"bg-bg3 w-18 min-w-18 h-24 min-h-24 rounded-lg flex flex-col items-center justify-stretch text-center p-1 gap-1 overflow-hidden cursor-pointer inset-ring-1 inset-ring-fg3"}
+                                    onClick={() => {
+                                        setIconDialogActive(true);
+                                    }}>
+                                    {icon && createElement(icon, { style: { width: "48px", height: "48px", minWidth: "48px", minHeight: "48px" } })}
+                                    <div className="flex-1 max-w-full inline-flex items-center justify-center flex-col text-xs">
+                                        <div className="text-center line-clamp-2 text-ellipsis overflow-hidden max-w-full">
+                                            {roastLevel}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div className="label">Roaster:</div>
+                            <input type="text" value={roaster} className="name" onChange={(e) => setRoaster(e.target.value)} placeholder="e.g. Local Roaster" />
+                        </div>
+                        <div>
+                            <div className="label">Roast date:</div>
+                            <input type="date" value={roastDate ? new Date(roastDate).toISOString().split('T')[0] : ''}
+                                className="date"
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    // Set ISO string if valid date selected, otherwise empty string
+                                    setRoastDate(val ? new Date(val).toISOString() : '');
+                                }}
+                                placeholder="" />
+                        </div>
+                        <div>
+                            <div className="label">Date opened:</div>
+                            <input type="date" value={dateOpened ? new Date(dateOpened).toISOString().split('T')[0] : ''}
+                                className="date"
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    // Set ISO string if valid date selected, otherwise empty string
+                                    setDateOpened(val ? new Date(val).toISOString() : '');
+                                }}
+                                placeholder="" />
+                        </div>
+                        <div>
+                            <div className="label">Notes:</div>
+                            <textarea className="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes" />
+                        </div>
+                        <button onClick={handleSave}>Save</button>
+                    </>
+                }
+                {type === "recipe" &&
+                    <>
+                        <h2>{edit ? "Edit" : "New"} {type.charAt(0).toUpperCase() + type.slice(1)}</h2>
+                        <div>
+                            <div className="label">Name:</div>
+                            <input type="text" value={name} className="name" onChange={(e) => setName(e.target.value)} placeholder="e.g. Strong V60" />
+                        </div>
+                        <div>
+                            {showErrors && recipeBrewerType.trim() === "" && <div className="error">Brewer type is required</div>}
+                            <div className="label">Intended Brewer Type:</div>
+                            <div className="flex justify-center">
+                                <div
+                                    className={"w-18 min-w-18 h-24 min-h-24 rounded-lg flex flex-col items-center justify-stretch text-center p-1 gap-1 overflow-hidden cursor-pointer inset-ring-1 inset-ring-fg3"}
+                                    onClick={() => {
+                                        setIconDialogActive(true);
+                                    }}>
+                                    {icon && createElement(icon, { style: { width: "48px", height: "48px", minWidth: "48px", minHeight: "48px" } })}
+                                    <div className="flex-1 max-w-full inline-flex items-center justify-center flex-col text-xs">
+                                        <div className="text-center line-clamp-2 text-ellipsis overflow-hidden max-w-full">
+                                            {recipeBrewerType}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex gap-2">
+                            <div>
+                                {showErrors && waterMl === null && <div className="error">Water (ml) is required</div>}
+                                <div className="label">Water (ml):</div>
+                                <input type="number"
+                                    value={waterMl !== null ? waterMl : ''}
+                                    step="1"
+                                    min="0"
+                                    className="value"
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        // Allow clearing the field without forcing a 0 or NaN
+                                        if (val === '') {
+                                            setWaterMl(null); // or null / undefined depending on your state type
+                                            return;
+                                        }
+                                        // Parse directly as integer (discarding decimals)
+                                        const parsed = parseInt(val, 10);
+                                        if (!isNaN(parsed)) {
+                                            setWaterMl(parsed);
+                                        }
+                                    }}
+                                    onKeyDown={(e) => {
+                                        // Prevent typing decimal points '.', ',', or exponent 'e'/'E'
+                                        if (['.', ',', 'e', 'E', '-'].includes(e.key)) {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                    placeholder="e.g. 300" />
+                            </div>
+                            <div>
+                                {showErrors && grindPct === null && <div className="error">Grind (%) is required</div>}
+                                <div className="label">Grind (%):</div>
+                                <input
+                                    type="number"
+                                    value={grindPct !== null ? grindPct : ''}
+                                    step="1"
+                                    min="0"
+                                    max="100"
+                                    className="value"
+                                    onChange={(e) => {
+                                        const val = e.target.value;
 
+                                        if (val === '') {
+                                            setGrindPct(null);
+                                            return;
+                                        }
+
+                                        const parsed = parseInt(val, 10);
+                                        if (!isNaN(parsed)) {
+                                            // Clamp percentage between 0% and 100%
+                                            const clamped = Math.min(100, Math.max(0, parsed));
+                                            setGrindPct(clamped);
+                                        }
+                                    }}
+                                    onKeyDown={(e) => {
+                                        // Prevent typing decimals, exponents, or negative signs
+                                        if (['.', ',', 'e', 'E', '-'].includes(e.key)) {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                    placeholder="e.g. 45"
+                                />
+                            </div>
+                        </div>
+                        <div className="flex gap-2">
+                            <div>
+                                {showErrors && doseG === null && <div className="error">Dose (g) is required</div>}
+                                <div className="label">Dose (g):</div>
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    min="0"
+                                    className="value"
+                                    value={doseG !== null ? doseG : ''}
+                                    placeholder="e.g. 18.5"
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+
+                                        if (val === '') {
+                                            setdoseG(null);
+                                            return;
+                                        }
+
+                                        // If user is actively typing a trailing decimal point (e.g. "18."),
+                                        // keep state unchanged or don't block typing
+                                        if (val.endsWith('.') || val.endsWith(',')) {
+                                            return;
+                                        }
+
+                                        // Limit input to max 1 decimal place string-wise
+                                        const parts = val.split(/[.,]/);
+                                        if (parts[1] && parts[1].length > 1) {
+                                            return; // Ignores typing a 2nd decimal place
+                                        }
+
+                                        const parsed = parseFloat(val);
+                                        if (!isNaN(parsed)) {
+                                            // Clean JS floating point noise to 1 decimal
+                                            setdoseG(Math.round(parsed * 10) / 10);
+                                        }
+                                    }}
+                                    onKeyDown={(e) => {
+                                        // Block e/E/minus, but allow decimal separator
+                                        if (['e', 'E', '-'].includes(e.key)) {
+                                            e.preventDefault();
+                                        }
+                                        // Prevent typing a second decimal point if one already exists
+                                        if (
+                                            (e.key === '.' || e.key === ',') &&
+                                            e.currentTarget.value.includes('.')
+                                        ) {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                />
+                            </div>
+                            <div>
+                                {showErrors && tempC === null && <div className="error">Temperature (°C) is required</div>}
+                                <div className="label">Temperature (°C):</div>
+                                <input
+                                    type="number"
+                                    value={tempC !== null ? tempC : ''}
+                                    step="1"
+                                    min="0"
+                                    max="100"
+                                    className="value"
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+
+                                        if (val === '') {
+                                            setTempC(null);
+                                            return;
+                                        }
+
+                                        const parsed = parseInt(val, 10);
+                                        if (!isNaN(parsed)) {
+                                            // Clamp value between min (0) and max (100)
+                                            const clamped = Math.min(100, Math.max(0, parsed));
+                                            setTempC(clamped);
+                                        }
+                                    }}
+                                    onKeyDown={(e) => {
+                                        // Prevent typing decimals, exponents, or negative signs
+                                        if (['.', ',', 'e', 'E', '-'].includes(e.key)) {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                    placeholder="e.g. 93"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <div className="label">Instructions:</div>
+                            <textarea className="notes h-40" value={instructions} onChange={(e) => setInstructions(e.target.value)} placeholder="e.g. Pour in three phases." />
+                        </div>
+                        <div>
+                            <div className="label">Notes:</div>
+                            <textarea className="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes" />
+                        </div>
+                        <button onClick={handleSave}>Save</button>
+                    </>
+                }
             </div>
         </div>
     );
@@ -1075,7 +1519,7 @@ export const ItemLibraryDialog = ({
         onClose: () => void;
         onNewItem?: ((item: ItemType) => void);
         onRemoveItem?: ((item: ItemType) => void);
-        onEditItem?: ((id:string, item: ItemType) => void);
+        onEditItem?: ((id: string, item: ItemType) => void);
         onSelectDetails?: boolean;
         type: ItemTypeName;
         brewerType?: BrewerType | null;
@@ -1179,7 +1623,7 @@ export const PickItemCarousel = (
         onSelectDetails?: boolean;
         onNewItem?: ((item: ItemType) => void) | null;
         onRemoveItem?: ((item: ItemType) => void) | null;
-        onEditItem?: ((id:string, item: ItemType) => void) | null;
+        onEditItem?: ((id: string, item: ItemType) => void) | null;
     }) => {
     const matchingItems = type === "recipe" && brewerType ? items.filter((item) => (item as Recipe).type === brewerType) : items;
     const activeUsedItems = matchingItems.filter((item) => item.usedInBrew && !item.isBase);
@@ -1329,9 +1773,6 @@ export const NewBrewDialog = ({
     brews,
     onSaveBrew,
     onCancel,
-    onDeleteBrew,
-    onCopyBrew,
-    onEditBrew,
     onAddBag,
     onRemoveBag,
     onEditBag,
@@ -1348,7 +1789,7 @@ export const NewBrewDialog = ({
     {
         brew?: Brew;
         edit?: boolean;
-        onSaveBrew: (brew: Omit<Brew, 'id' | 'dialIns'>) => void;
+        onSaveBrew: (brew: Brew) => void;
         onCancel: () => void;
 
         bags: Bag[];
@@ -1360,12 +1801,9 @@ export const NewBrewDialog = ({
         onAddBag: (bag: Bag) => void;
         onRemoveBag: (bag: Bag) => void;
         onEditBag: (id: string, bag: Bag) => void;
-        onCopyBag: (bag: Bag) => void;
         onAddBrewer: (brewer: Brewer) => void;
-        onCopyBrewer: (brewer: Brewer) => void;
         onRemoveBrewer: (brewer: Brewer) => void;
         onEditBrewer: (id: string, brewer: Brewer) => void;
-        onCopyGrinder: (grinder: Grinder) => void;
         onRemoveGrinder: (grinder: Grinder) => void;
         onEditGrinder: (id: string, grinder: Grinder) => void;
         onAddGrinder: (grinder: Grinder) => void;
@@ -1433,6 +1871,7 @@ export const NewBrewDialog = ({
                     )}
                     <div>
                         {!bag && showErrors && <div className="error">No bag selected</div>}
+                        <div className="label">Bag:</div>
                         <PickItemCarousel
                             selectedItem={bag}
                             onItemSelected={(item) => {
@@ -1447,6 +1886,7 @@ export const NewBrewDialog = ({
                     </div>
                     <div>
                         {!grinder && showErrors && <div className="error">No grinder selected</div>}
+                        <div className="label">Grinder:</div>
                         <PickItemCarousel
                             selectedItem={grinder}
                             onItemSelected={(item) => {
@@ -1461,6 +1901,7 @@ export const NewBrewDialog = ({
                     </div>
                     <div>
                         {!brewer && showErrors && <div className="error">No brewer selected</div>}
+                        <div className="label">Brewer:</div>
                         <PickItemCarousel
                             selectedItem={brewer}
                             onItemSelected={(item) => {
@@ -1474,7 +1915,8 @@ export const NewBrewDialog = ({
                         />
                     </div>
                     <div>
-                        {!recipe && showErrors && <div className="text-sm text-red-500">No recipe selected</div>}
+                        {!recipe && showErrors && <div className="error">No recipe selected</div>}
+                        <div className="label">Recipe:</div>
                         <PickItemCarousel
                             items={recipes}
                             selectedItem={recipe}
@@ -1485,6 +1927,7 @@ export const NewBrewDialog = ({
                             brewerType={brewer?.type}
                             onNewItem={onAddRecipe ? (item) => onAddRecipe(item as Recipe) : undefined}
                             onRemoveItem={onRemoveRecipe ? (item) => onRemoveRecipe(item as Recipe) : undefined}
+                            onEditItem={onEditRecipe ? (id, item) => onEditRecipe(id, item as Recipe) : undefined}
                         />
                     </div>
                     <textarea
@@ -1501,7 +1944,6 @@ export const NewBrewDialog = ({
                         return;
                     }
                     onSaveBrew({
-                        ...brew || {},
                         name: (name.trim() === "") ? `Brew ${brews.length + 1}` : name,
                         brewerId: brewer.id,
                         grinderId: grinder.id,
@@ -1528,7 +1970,7 @@ export const BrewDetailsDialog = ({
     recipes,
     brews,
     onDeleteBrew,
-    onCopyBrew,
+    onNewBrew,
     onEditBrew,
 
     onAddBag,
@@ -1559,8 +2001,8 @@ export const BrewDetailsDialog = ({
         brews: Brew[];
 
         onDeleteBrew: (brew: Brew) => void;
-        onCopyBrew: (brew: Omit<Brew, 'id' | 'dialIns'>) => void;
-        onEditBrew: (brew: Omit<Brew, 'id' | 'dialIns'>) => void;
+        onNewBrew: (brew: Brew) => void;
+        onEditBrew: (id: string, brew: Brew) => void;
 
         onSaveEvaluation: (brew: Brew, evaluation: Omit<Evaluation, 'timestamp'>) => void;
         onSaveDialIn: (brew: Brew, dialIn: Omit<DialIn, 'id' | 'timestamp' | 'evaluations'>) => void;
@@ -1569,7 +2011,7 @@ export const BrewDetailsDialog = ({
 
         onAddBag: (bag: Bag) => void;
         onRemoveBag: (bag: Bag) => void;
-        onEditBag: (id:string, bag: Bag) => void;
+        onEditBag: (id: string, bag: Bag) => void;
         onAddBrewer: (brewer: Brewer) => void;
         onRemoveBrewer: (brewer: Brewer) => void;
         onEditBrewer: (id: string, brewer: Brewer) => void;
@@ -1593,9 +2035,7 @@ export const BrewDetailsDialog = ({
     const [showBagOpenedModal, setShowBagOpenedModal] = useState<boolean>(false);
     const [showNewEvaluationDialog, setShowNewEvaluationDialog] = useState<boolean>(false);
     const [showNewDialInDialog, setShowNewDialInDialog] = useState<boolean>(false);
-    const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState<boolean>(false);
-    const [showConfirmCopyModal, setShowConfirmCopyModal] = useState<boolean>(false);
-    const [showConfirmEditModal, setShowConfirmEditModal] = useState<boolean>(false);
+
 
     const [newBrewDialog, setNewBrewDialog] = useState<boolean>(false);
     const [editBrew, setEditBrew] = useState<boolean>(false);
@@ -1618,6 +2058,7 @@ export const BrewDetailsDialog = ({
                     okButton="Yes Edit"
                     onCancel={() => setShowConfirmEditBrewModal(false)}
                     onConfirm={() => {
+                        setNewBrewDialog(true);
                         setEditBrew(true);
                         setShowConfirmEditBrewModal(false);
                     }}
@@ -1640,6 +2081,7 @@ export const BrewDetailsDialog = ({
                     okButton="Yes Copy"
                     onCancel={() => setShowConfirmCopyBrewModal(false)}
                     onConfirm={() => {
+                        setNewBrewDialog(true);
                         setEditBrew(false);
                         setShowConfirmCopyBrewModal(false);
                     }}
@@ -1647,11 +2089,11 @@ export const BrewDetailsDialog = ({
             )}
             {newBrewDialog && (
                 <NewBrewDialog
-                    onSaveBrew={(brew) => {
+                    onSaveBrew={(brewIn) => {
                         if (editBrew) {
-                            onEditBrew(brew);
+                            onEditBrew(brew.id, brewIn);
                         } else {
-                            onCopyBrew(brew);
+                            onNewBrew(brewIn);
                         }
                         setEditBrew(false);
                         setNewBrewDialog(false);
@@ -1737,39 +2179,6 @@ export const BrewDetailsDialog = ({
                     }}
                 />
             )}
-            {showConfirmDeleteModal && (
-                <ConfirmModal
-                    title={`Are you sure you want to delete ${brew.name}?`}
-                    okButton="Delete"
-                    onCancel={() => setShowConfirmDeleteModal(false)}
-                    onConfirm={() => {
-                        onDeleteBrew(brew);
-                        setShowConfirmDeleteModal(false);
-                    }}
-                />
-            )}
-            {showConfirmEditModal && (
-                <ConfirmModal
-                    title={`Are you sure you want to edit ${brew.name}?`}
-                    okButton="Edit"
-                    onCancel={() => setShowConfirmEditModal(false)}
-                    onConfirm={() => {
-                        onEditBrew(brew);
-                        setShowConfirmEditModal(false);
-                    }}
-                />
-            )}
-            {showConfirmCopyModal && (
-                <ConfirmModal
-                    title={`Are you sure you want to copy ${brew.name}?`}
-                    okButton="Copy"
-                    onCancel={() => setShowConfirmCopyModal(false)}
-                    onConfirm={() => {
-                        onCopyBrew(brew);
-                        setShowConfirmCopyModal(false);
-                    }}
-                />
-            )}
 
             <div className="backdrop" onClick={onClose}></div>
             <div className="details flex flex-col gap-2">
@@ -1777,11 +2186,11 @@ export const BrewDetailsDialog = ({
                     <div className="absolute top-2 right-2 gap-2 flex items-start justify-end">
                         {showOptionButtons &&
                             <div className="flex gap-2">
-                                <button className="bg-transparent rounded-full p-1" onClick={() => setShowConfirmDeleteModal(true)}>
+                                <button className="bg-transparent rounded-full p-1" onClick={() => setShowConfirmDeleteBrewModal(true)}>
                                     <DeleteActionIcon strokeColor='var(--color-fg1)' fillColor="var(--color-bg1)" /></button>
-                                <button className="bg-transparent rounded-full p-1" onClick={() => setShowConfirmCopyModal(true)}>
+                                <button className="bg-transparent rounded-full p-1" onClick={() => setShowConfirmCopyBrewModal(true)}>
                                     <CopyActionIcon strokeColor='var(--color-fg1)' fillColor="var(--color-bg1)" /></button>
-                                <button className="bg-transparent rounded-full p-1" onClick={() => setShowConfirmEditModal(true)}>
+                                <button className="bg-transparent rounded-full p-1" onClick={() => setShowConfirmEditBrewModal(true)}>
                                     <EditActionIcon strokeColor='var(--color-fg1)' fillColor="var(--color-bg1)" /></button>
                             </div>
                         }
@@ -2247,20 +2656,20 @@ export const NewDialInDialog = ({ brew, recipe, grinder, bag, onSaveDialIn, onCl
                     <div className={"row-4 col-2" +
                         ((doseDelta !== 0) ? " line-through" : "")}
                     >
-                        {(recipe.doseGrams).toFixed(1)}g
+                        {(recipe.doseG).toFixed(1)}g
                     </div>
                     <div className={"row-4 col-3" +
                         (lastDialIn?.doseDelta !== 0 ? " line-through" : "")}
                     >
                         {
                             lastDialIn?.doseDelta !== 0 ?
-                                (recipe.doseGrams + (lastDialIn?.doseDelta ?? 0)).toFixed(1) + "g"
+                                (recipe.doseG + (lastDialIn?.doseDelta ?? 0)).toFixed(1) + "g"
                                 :
                                 "-"
                         }
                     </div>
                     <div className="row-4 col-4">
-                        {doseDelta !== 0 ? (recipe.doseGrams + doseDelta).toFixed(1) + "g" : "-"}
+                        {doseDelta !== 0 ? (recipe.doseG + doseDelta).toFixed(1) + "g" : "-"}
                     </div>
                     <div className="row-4 col-5">
                         <div className="flex ml-2 gap-2">

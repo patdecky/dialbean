@@ -91,11 +91,11 @@ export interface Brewer {
 export interface Recipe {
     id: string;
     name: string;
+    notes?: string;
     type: BrewerType;
     waterMl: number;
-    doseGrams: number;
+    doseG: number;
     tempC: number;
-    notes?: string;
     grindPct: number; // 0% to 100% relative scale
     instructions: string; // Free-text instructions or markdown
     isBase: boolean; // true for base recipes, false for user-defined recipes

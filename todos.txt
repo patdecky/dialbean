@@ -1,0 +1,21 @@
+// todos
+
+show a success message dialog, when action works correctly.
+
+when new item created in library, it is not selected in the carrousel
+
+When used bag is removed exception appears. Fix.
+
+Dial in - center the evaluations dialog.
+
+On dial in dialog move the use button right next to the suggestion text.
+
+Make dial in details dialog.
+
+New brew dialog - labels.
+
+On small item card - recipe - show brewer type. Make two lines and two lines.
+
+Style the library dialog
+
+when library item details are clicked, item is selected, no details clicked
