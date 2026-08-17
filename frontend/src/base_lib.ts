@@ -121,7 +121,7 @@ export const brewers: Brewer[] = [
         type: 'AeroPress',
         iconId: "1",
         isBase: true,
-        usedInBrew: false
+        usedInBrew: true
     },
     {
         id: '2',
@@ -129,7 +129,7 @@ export const brewers: Brewer[] = [
         type: 'V60',
         iconId: "2",
         isBase: true,
-        usedInBrew: false
+        usedInBrew: true
     },
     {
         id: '3',
@@ -137,7 +137,7 @@ export const brewers: Brewer[] = [
         type: 'Flat-Bottom',
         iconId: "3",
         isBase: true,
-        usedInBrew: false
+        usedInBrew: true
     },
     {
         id: '4',
@@ -145,14 +145,14 @@ export const brewers: Brewer[] = [
         type: 'Chemex',
         iconId: "4",
         isBase: true,
-        usedInBrew: false
+        usedInBrew: true
     }, {
         id: '5',
         name: 'French-Press',
         type: 'French-Press',
         iconId: "5",
         isBase: true,
-        usedInBrew: false
+        usedInBrew: true
     },
     {
         id: '6',
@@ -160,7 +160,7 @@ export const brewers: Brewer[] = [
         type: 'Moka Pot',
         iconId: "6",
         isBase: true,
-        usedInBrew: false
+        usedInBrew: true
     },
     {
         id: '7',
@@ -168,7 +168,7 @@ export const brewers: Brewer[] = [
         type: 'Lever Espresso',
         iconId: "7",
         isBase: true,
-        usedInBrew: false
+        usedInBrew: true
     },
     {
         id: '8',
@@ -176,14 +176,14 @@ export const brewers: Brewer[] = [
         type: 'Semi Auto Espresso',
         iconId: "8",
         isBase: true,
-        usedInBrew: false
+        usedInBrew: true
     }, {
         id: '9',
         name: 'Super Auto Espresso',
         type: 'Super Auto Espresso',
         iconId: "9",
         isBase: true,
-        usedInBrew: false
+        usedInBrew: true
     },
     {
         id: '10',

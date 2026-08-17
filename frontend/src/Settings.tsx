@@ -3,7 +3,7 @@ import { useDialBean } from './DialBeanContext';
 import { DialBeanLargeIcon } from './icons';
 import { LibraryCard } from './components';
 
-const Cookbook = () => {
+const Settings = () => {
     const { data, addRecipe, removeRecipe, editRecipe } = useDialBean();
 
     return (
@@ -11,7 +11,7 @@ const Cookbook = () => {
             <div className="w-full h-full p-4 flex flex-col gap-2">
                 <div className="w-full flex  items-center justify-start gap-1 mb-2 landscape:mb-1">
                     <DialBeanLargeIcon />
-                    <h1>Cookbook</h1>
+                    <h1>Settings</h1>
                 </div>
                 <div className="bg-bg2 px-2 flex-1 pt-4 pb-2 w-full h-full rounded-lg flex justify-stretch gap-4">
                     <LibraryCard
@@ -28,7 +28,7 @@ const Cookbook = () => {
     );
 };
 
-export default Cookbook;
+export default Settings;
 
 
 

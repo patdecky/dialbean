@@ -1,19 +1,22 @@
 import './App.css'
 import { Routes, Route, Outlet, NavLink, useLocation } from "react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { DialBeanProvider } from "./DialBeanContext";
 import { CounterIcon, CupboardIcon, CookbookIcon } from "./icons";
+import { MenuActionIcon } from "./action_icons";
 
 import Counter from './Counter'
 import Cupboard from './Cupboard'
 import Cookbook from './Cookbook'
+import Settings from './Settings'
+import { MessageBlock } from './modals';
 
 
 const Layout = () => {
     const location = useLocation();
     const baseClassName = "flex flex-col text-sm items-center px-2 py-1 rounded-md hover:ring hover:ring-bg2";
-    const activeClassName = baseClassName + " bg-bg1 usedInBrew";
+    const activeClassName = baseClassName + " bg-bg1 ";
     const inactiveClassName = baseClassName + " inactive";
     return (
         <main className="overflow-hidden h-dvh w-full bg-bg1 flex flex-col justify-stretch items-stretch landscape:flex-row">
@@ -42,6 +45,13 @@ const Layout = () => {
                         Cookbook
                     </span>
                 </NavLink>
+                <NavLink to="/settings" className={({ isActive }) =>
+                    (isActive ? activeClassName : inactiveClassName) + " landscape:order-first"}>
+                    <MenuActionIcon className="mt-1 main-menu-icon" />
+                    <span className="main-menu-text">
+                        Settings
+                    </span>
+                </NavLink>
             </nav>
         </main>
 
@@ -61,14 +71,18 @@ function App() {
             window.removeEventListener('keydown', handleKeyDown);
         };
     }, []);
+    const [message, setMessage] = useState<string>("");
+
     return (
         <>
-            <DialBeanProvider>
+            <MessageBlock message={message} onClear={() => setMessage("")} />
+            <DialBeanProvider setMessage={setMessage}>
                 <Routes>
                     <Route element={<Layout />} >
                         <Route path="/counter?" element={<Counter />} />
                         <Route path="/cupboard" element={<Cupboard />} />
                         <Route path="/cookbook" element={<Cookbook />} />
+                        <Route path="/settings" element={<Settings />} />
                     </Route>
                 </Routes>
             </DialBeanProvider>

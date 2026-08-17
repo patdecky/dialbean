@@ -48,7 +48,7 @@ const storageAdapter: StorageAdapter = new LocalStorageAdapter();
 
 const DialBeanContext = createContext<DialBeanContextType | null>(null);
 
-export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const DialBeanProvider: React.FC<{ setMessage: (message: string) => void; children: React.ReactNode }> = ({ setMessage, children }) => {
     const [data, setData] = useState<DialBeanSchema>(() => storageAdapter.loadData());
 
     // Auto-sync to LocalStorage whenever state updates
@@ -61,6 +61,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const addBag = (bagData: Omit<Bag, 'id' | 'isBase' | 'usedInBrew'>): Bag => {
         const newBag: Bag = { ...bagData, id: crypto.randomUUID(), isBase: false, usedInBrew: false };
         setData((prev) => ({ ...prev, bags: [...prev.bags, newBag] }));
+        setMessage(`Added new bag`);
         return newBag;
     };
 
@@ -81,6 +82,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             ...prev,
             bags: prev.bags.filter((bag) => bag.id !== bagId)
         }));
+        setMessage(`Removed bag`);
     };
 
     const editBag = (bagId: string, bagData: Omit<Bag, 'id' | 'isBase' | 'usedInBrew'>): Bag => {
@@ -96,6 +98,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 return newBag;
             })
         }));
+        setMessage(`Saved changes to bag`);
         return newBag;
     };
 
@@ -104,7 +107,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (!bag) {
             throw new Error(`Bag with ID ${bagId} not found`);
         }
-        const newBag: Bag = { ...bag, isFinished: true };        
+        const newBag: Bag = { ...bag, isFinished: true };
         setData((prev) => ({
             ...prev,
             bags: prev.bags.map((bag) => {
@@ -112,9 +115,10 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 return newBag;
             })
         }));
+        setMessage(`Marked bag as finished`);
         return newBag;
     };
-    
+
     const markBagRestocked = (bagId: string): Bag => {
         const bag = data.bags.find((b) => b.id === bagId);
         if (!bag) {
@@ -128,6 +132,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 return newBag;
             })
         }));
+        setMessage(`Restocked bag`);
         return newBag;
     };
 
@@ -144,12 +149,14 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 return newBag;
             })
         }));
+        setMessage(`Marked bag as opened`);
         return newBag;
     };
 
     const addGrinder = (grinderData: Omit<Grinder, 'id' | 'isBase' | 'usedInBrew'>): Grinder => {
         const newGrinder: Grinder = { ...grinderData, id: crypto.randomUUID(), isBase: false, usedInBrew: false };
         setData((prev) => ({ ...prev, grinders: [...prev.grinders, newGrinder] }));
+        setMessage(`Added new grinder`);
         return newGrinder;
     };
 
@@ -166,6 +173,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 return newGrinder;
             })
         }));
+        setMessage(`Saved changes to grinder`);
         return newGrinder;
     };
     const removeGrinder = (grinderId: string) => {
@@ -185,6 +193,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             ...prev,
             grinders: prev.grinders.filter((grinder) => grinder.id !== grinderId)
         }));
+        setMessage(`Removed grinder`);
     };
 
     const markGrinderCleaned = (grinderId: string): Grinder => {
@@ -200,12 +209,14 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 return newGrinder;
             })
         }));
+        setMessage(`Marked grinder as cleaned`);
         return newGrinder;
     };
 
     const addBrewer = (brewerData: Omit<Brewer, 'id' | 'isBase' | 'usedInBrew'>): Brewer => {
         const newBrewer: Brewer = { ...brewerData, id: crypto.randomUUID(), isBase: false, usedInBrew: false };
         setData((prev) => ({ ...prev, brewers: [...prev.brewers, newBrewer] }));
+        setMessage(`Added new brewer`);
         return newBrewer;
     };
 
@@ -222,6 +233,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 return newBrewer;
             })
         }));
+        setMessage(`Saved changes to brewer`);
         return newBrewer;
     };
 
@@ -242,6 +254,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             ...prev,
             brewers: prev.brewers.filter((brewer) => brewer.id !== brewerId)
         }));
+        setMessage(`Removed brewer`);
     };
 
     const markBrewerCleaned = (brewerId: string): Brewer => {
@@ -257,16 +270,18 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 return newBrewer;
             })
         }));
+        setMessage(`Marked brewer as cleaned`);
         return newBrewer;
     };
 
     const addRecipe = (recipeData: Omit<Recipe, 'id' | 'isBase' | 'usedInBrew'>): Recipe => {
         const newRecipe: Recipe = { ...recipeData, id: crypto.randomUUID(), isBase: false, usedInBrew: false };
         setData((prev) => ({ ...prev, recipes: [...prev.recipes, newRecipe] }));
+        setMessage(`Added new recipe`);
         return newRecipe;
     };
 
-    const editRecipe = (recipeId: string, recipeData: Omit<Recipe, 'id' | 'isBase' | 'usedInBrew'>):Recipe => {
+    const editRecipe = (recipeId: string, recipeData: Omit<Recipe, 'id' | 'isBase' | 'usedInBrew'>): Recipe => {
         const recipe = data.recipes.find((r) => r.id === recipeId);
         if (!recipe) {
             throw new Error(`Recipe with ID ${recipeId} not found`);
@@ -279,6 +294,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 return newRecipe;
             })
         }));
+        setMessage(`Saved changes to recipe`);
         return newRecipe;
     };
 
@@ -299,6 +315,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             ...prev,
             recipes: prev.recipes.filter((recipe) => recipe.id !== recipeId)
         }));
+        setMessage(`Removed recipe`);
     };
 
     const newBrew = (brewData: Omit<Brew, 'id' | 'dialIns'>): Brew => {
@@ -362,6 +379,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 return newBrewer;
             })
         }));
+        setMessage(`Added new brew`);
         return newBrew;
     };
 
@@ -384,6 +402,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 return newBrew;
             })
         }));
+        // no meessage here, silent for notification handling later
         return newBrew;
     };
 
@@ -411,6 +430,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 return newBrew;
             })
         }));
+        setMessage(`Marked Dial-in disgusting`);
         return newBrew;
     };
 
@@ -469,6 +489,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 return newBrewer ?? d;
             })
         }));
+        setMessage(`Removed brew`);
     }
 
     const editBrew = (brewId: string, brewData: Omit<Brew, 'id' | 'dialIns'>): Brew => {
@@ -555,6 +576,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 return newOldBrewer ?? d;
             })
         }));
+        setMessage(`Saved changes to brew`);
         return newBrew;
     }
 
@@ -577,6 +599,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 return newBrew;
             })
         }));
+        setMessage(`Removed Dial-in on a brew`);
         return newBrew;
     }
 
@@ -610,6 +633,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 return newBrew;
             })
         }));
+        setMessage(`Added new evaluation for brew`);
         return newBrew;
     };
 
@@ -639,6 +663,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 return newBrew;
             })
         }));
+        setMessage(`Removed evaluation on a brew`);
         return newBrew;
     };
 
@@ -666,6 +691,7 @@ export const DialBeanProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 return newBrew;
             })
         }));
+        setMessage(`Added new Dial-in`);
         return newBrew;
     };
 

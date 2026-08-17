@@ -1,21 +1,14 @@
 // todos
 
-show a success message dialog, when action works correctly.
 
-when new item created in library, it is not selected in the carrousel
 
+
+let copilot check the spelling of all strings.
+
+decide whether to remove all brews with item or to block removal of item if used.
+ - if second, fix the remove dialog checkbox.
 When used bag is removed exception appears. Fix.
 
-Dial in - center the evaluations dialog.
-
-On dial in dialog move the use button right next to the suggestion text.
-
-Make dial in details dialog.
-
-New brew dialog - labels.
-
-On small item card - recipe - show brewer type. Make two lines and two lines.
-
-Style the library dialog
-
-when library item details are clicked, item is selected, no details clicked
+finish cupboard
+finish recipe book
+    

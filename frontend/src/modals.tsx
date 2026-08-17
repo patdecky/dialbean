@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { XActionIcon } from "./action_icons";
 import { AcidityIcon, SweetIcon, BitterIcon, BodyIcon, StrengthIcon } from "./icons";
 import type { Brew, Bag, Evaluation, ItemTypeName, ItemType } from "./types";
@@ -61,7 +61,7 @@ export const ConfirmRemoveItemModal = ({ item, type, onConfirm, onCancel }:
                         className={item.usedInBrew && !understand ? "opacity-50 cursor-not-allowed" : ""}
                         onClick={onConfirm}
                         disabled={item.usedInBrew && !understand}
-                        >Yes Remove</button>
+                    >Yes Remove</button>
                     <button
                         className="inverse"
                         onClick={onCancel}>Cancel</button>
@@ -101,7 +101,6 @@ export const ConfirmDeleteBrewModal = ({ brew, onConfirm, onCancel }:
         </div>
     );
 }
-
 
 export const ConfirmEditBrewModal = ({ brew, onConfirm, onCancel }:
     {
@@ -195,7 +194,7 @@ export const ConfirmDeleteDialInModal = ({ onConfirm, onCancel }:
             <div className="backdrop" onClick={onCancel}></div>
             <div className="modal">
                 <div className="message">
-                    Are you sure you want to delete the last Dial-In?
+                    Are you sure you want to delete the last Dial-in?
                 </div>
                 <div className="options">
                     <button
@@ -285,7 +284,7 @@ export const ConfirmCloseDialInModal = ({ onConfirm, onCancel }:
             <div className="modal">
                 <div className="message">
                     <p>
-                        Are you sure you want to close the Dial-In dialog?
+                        Are you sure you want to close the Dial-in dialog?
                     </p>
                 </div>
                 <div className="options">
@@ -362,3 +361,57 @@ export const BrewRatingInfo = ({ onClose }:
         </div>
     );
 }
+
+
+export const MessageBlock = ({ message, onClear }: { message: string | null, onClear: () => void }) => {
+    const [showing, setShowing] = useState<boolean>(Boolean(message));
+    const [displayMessage, setDisplayMessage] = useState<string>("");
+
+    useEffect(() => {
+        if (!message) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setShowing(false);
+            return;
+        }
+
+        setShowing(true);
+        setDisplayMessage(message);
+
+        const timer = setTimeout(() => {
+            setShowing(false);
+            onClear();
+        }, 1500);
+
+        return () => clearTimeout(timer);
+    }, [message, onClear]);
+
+    return (
+        <div
+            className={`
+                fixed top-4 left-1/2 z-5000 max-w-md w-full px-4
+                transition-all duration-300 ease-out pointer-events-none
+                ${showing
+                    ? "translate-y-0 opacity-100 -translate-x-1/2"
+                    : "-translate-y-12 opacity-0 -translate-x-1/2"
+                }
+            `}
+        >
+            <div className="flex justify-center">
+                <div className="pointer-events-auto inline-flex items-center p-1 rounded-full bg-fg1 text-bg1 max-w-[95dvw] shadow-2xl/20 opacity-80 hover:opacity-100 transition-opacity">
+                    <span className="text-sm text-nowrap text-ellipsis overflow-hidden whitespace-nowrap pl-2">
+                        {displayMessage}
+                        </span>
+                    <button
+                        onClick={() => {
+                            setShowing(false);
+                            onClear();
+                        }}
+                        className="ml-3 p-1 rounded-full"
+                    >
+                        <XActionIcon strokeColor="var(--color-bg2)" />
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};

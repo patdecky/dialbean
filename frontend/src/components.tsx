@@ -190,7 +190,10 @@ export const SmallItemCard = ({
                 item={item}
                 type={type}
                 onClose={() => setShowDetails(false)}
-                onNewItem={onNewItem ? (item) => onNewItem(item) : undefined}
+                onNewItem={onNewItem ? (item) => {
+                    onNewItem(item);
+                    setShowDetails(false);
+                } : undefined}
                 onEditItem={onEditItem ? (id, item) => onEditItem(id, item) : undefined}
                 onRemoveItem={onRemoveItem ? (item) => { onRemoveItem(item) } : undefined}
             />}
@@ -212,15 +215,20 @@ export const SmallItemCard = ({
                     {allowDetails && (
                         <button
                             className="absolute top-0 right-0 bg-transparent rounded-full p-[2px]"
-                            onClick={() => {
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
                                 setShowDetails(true);
                             }} >
                             <InfoActionIcon size="12" strokeColor="var(--color-fg1)" />
                         </button>
                     )}
                     <div className="flex-1 max-w-full inline-flex items-center justify-center flex-col text-xs text-fg3">
-                        <div className="text-center line-clamp-4 text-ellipsis overflow-hidden max-w-full font-hand font-bold">
+                        <div className="text-center line-clamp-2 text-ellipsis overflow-hidden max-w-full font-hand font-bold">
                             {item.name}
+                        </div>
+                        <div className="text-center line-clamp-2 text-ellipsis overflow-hidden max-w-full font-hand font-bold">
+                            for {(item as Recipe).type}
                         </div>
                     </div>
                 </div >
@@ -242,7 +250,9 @@ export const SmallItemCard = ({
                     {allowDetails && (
                         <button
                             className="bg-transparent absolute top-0 right-0 rounded-full p-[2px]"
-                            onClick={() => {
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
                                 setShowDetails(true);
                             }}>
                             <InfoActionIcon size="12" strokeColor='var(--color-fg1)' />
@@ -263,7 +273,7 @@ export const SmallItemCard = ({
 
 export const TinyItemCard = ({ item, type, isSelected = false, onItemSelected = null, itemRef = null }: {
     item: ItemType;
-    type: 'brewer' | 'grinder' | 'bag' | 'recipe';
+    type: ItemTypeName;
     isSelected?: boolean;
     onItemSelected?: ((item: ItemType) => void) | null;
     itemRef?: React.Ref<HTMLDivElement> | null;
@@ -273,15 +283,16 @@ export const TinyItemCard = ({ item, type, isSelected = false, onItemSelected = 
 
     return (type === "recipe" ? (
         <div
-            className={"bg-yellow-200 border-2 w-11 min-w-11 h-11 min-h-11 flex flex-col items-center justify-stretch text-center px-[2px] py-2 gap-1 overflow-hidden relative" +
+            className={"bg-bgrec border-2 w-11 min-w-11 h-11 min-h-11 flex flex-col items-center justify-stretch text-center px-[2px] gap-1 overflow-hidden relative" +
                 (isSelected ? " inset-ring-2 inset-ring-yellow-500" : "") +
                 (onItemSelected !== null ? " cursor-pointer" : "")
             }
             ref={itemRef}
             onClick={() => onItemSelected?.(item)}>
             <div className="flex-1 max-w-full inline-flex items-center justify-center flex-col text-sm">
-                <div className="line-clamp-1 text-sm overflow-hidden max-w-full font-hand font-bold">
-                    {item.name.split(" ").map((word) => (word.slice(0, 1))).join("")}
+                <div className="line-clamp-2 text-xs overflow-hidden max-w-full font-hand font-bold">
+                    {/* {item.name.split(" ").map((word) => (word.slice(0, 1))).join("")} */}
+                    {item.name}
                 </div>
             </div>
         </div >
@@ -329,7 +340,10 @@ export const MediumRecipeCard = ({
                 onClose={() => {
                     setShowDetails(false)
                 }}
-                onNewItem={onNewItem ? (item) => onNewItem(item as Recipe) : undefined}
+                onNewItem={onNewItem ? (item) => {
+                    onNewItem(item as Recipe);
+                    setShowDetails(false);
+                } : undefined}
                 onEditItem={onEditItem ? (id, item) => onEditItem(id, item as Recipe) : undefined}
                 onRemoveItem={onRemoveItem ? (item) => { onRemoveItem(item as Recipe) } : undefined}
             />}
@@ -588,23 +602,25 @@ export const BrewCard = ({ brew, bag, brewer, grinder, recipe, onSelected = null
             <div className="flex justify-between items-start">
                 <div className="flex flex-col gap-1">
                     <div
-                        className="flex items-center justify-start">
-                        <TinyItemCard
-                            item={recipe}
-                            type="recipe"
-                        />
+                        className="flex items-center justify-start gap-[2px]">
                         <TinyItemCard
                             item={bag}
                             type="bag"
                         />
                         <TinyItemCard
-                            item={brewer}
-                            type="brewer"
-                        />
-                        <TinyItemCard
                             item={grinder}
                             type="grinder"
                         />
+                        <TinyItemCard
+                            item={brewer}
+                            type="brewer"
+                        />
+                        <div className="ml-1">
+                            <TinyItemCard
+                                item={recipe}
+                                type="recipe"
+                            />
+                        </div>
                     </div>
                     <div>
                         {brew.dialIns.length > 0 && brew.dialIns[brew.dialIns.length - 1].evaluations.length > 0 ? (
@@ -1012,14 +1028,14 @@ export const NewItemDialog = ({
     const [scaleMax, setScaleMax] = useState<number | null>((item as Grinder)?.scaleMax ?? 10);
     const [stepSize, setStepSize] = useState<number | null>((item as Grinder)?.stepSize ?? 1);
     const [roaster, setRoaster] = useState<string>((item as Bag)?.roaster ?? "Roaster");
-    const [roastLevel, setRoastLevel] = useState<RoastLevel>((item as Bag)?.roastLevel ?? "Medium");
+    const [roastLevel, setRoastLevel] = useState<RoastLevel>((item as Bag)?.roastLevel ?? (getNameIcon(iconId, "bag")?.name ?? "Medium"));
     const [roastDate, setRoastDate] = useState<string | undefined>((item as Bag)?.roastDate ?? undefined); //ISO string
     const [dateOpened, setDateOpened] = useState<string | undefined>((item as Bag)?.dateOpened ?? undefined); //ISO string
     const [waterMl, setWaterMl] = useState<number | null>((item as Recipe)?.waterMl ?? 200);
     const [grindPct, setGrindPct] = useState<number | null>((item as Recipe)?.grindPct ?? 20);
     const [tempC, setTempC] = useState<number | null>((item as Recipe)?.tempC ?? 90);
     const [doseG, setdoseG] = useState<number | null>((item as Recipe)?.doseG ?? 18);
-    const [instructions, setInstructions] = useState<string>((item as Recipe)?.instructions ?? "Instructions");
+    const [instructions, setInstructions] = useState<string>((item as Recipe)?.instructions ?? "");
     const icon = getTypeIcon(iconId, type);
 
 
@@ -1509,11 +1525,10 @@ export const NewItemDialog = ({
     );
 }
 
-export const ItemLibraryDialog = ({
+export const LibraryCard = ({
     onItemSelected,
     items,
     type,
-    onClose,
     onNewItem,
     onRemoveItem,
     onEditItem,
@@ -1522,7 +1537,6 @@ export const ItemLibraryDialog = ({
     {
         items: ItemType[];
         onItemSelected?: (item: ItemType) => void | null;
-        onClose: () => void;
         onNewItem?: ((item: ItemType) => void);
         onRemoveItem?: ((item: ItemType) => void);
         onEditItem?: ((id: string, item: ItemType) => void);
@@ -1549,38 +1563,39 @@ export const ItemLibraryDialog = ({
     const [newItemDialogActive, setNewItemDialogActive] = useState(false);
 
     return (
-        <div className="fixed top-0 left-0 w-full h-full z-50 flex items-center justify-center">
-            <div className="fixed top-0 left-0 w-full h-full backdrop-blur-sm bg-gray-200 opacity-50"></div>
-            <div className="bg-white z-60 p-4 rounded shadow-md min-w-64 relative z-1">
-                {newItemDialogActive && onNewItem && (
-                    <NewItemDialog
-                        item={undefined}
-                        onClose={() => setNewItemDialogActive(false)}
-                        type={type}
-                        onSave={(item) => {
-                            onNewItem?.(item);
-                            setNewItemDialogActive(false);
-                        }}
-                    />
-                )}
-                <div>{type.charAt(0).toUpperCase() + type.slice(1)} Gallery:</div>
-                <div>
-                    <input type="text" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filter ..." />
-                    <button onClick={() => setFilter('')}>Clear Filter</button>
-                </div>
-                {type === "recipe" && brewerType && (
-                    <button className={"rounded-full sm" + (matchFilter ? "" : " inverse")}
-                        onClick={() => setMatchFilter(!matchFilter)}
-                    >
-                        {brewerType}
-                    </button>
-                )}
-
-                <div className="overflow-y-auto h-96 min-h-96 max-h-96 w-84 min-w-72">
-                    <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col gap-2 justify-stretch w-full">
+            {newItemDialogActive && onNewItem && (
+                <NewItemDialog
+                    item={undefined}
+                    onClose={() => setNewItemDialogActive(false)}
+                    type={type}
+                    onSave={(item) => {
+                        onNewItem?.(item);
+                        setNewItemDialogActive(false);
+                    }}
+                />
+            )}
+            <h2>{type.charAt(0).toUpperCase() + type.slice(1)} Library:</h2>
+            <div className='flex items-center'>
+                <input type="text" className="filter" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filter ..." />
+                <button className='bg-transparent relative right-7 rounded-md p-[5px]' onClick={() => setFilter('')}>
+                    <XActionIcon strokeColor='var(--color-fg1)' />
+                </button>
+            </div>
+            {type === "recipe" && brewerType && (
+                <button className={"rounded-full sm self-start px-2" + (matchFilter ? "" : " inverse")}
+                    onClick={() => setMatchFilter(!matchFilter)}
+                >
+                    For {brewerType}
+                </button>
+            )}
+            <div className='flex flex-1 flex-col justify-between gap-2'>
+                <div className='grow-1'>
+                    <div className="grow-1 flex flex-wrap gap-2 justify-start items-center">
                         <>
                             {filteredItems.length > 0 ? (
                                 filteredItems.map((item) => (
+
                                     <SmallItemCard
                                         key={item.id}
                                         item={item}
@@ -1594,15 +1609,67 @@ export const ItemLibraryDialog = ({
                                     />
                                 ))
                             ) : (
-                                <div>No items available.</div>
+                                <>
+                                    <div className='w-full h-30 flex items-center justify-center gap-2'>
+                                        <div>No {type} found.</div>
+                                        {filter && <button className='sm' onClick={() => setFilter('')}>Clear Filter</button>}
+                                    </div>
+                                </>
                             )}
-                            {onNewItem ? <button onClick={() => setNewItemDialogActive(true)}>New Item</button> : null}
                         </>
                     </div>
                 </div>
+                {onNewItem ? <button onClick={() => setNewItemDialogActive(true)}>New {type}</button> : null}
+            </div>
+        </div>
+    );
+}
+
+export const ItemLibraryDialog = ({
+    onItemSelected,
+    items,
+    type,
+    onClose,
+    onNewItem,
+    onRemoveItem,
+    onEditItem,
+    onSelectDetails,
+    brewerType }:
+    {
+        items: ItemType[];
+        onItemSelected?: (item: ItemType) => void | null;
+        onClose: () => void;
+        onNewItem?: ((item: ItemType) => void);
+        onRemoveItem?: ((item: ItemType) => void);
+        onEditItem?: ((id: string, item: ItemType) => void);
+        onSelectDetails?: boolean;
+        type: ItemTypeName;
+        brewerType?: BrewerType | null;
+    }) => {
+
+
+
+    return (
+        <div className="dialog">
+
+            <div className="backdrop" onClick={onClose}></div>
+            <div className="library flex flex-col">
                 <button
-                    className="absolute top-2 right-2 hover:bg-gray-300 rounded-full p-1"
-                    onClick={onClose}><MdClose /></button>
+                    className="absolute top-2 right-2 bg-transparent rounded-full p-1"
+                    onClick={onClose}><XActionIcon strokeColor='var(--color-fg1)' /></button>
+                <div className="flex flex-1">
+
+                    <LibraryCard
+                        items={items}
+                        type={type}
+                        onItemSelected={onItemSelected}
+                        onSelectDetails={onSelectDetails}
+                        onEditItem={onEditItem}
+                        onRemoveItem={onRemoveItem}
+                        onNewItem={onNewItem}
+                        brewerType={brewerType ? brewerType : undefined}
+                    />
+                </div>
             </div>
         </div>
     );
@@ -1639,6 +1706,7 @@ export const PickItemCarousel = (
     if (selectedItem && !visibleItems.some((item) => item.id === selectedItem.id)) {
         visibleItems.push(selectedItem);
     }
+    console.log("I am the item", selectedItem)
 
     const containerRef = useRef<HTMLDivElement>(null);
     const selectedItemRef = useRef<HTMLDivElement>(null);
@@ -1708,12 +1776,10 @@ export const PickItemCarousel = (
                     onNewItem={onNewItem ? (item) => {
                         onNewItem(item);
                         setLibraryDialogActive(false);
-                        onItemSelected?.(item);
                     } : undefined}
                     onEditItem={onEditItem ? (id, item) => {
                         onEditItem(id, item);
                         setLibraryDialogActive(false);
-                        onItemSelected?.(item);
                     } : undefined}
                     onRemoveItem={onRemoveItem ? onRemoveItem : undefined}
                     brewerType={brewerType ? brewerType : undefined}
@@ -1723,7 +1789,7 @@ export const PickItemCarousel = (
                 <button
                     onClick={() => handleScroll(-200)}
                     className="absolute top-0 left-0 h-full px-[2px] rounded-sm shadow-[4px_0_8px_-4px_#0005] 
-                    z-10 opacity-80 hover:opacity-100 transition-opacity text-fg1 bg-bg1 border border-bg3"
+                    z-1 opacity-80 hover:opacity-100 transition-opacity text-fg1 bg-bg1 border border-bg3"
                     aria-label="Scroll Left"
                 >
                     &lt;
@@ -1733,7 +1799,7 @@ export const PickItemCarousel = (
                 <button
                     onClick={() => handleScroll(200)}
                     className="absolute top-0 right-0 h-full p-[2px] rounded-sm shadow-[-4px_0_8px_-4px_#0005]
-                    z-10 opacity-80 hover:opacity-100 transition-opacity text-fg1 bg-bg1 border border-bg3"
+                    z-1 opacity-80 hover:opacity-100 transition-opacity text-fg1 bg-bg1 border border-bg3"
                     aria-label="Scroll Right"
                 >
                     &gt;
@@ -1748,6 +1814,7 @@ export const PickItemCarousel = (
                                 key={item.id}
                                 item={item}
                                 type={type}
+                                onSelectDetails={onSelectDetails}
                                 isSelected={selectedItem?.id === item.id}
                                 onItemSelected={onItemSelected ? onItemSelected : undefined}
                                 itemRef={selectedItem?.id === item.id ? selectedItemRef : null}
@@ -1804,49 +1871,29 @@ export const NewBrewDialog = ({
         recipes: Recipe[];
         brews: Brew[];
 
-        onAddBag: (bag: Bag) => void;
+        onAddBag: (bag: Bag) => Bag;
         onRemoveBag: (bag: Bag) => void;
         onEditBag: (id: string, bag: Bag) => void;
-        onAddBrewer: (brewer: Brewer) => void;
+        onAddBrewer: (brewer: Brewer) => Brewer;
         onRemoveBrewer: (brewer: Brewer) => void;
         onEditBrewer: (id: string, brewer: Brewer) => void;
         onRemoveGrinder: (grinder: Grinder) => void;
         onEditGrinder: (id: string, grinder: Grinder) => void;
-        onAddGrinder: (grinder: Grinder) => void;
-        onAddRecipe: (recipe: Recipe) => void;
+        onAddGrinder: (grinder: Grinder) => Grinder;
+        onAddRecipe: (recipe: Recipe) => Recipe;
         onRemoveRecipe: (recipe: Recipe) => void;
         onEditRecipe: (id: string, recipe: Recipe) => void;
     }) => {
     const [name, setName] = useState(brew?.name || `Brew ${brews.length + 1}`);
     const [notes, setNotes] = useState(brew?.notes || '');
     const [brewerId, setBrewerId] = useState<string | undefined>(brew?.brewerId);
-    const getBrewer = (brewerId: string | undefined) => {
-        return (brew?.brewerId && brewers.find((b) => b.id === brew.brewerId)) ||
-            brewers.find((b) => b.id === brewerId) ||
-            null;
-    };
-    const brewer = getBrewer(brewerId);
+    const brewer = brewers.find((b) => b.id === brewerId)
     const [grinderId, setGrinderId] = useState<string | undefined>(brew?.grinderId);
-    const getGrinder = (grinderId: string | undefined) => {
-        return (brew?.grinderId && grinders.find((g) => g.id === brew.grinderId)) ||
-            grinders.find((g) => g.id === grinderId) ||
-            null;
-    }
-    const grinder = getGrinder(grinderId);
+    const grinder = grinders.find((g) => g.id === grinderId);
     const [bagId, setBagId] = useState<string | undefined>(brew?.bagId);
-    const getBag = (bagId: string | undefined) => {
-        return (brew?.bagId && bags.find((b) => b.id === brew.bagId)) ||
-            bags.find((b) => b.id === bagId) ||
-            null;
-    }
-    const bag = getBag(bagId);
+    const bag = bags.find((b) => b.id === bagId);
     const [recipeId, setRecipeId] = useState<string | undefined>(brew?.recipeId);
-    const getRecipe = (recipeId: string | undefined) => {
-        return (brew?.recipeId && recipes.find((r) => r.id === brew.recipeId)) ||
-            recipes.find((r) => r.id === recipeId) ||
-            null;
-    }
-    const recipe = getRecipe(recipeId);
+    const recipe = recipes.find((r) => r.id === recipeId)
 
     const [showErrors, setShowErrors] = useState(false);
     const [showConfirmClose, setShowConfirmClose] = useState(false);
@@ -1865,13 +1912,16 @@ export const NewBrewDialog = ({
                 )}
                 <h2>{edit ? "Edit Brew" : "New Brew"}</h2>
                 <div className="flex flex-col gap-1">
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="e.g. India on Aeropress"
-                        className="name"
-                    />
+                    <div>
+                        <div className="label">Name:</div>
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="e.g. India on Aeropress"
+                            className="name"
+                        />
+                    </div>
                     {brewer && recipe && brewer.type !== recipe.type && (
                         <div className="error">Brewer type does not match recipe type.</div>
                     )}
@@ -1885,8 +1935,14 @@ export const NewBrewDialog = ({
                             }}
                             items={bags}
                             type="bag"
-                            onNewItem={onAddBag ? (item) => onAddBag(item as Bag) : undefined}
-                            onRemoveItem={onRemoveBag ? (item) => onRemoveBag(item as Bag) : undefined}
+                            onNewItem={onAddBag ? (item) => {
+                                const newBag = onAddBag(item as Bag);
+                                setBagId(newBag.id);
+                            } : undefined}
+                            onRemoveItem={onRemoveBag ? (item) => {
+                                onRemoveBag(item as Bag)
+                                if (bag && item.id === bag.id) setBagId(undefined);
+                            } : undefined}
                             onEditItem={onEditBag ? (id, item) => onEditBag(id, item as Bag) : undefined}
                         />
                     </div>
@@ -1900,9 +1956,15 @@ export const NewBrewDialog = ({
                             }}
                             items={grinders}
                             type="grinder"
-                            onNewItem={onAddGrinder ? (item) => onAddGrinder(item as Grinder) : undefined}
+                            onNewItem={onAddGrinder ? (item) => {
+                                const newGrinder = onAddGrinder(item as Grinder);
+                                setGrinderId(newGrinder.id)
+                            } : undefined}
                             onEditItem={onEditGrinder ? (id, item) => onEditGrinder(id, item as Grinder) : undefined}
-                            onRemoveItem={onRemoveGrinder ? (item) => onRemoveGrinder(item as Grinder) : undefined}
+                            onRemoveItem={onRemoveGrinder ? (item) => {
+                                onRemoveGrinder(item as Grinder);
+                                if (grinder && item.id === grinder.id) setGrinderId(undefined);
+                            } : undefined}
                         />
                     </div>
                     <div>
@@ -1915,9 +1977,17 @@ export const NewBrewDialog = ({
                             }}
                             items={brewers}
                             type="brewer"
-                            onNewItem={onAddBrewer ? (item) => onAddBrewer(item as Brewer) : undefined}
+                            onNewItem={onAddBrewer ? (item) => {
+                                const newBrewer = onAddBrewer(item as Brewer);
+                                console.log("setting new brewer", newBrewer)
+
+                                setBrewerId(newBrewer.id);
+                            } : undefined}
                             onEditItem={onEditBrewer ? (id, item) => onEditBrewer(id, item as Brewer) : undefined}
-                            onRemoveItem={onRemoveBrewer ? (item) => onRemoveBrewer(item as Brewer) : undefined}
+                            onRemoveItem={onRemoveBrewer ? (item) => {
+                                onRemoveBrewer(item as Brewer);
+                                if (brewer && item.id === brewer.id) setBrewerId(undefined);
+                            } : undefined}
                         />
                     </div>
                     <div>
@@ -1931,17 +2001,26 @@ export const NewBrewDialog = ({
                             }}
                             type="recipe"
                             brewerType={brewer?.type}
-                            onNewItem={onAddRecipe ? (item) => onAddRecipe(item as Recipe) : undefined}
-                            onRemoveItem={onRemoveRecipe ? (item) => onRemoveRecipe(item as Recipe) : undefined}
+                            onNewItem={onAddRecipe ? (item) => {
+                                const newRecipe = onAddRecipe(item as Recipe);
+                                setRecipeId(newRecipe.id);
+                            } : undefined}
+                            onRemoveItem={onRemoveRecipe ? (item) => {
+                                onRemoveRecipe(item as Recipe);
+                                if (recipe && recipe.id === item.id) setRecipeId(undefined);
+                            } : undefined}
                             onEditItem={onEditRecipe ? (id, item) => onEditRecipe(id, item as Recipe) : undefined}
                         />
                     </div>
-                    <textarea
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        placeholder="Notes"
-                        className="notes"
-                    />
+                    <div>
+                        <div className="label">Notes:</div>
+                        <textarea
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            placeholder="Notes"
+                            className="notes"
+                        />
+                    </div>
                 </div>
 
                 <button onClick={() => {
@@ -1955,9 +2034,8 @@ export const NewBrewDialog = ({
                         grinderId: grinder.id,
                         bagId: bag.id,
                         recipeId: recipe.id,
-                        timestamp: new Date().toISOString(),
                         notes: (notes.trim() === "") ? undefined : notes,
-                    })
+                    } as Brew);
                 }}>
                     Save Brew
                 </button>
@@ -2015,16 +2093,16 @@ export const BrewDetailsDialog = ({
         onDeleteLastEvaluation: (brew: Brew) => void;
         onDeleteLastDialIn: (brew: Brew) => void;
 
-        onAddBag: (bag: Bag) => void;
+        onAddBag: (bag: Bag) => Bag;
         onRemoveBag: (bag: Bag) => void;
         onEditBag: (id: string, bag: Bag) => void;
-        onAddBrewer: (brewer: Brewer) => void;
+        onAddBrewer: (brewer: Brewer) => Brewer;
         onRemoveBrewer: (brewer: Brewer) => void;
         onEditBrewer: (id: string, brewer: Brewer) => void;
         onRemoveGrinder: (grinder: Grinder) => void;
         onEditGrinder: (id: string, grinder: Grinder) => void;
-        onAddGrinder: (grinder: Grinder) => void;
-        onAddRecipe: (recipe: Recipe) => void;
+        onAddGrinder: (grinder: Grinder) => Grinder;
+        onAddRecipe: (recipe: Recipe) => Recipe;
         onRemoveRecipe: (recipe: Recipe) => void;
         onEditRecipe: (id: string, recipe: Recipe) => void;
 
@@ -2221,12 +2299,12 @@ export const BrewDetailsDialog = ({
                 </div>
                 <div className="flex justify-center items-center gap-1">
                     <SmallItemCard
-                        item={brewer}
-                        type="brewer"
+                        item={bag}
+                        type="bag"
                         onSelectDetails={true}
-                        onNewItem={onAddBrewer ? (item) => onAddBrewer(item as Brewer) : undefined}
-                        onEditItem={(id, item) => onEditBrewer(id, item as Brewer)}
-                        onRemoveItem={(item) => onRemoveBrewer(item as Brewer)}
+                        onNewItem={onAddBag ? (item) => onAddBag(item as Bag) : undefined}
+                        onEditItem={(id, item) => onEditBag(id, item as Bag)}
+                        onRemoveItem={(item) => onRemoveBag(item as Bag)}
                     />
                     <SmallItemCard
                         item={grinder}
@@ -2237,12 +2315,12 @@ export const BrewDetailsDialog = ({
                         onRemoveItem={(item) => onRemoveGrinder(item as Grinder)}
                     />
                     <SmallItemCard
-                        item={bag}
-                        type="bag"
+                        item={brewer}
+                        type="brewer"
                         onSelectDetails={true}
-                        onNewItem={onAddBag ? (item) => onAddBag(item as Bag) : undefined}
-                        onEditItem={(id, item) => onEditBag(id, item as Bag)}
-                        onRemoveItem={(item) => onRemoveBag(item as Bag)}
+                        onNewItem={onAddBrewer ? (item) => onAddBrewer(item as Brewer) : undefined}
+                        onEditItem={(id, item) => onEditBrewer(id, item as Brewer)}
+                        onRemoveItem={(item) => onRemoveBrewer(item as Brewer)}
                     />
                 </div>
                 <div className="flex justify-center">
@@ -2344,7 +2422,9 @@ export const NewEvaluationDialog = ({ brew, onSaveEvaluation, onClose }:
             <div className="backdrop" onClick={() => setShowConfirmClose(true)}></div>
             <div className="details flex flex-col gap-2">
                 {showConfirmClose && (
-                    <ConfirmCloseEvaluation
+                    <ConfirmModal
+                        title="Are you sure you want to close the new evaluation dialog?"
+                        okButton="Yes Close"
                         onConfirm={() => {
                             setShowConfirmClose(false);
                             onClose();
@@ -2391,11 +2471,14 @@ export const NewEvaluationDialog = ({ brew, onSaveEvaluation, onClose }:
                         </div>
                     </div>
                 </div>
-                <textarea
-                    className="notes"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                />
+                <div>
+                    <div className="label">Notes:</div>
+                    <textarea
+                        className="notes"
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                    />
+                </div>
                 <button onClick={() => {
                     onSaveEvaluation({
                         sweetness,
@@ -2510,50 +2593,58 @@ export const NewDialInDialog = ({ brew, recipe, grinder, bag, onSaveDialIn, onCl
             <div className="details flex flex-col gap-2">
                 <h2>New Dial-In</h2>
                 {lastDialIn &&
-                    <div className={evaluationAvailable ? "cursor-pointer" : ""} onClick={() => setShowEvaluations(!showEvaluations)}>
-                        <div className="text-xs">Last Dial-In:</div>
-                        <DialInCard
-                            dialIn={lastDialIn}
-                            recipe={recipe}
-                            grinder={grinder}
-                        />
-                        {(lastDialIn.evaluations.length > 0) ? (
-                            showEvaluations ? (
-                                <div className="border-l border-fg3 pl-1 ml-3">
-                                    {lastDialIn.evaluations.map((evaluation, evalIndex) => (
-                                        <div key={`eval-${evalIndex}`} className="">
-                                            <EvaluationCard
-                                                evaluation={evaluation}
-                                                showNotes={true}
-                                            />
+                    <div>
+                        <div className="label">Last Dial-In:</div>
+                        <div className="flex justify-center">
+                            <div className={evaluationAvailable ? "cursor-pointer" : ""} onClick={() => setShowEvaluations(!showEvaluations)}>
+                                <DialInCard
+                                    dialIn={lastDialIn}
+                                    recipe={recipe}
+                                    grinder={grinder}
+                                />
+                                {(lastDialIn.evaluations.length > 0) ? (
+                                    showEvaluations ? (
+                                        <div className="border-l border-fg3 pl-1 ml-3">
+                                            {lastDialIn.evaluations.map((evaluation, evalIndex) => (
+                                                <div key={`eval-${evalIndex}`} className="">
+                                                    <EvaluationCard
+                                                        evaluation={evaluation}
+                                                        showNotes={true}
+                                                    />
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <EvaluationAverageCard
-                                    evaluations={lastDialIn.evaluations} />
-                            )) : <div className="text-xs">No Evaluations</div>}
+                                    ) : (
+                                        <EvaluationAverageCard
+                                            evaluations={lastDialIn.evaluations} />
+                                    )) : <div className="text-xs">No Evaluations</div>}
+                            </div>
+                        </div>
                     </div>
                 }
                 <div className="flex flex-col">
-                    <div className="text-xs">Suggestion: </div>
+                    <div className="label">Suggestion: </div>
                     <div className="flex justify-between items-end gap-1">
-                        <div className="">
+                        <div className="flex flex-wrap gap-1">
                             <div>
                                 {requestSuggestion.comment}
                             </div>
-                            <div>
-                                {" => "}
-                                {requestSuggestion.request ? requestSuggestion.request : "No Suggestion"}
+                            <div className="flex flex-nowrap gap-1">
+                                <div>
+                                    {" => "}
+                                    {requestSuggestion.request ? requestSuggestion.request : "No Suggestion"}
+                                </div>
+                                <button className='xs'
+                                    style={{ opacity: requestMatchesSuggestion ? '0' : '1' }}
+                                    onClick={() => setRequest(requestSuggestion.request)}>
+                                    Use
+                                </button>
                             </div>
                         </div>
-                        <button className='xs'
-                            style={{ visibility: requestMatchesSuggestion ? 'hidden' : 'visible' }}
-                            onClick={() => setRequest(requestSuggestion.request)}
-                        >Use</button>
+
                     </div>
 
-                    <div className="text-xs">Optimisation request: </div>
+                    <div className="label">Optimisation request: </div>
                     <div className="flex justify-center gap-2">
                         <div className="flex flex-col gap-2 items-center justify-start">
                             <SweetIcon style={{ width: '32px', height: '32px' }} />
@@ -2586,107 +2677,110 @@ export const NewDialInDialog = ({ brew, recipe, grinder, bag, onSaveDialIn, onCl
                         {request ? ((optimizationUsed ? "Optimized: " : "Optimize: ") + request) : "Select to Optimize"}
                     </button>
                 </div>
-                <div className="grid grid-cols-[auto_auto_auto_50px_auto] gap-2 place-items-center">
-                    <div className="row-1 col-2 text-sm">Recipe:</div>
-                    <div className="row-1 col-3 text-sm">Last:</div>
-                    <div className="row-1 col-4 text-sm">New:</div>
-                    <div className="row-2 col-1">
-                        <GrindIcon style={{ width: '32px', height: '32px' }} />
-                    </div>
-                    <div className={"row-2 col-2" +
-                        ((grinderDelta !== 0) ? " line-through" : "")}
-                    >
-                        {(recipeGrind.toFixed(grindPrecision))}
-                    </div>
-                    <div className={"row-2 col-3" +
-                        (grinderDelta !== 0 ? " line-through" : "")}
-                    >
-                        {
-                            lastDialIn?.grinderDelta !== 0 ?
-                                (recipeGrind + (lastDialIn?.grinderDelta ?? 0)).toFixed(grindPrecision)
-                                :
-                                "-"
-                        }
-                    </div>
-                    <div className="row-2 col-4">
-                        {grinderDelta !== 0 ? (recipeGrind + grinderDelta).toFixed(grindPrecision) : "-"}
-                    </div>
-                    <div className="row-2 col-5">
-                        <div className="flex gap-2 ml-2">
-                            <button className="sm p-2"
-                                onClick={() => handleManualAdjust('grinder', 'down')}>
-                                <MinusActionIcon />
-                            </button>
-                            <button className="sm p-2"
-                                onClick={() => handleManualAdjust('grinder', 'up')}>
-                                <PlusActionIcon />
-                            </button>
+                <div>
+                    <div className="label">Dial-In:</div>
+                    <div className="grid grid-cols-[auto_auto_auto_50px_auto] gap-2 place-items-center">
+                        <div className="row-1 col-2 text-sm">Recipe:</div>
+                        <div className="row-1 col-3 text-sm">Last:</div>
+                        <div className="row-1 col-4 text-sm">New:</div>
+                        <div className="row-2 col-1">
+                            <GrindIcon style={{ width: '32px', height: '32px' }} />
                         </div>
-                    </div>
-                    <div className="row-3 col-1">
-                        <TemperatureIcon style={{ width: '32px', height: '32px' }} />
-                    </div>
-                    <div className={"row-3 col-2" +
-                        ((tempDelta !== 0) ? " line-through" : "")}
-                    >
-                        {(recipe.tempC).toFixed(0)}°C
-                    </div>
-                    <div className={"row-3 col-3" +
-                        (lastDialIn?.tempDelta !== 0 ? " line-through" : "")}
-                    >
-                        {
-                            lastDialIn?.tempDelta !== 0 ?
-                                ((recipe.tempC + (lastDialIn?.tempDelta ?? 0)).toFixed(0) + "°C")
-                                :
-                                "-"
-                        }
-                    </div>
-                    <div className="row-3 col-4">
-                        {tempDelta !== 0 ? ((recipe.tempC + tempDelta).toFixed(0) + "°C") : "-"}
-                    </div>
-                    <div className="row-3 col-5">
-                        <div className="flex gap-2 ml-2">
-                            <button className="sm p-2"
-                                onClick={() => handleManualAdjust('temp', 'down')}>
-                                <MinusActionIcon />
-                            </button>
-                            <button className="sm p-2"
-                                onClick={() => handleManualAdjust('temp', 'up')}>
-                                <PlusActionIcon />
-                            </button>
+                        <div className={"row-2 col-2" +
+                            ((grinderDelta !== 0) ? " line-through" : "")}
+                        >
+                            {(recipeGrind.toFixed(grindPrecision))}
                         </div>
-                    </div>
-                    <div className="row-4 col-1">
-                        <WeightIcon style={{ width: '32px', height: '32px' }} />
-                    </div>
-                    <div className={"row-4 col-2" +
-                        ((doseDelta !== 0) ? " line-through" : "")}
-                    >
-                        {(recipe.doseG).toFixed(1)}g
-                    </div>
-                    <div className={"row-4 col-3" +
-                        (lastDialIn?.doseDelta !== 0 ? " line-through" : "")}
-                    >
-                        {
-                            lastDialIn?.doseDelta !== 0 ?
-                                (recipe.doseG + (lastDialIn?.doseDelta ?? 0)).toFixed(1) + "g"
-                                :
-                                "-"
-                        }
-                    </div>
-                    <div className="row-4 col-4">
-                        {doseDelta !== 0 ? (recipe.doseG + doseDelta).toFixed(1) + "g" : "-"}
-                    </div>
-                    <div className="row-4 col-5">
-                        <div className="flex ml-2 gap-2">
-                            <button className="sm p-2"
-                                onClick={() => handleManualAdjust('dose', 'down')}>
-                                <MinusActionIcon />
-                            </button>
-                            <button className="sm p-2"
-                                onClick={() => handleManualAdjust('dose', 'up')}>
-                                <PlusActionIcon />
-                            </button>
+                        <div className={"row-2 col-3" +
+                            (grinderDelta !== 0 ? " line-through" : "")}
+                        >
+                            {
+                                lastDialIn?.grinderDelta !== 0 ?
+                                    (recipeGrind + (lastDialIn?.grinderDelta ?? 0)).toFixed(grindPrecision)
+                                    :
+                                    "-"
+                            }
+                        </div>
+                        <div className="row-2 col-4">
+                            {grinderDelta !== 0 ? (recipeGrind + grinderDelta).toFixed(grindPrecision) : "-"}
+                        </div>
+                        <div className="row-2 col-5">
+                            <div className="flex gap-2 ml-2">
+                                <button className="sm p-2"
+                                    onClick={() => handleManualAdjust('grinder', 'down')}>
+                                    <MinusActionIcon />
+                                </button>
+                                <button className="sm p-2"
+                                    onClick={() => handleManualAdjust('grinder', 'up')}>
+                                    <PlusActionIcon />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="row-3 col-1">
+                            <TemperatureIcon style={{ width: '32px', height: '32px' }} />
+                        </div>
+                        <div className={"row-3 col-2" +
+                            ((tempDelta !== 0) ? " line-through" : "")}
+                        >
+                            {(recipe.tempC).toFixed(0)}°C
+                        </div>
+                        <div className={"row-3 col-3" +
+                            (lastDialIn?.tempDelta !== 0 ? " line-through" : "")}
+                        >
+                            {
+                                lastDialIn?.tempDelta !== 0 ?
+                                    ((recipe.tempC + (lastDialIn?.tempDelta ?? 0)).toFixed(0) + "°C")
+                                    :
+                                    "-"
+                            }
+                        </div>
+                        <div className="row-3 col-4">
+                            {tempDelta !== 0 ? ((recipe.tempC + tempDelta).toFixed(0) + "°C") : "-"}
+                        </div>
+                        <div className="row-3 col-5">
+                            <div className="flex gap-2 ml-2">
+                                <button className="sm p-2"
+                                    onClick={() => handleManualAdjust('temp', 'down')}>
+                                    <MinusActionIcon />
+                                </button>
+                                <button className="sm p-2"
+                                    onClick={() => handleManualAdjust('temp', 'up')}>
+                                    <PlusActionIcon />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="row-4 col-1">
+                            <WeightIcon style={{ width: '32px', height: '32px' }} />
+                        </div>
+                        <div className={"row-4 col-2" +
+                            ((doseDelta !== 0) ? " line-through" : "")}
+                        >
+                            {(recipe.doseG).toFixed(1)}g
+                        </div>
+                        <div className={"row-4 col-3" +
+                            (lastDialIn?.doseDelta !== 0 ? " line-through" : "")}
+                        >
+                            {
+                                lastDialIn?.doseDelta !== 0 ?
+                                    (recipe.doseG + (lastDialIn?.doseDelta ?? 0)).toFixed(1) + "g"
+                                    :
+                                    "-"
+                            }
+                        </div>
+                        <div className="row-4 col-4">
+                            {doseDelta !== 0 ? (recipe.doseG + doseDelta).toFixed(1) + "g" : "-"}
+                        </div>
+                        <div className="row-4 col-5">
+                            <div className="flex ml-2 gap-2">
+                                <button className="sm p-2"
+                                    onClick={() => handleManualAdjust('dose', 'down')}>
+                                    <MinusActionIcon />
+                                </button>
+                                <button className="sm p-2"
+                                    onClick={() => handleManualAdjust('dose', 'up')}>
+                                    <PlusActionIcon />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

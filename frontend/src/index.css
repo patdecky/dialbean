@@ -37,9 +37,10 @@
   --color-bg2: #F6ECE7;
   --color-bg3: #EADED8;
   --color-bg4: #F0D8CC;
-  --color-bgrec: #fffda2;
-  --color-bgrec2: #fffd80;
-  --color-fgrec: #fd991e;
+  --color-bg5: #cca693;
+  --color-bgrec:  #fff085;
+  --color-bgrec2: #f6e569;
+  --color-fgrec: #ffce51;
   --color-mid: #FAB47F;
   --color-fg1: #361B16;
   --color-fg2: #54321D;
@@ -57,6 +58,7 @@
   textarea:focus {
     outline: none !important;
     box-shadow: 0 0 0 2px #FAB47F !important;
+    border-color: #ffce51 !important;
     border-color: #FAB47F !important;
   }
 
@@ -133,6 +135,10 @@
     @apply border rounded-sm border-fg3 text-fg1 p-1 text-sm w-full;
   }
 
+  input[type="text"].filter {
+    @apply border w-full rounded-sm border-fg3 text-fg1 p-1 text-sm max-w-60;
+  }
+
   input[type="number"].value {
     @apply border rounded-sm border-fg3 text-fg1 p-1 text-sm w-20;
   }
@@ -204,7 +210,7 @@
   }
 
   .dialog .library {
-    @apply bg-bg2 border border-bg3 px-4 pt-7 pb-4 rounded-xl shadow-2xl/40 relative z-1 min-w-50 w-100 min-h-50 max-w-[90dvw] max-h-[90dvh] overflow-y-auto;
+    @apply bg-bg2 border border-bg3 px-4 pt-7 pb-4 rounded-xl shadow-2xl/40 relative z-100 w-[90dvw] max-w-[90dvw] h-[90dvh] max-h-[90dvh] overflow-y-auto;
   }
 
   .dialog .item {
@@ -227,7 +233,7 @@
   .library-mark {
     width: 20px;
     height: 20px;
-    background-color: var(--color-fg1);
+    background-color: var(--color-bg5);
     /* Corners: Top-Left (0 0), Top-Right (100% 0), Bottom-Left (0 100%) */
     clip-path: polygon(0 0, 100% 0, 0 100%);
     @apply absolute top-0 left-0;

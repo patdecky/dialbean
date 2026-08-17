@@ -4,8 +4,9 @@ import type { Bag, Brew, Brewer, Grinder, Recipe } from './types';
 import { useDialBean } from './DialBeanContext';
 import { NewBrewDialog, BrewDetailsDialog, BrewCard } from './components';
 import { DialBeanLargeIcon } from "./icons";
+import { MessageBlock } from './modals';
 
-const Counter = () => {
+const Counter = ({}) => {
     const { data, 
         newBrew, 
         addBag, 
@@ -90,7 +91,6 @@ const Counter = () => {
                             if (toEditBrewId) {
                                 // Update existing brew
                                 const updatedBrew = editBrew(toEditBrewId, brew);
-                                console.log("Updated brew:", updatedBrew);
                                 setSelectedBrewId(updatedBrew.id);
                             } else {
                                 const newBrewObject = newBrew(brew);
@@ -111,6 +111,13 @@ const Counter = () => {
                             setToCopyBrewId(null);
                             setToEditBrewId(null);
                         }}
+                        edit={toEditBrewId !== null}
+                        brew={toCopyBrewId || toEditBrewId ? data.brews.find((b) => b.id === (toCopyBrewId || toEditBrewId)) : undefined}
+                        bags={data.bags}
+                        grinders={data.grinders}
+                        brewers={data.brewers}
+                        recipes={data.recipes}
+                        brews={data.brews}
                         onAddBrewer={addBrewer}
                         onAddGrinder={addGrinder}
                         onAddBag={addBag}
@@ -119,13 +126,6 @@ const Counter = () => {
                         onEditGrinder={(id, grinder) => editGrinder(id, grinder)}
                         onEditBag={(id, bag) => editBag(id, bag)}
                         onEditRecipe={(id, recipe) => editRecipe(id, recipe)}
-                        edit={toEditBrewId !== null}
-                        brew={toCopyBrewId || toEditBrewId ? data.brews.find((b) => b.id === (toCopyBrewId || toEditBrewId)) : undefined}
-                        bags={data.bags}
-                        brewers={data.brewers}
-                        grinders={data.grinders}
-                        recipes={data.recipes}
-                        brews={data.brews}
                         onRemoveBag={(bag) => removeBag((bag as Bag).id)}
                         onRemoveBrewer={(brewer) => removeBrewer((brewer as Brewer).id)}
                         onRemoveGrinder={(grinder) => removeGrinder((grinder as Grinder).id)}
