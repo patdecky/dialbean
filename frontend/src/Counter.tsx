@@ -4,30 +4,37 @@ import type { Bag, Brew, Brewer, Grinder, Recipe } from './types';
 import { useDialBean } from './DialBeanContext';
 import { NewBrewDialog, BrewDetailsDialog, BrewCard } from './components';
 import { DialBeanLargeIcon } from "./icons";
-import { MessageBlock } from './modals';
 
-const Counter = ({}) => {
-    const { data, 
-        newBrew, 
-        addBag, 
+const Counter = () => {
+    const { data,
+        newBrew,
+        addBag,
         addBrewer,
-        addGrinder, 
+        addGrinder,
         addRecipe,
-        removeBag, 
-        removeBrewer, 
-        removeGrinder, 
+        removeBag,
+        removeBrewer,
+        removeGrinder,
         removeRecipe,
         editBrewer,
         editGrinder,
         editBag,
         editRecipe,
-        addEvaluation, 
-        removeEvaluation, 
+        addEvaluation,
+        removeEvaluation,
         removeDialIn,
         addDialIn,
-        editBrew, 
+        editBrew,
         removeBrew
     } = useDialBean();
+    const [selectedBrewId, setSelectedBrewId] = useState<string | null>(null);
+    const [newBrewActive, setNewBrewActive] = useState(false);
+    const [toCopyBrewId, setToCopyBrewId] = useState<string | null>(null);
+    const [toEditBrewId, setToEditBrewId] = useState<string | null>(null);
+    const [showFinishedBrews, setShowFinishedBrews] = useState<boolean>(false);
+
+    if (!data) { return <div className="flex items-center justify-center">Loading...</div>; }
+
     const activeBrews: Brew[] = data.brews.filter(brew => data.bags.find(bag => bag.id === brew.bagId)?.isFinished === false);
     const finishedBrews: Brew[] = data.brews.filter(brew => data.bags.find(bag => bag.id === brew.bagId)?.isFinished === true);
     const activeBrewGrinders: Grinder[] = activeBrews.map(brew => data.grinders.find(grinder => grinder.id === brew.grinderId)) as Grinder[];
@@ -38,17 +45,13 @@ const Counter = ({}) => {
     const finishedBrewBrewers: Brewer[] = finishedBrews.map(brew => data.brewers.find(brewer => brewer.id === brew.brewerId)) as Brewer[];
     const finishedBrewRecipes: Recipe[] = finishedBrews.map(brew => data.recipes.find(recipe => recipe.id === brew.recipeId)) as Recipe[];
     const finishedBrewBags: Bag[] = finishedBrews.map(brew => data.bags.find(bag => bag.id === brew.bagId)) as Bag[];
-    const [selectedBrewId, setSelectedBrewId] = useState<string | null>(null);
-    const [newBrewActive, setNewBrewActive] = useState(false);
-    const [toCopyBrewId, setToCopyBrewId] = useState<string | null>(null);
-    const [toEditBrewId, setToEditBrewId] = useState<string | null>(null);
-    const [showFinishedBrews, setShowFinishedBrews] = useState<boolean>(false);
 
     const selectedBrew = selectedBrewId ? data.brews.find(brew => brew.id === selectedBrewId) : null;
+
     console.log("Counter render: selectedBrewId:", selectedBrewId, "selectedBrew:", selectedBrew);
     return (
         <div className="flex flex-col items-center justify-start w-full h-full">
-            <div className="w-full h-full p-4 flex flex-col">
+            <div className="w-full h-full p-4 flex flex-col gap-2">
                 <div className="w-full flex  items-center justify-start gap-1 mb-2 landscape:mb-1">
                     <DialBeanLargeIcon />
                     <h1>Counter</h1>
@@ -70,7 +73,7 @@ const Counter = ({}) => {
                     )}
                     {finishedBrews.length > 0 && (showFinishedBrews ? (
                         <>
-                        <button className="self-start sm" onClick={() => setShowFinishedBrews(false)}>Hide Finished</button>
+                            <button className="self-start sm" onClick={() => setShowFinishedBrews(false)}>Hide Finished</button>
                             {finishedBrews.map((brew, index) =>
                                 <BrewCard key={brew.id}
                                     brew={brew}

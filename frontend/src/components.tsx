@@ -375,7 +375,7 @@ export const MediumRecipeCard = ({
                 <div className="line-clamp-2 text-ellipsis overflow-hidden font-hand font-bold">
                     {recipe.name}
                 </div>
-                <div className="text-sm whitespace-pre-wrap font-hand">
+                <div className="instructions">
                     {recipe.instructions}
                 </div>
             </div >
@@ -590,8 +590,7 @@ export const BrewCard = ({ brew, bag, brewer, grinder, recipe, onSelected = null
             <div className="flex justify-between items-start">
                 <h2>{brew.name}</h2>
                 <div className="flex flex-col items-end">
-                    <div className="timestamp">
-                        {new Date(brew.timestamp).toLocaleString()}
+                    <div className="timestamp">{new Date(brew.timestamp).toLocaleDateString()}
                     </div>
                     {brew.lastUsedTimestamp &&
                         <div className="timestamp">
@@ -625,10 +624,10 @@ export const BrewCard = ({ brew, bag, brewer, grinder, recipe, onSelected = null
                     <div>
                         {brew.dialIns.length > 0 && brew.dialIns[brew.dialIns.length - 1].evaluations.length > 0 ? (
                             <EvaluationAverageCard evaluations={brew.dialIns[brew.dialIns.length - 1].evaluations} />
-                        ) : <div className="text-sm h-5">No evaluations yet</div>}
+                        ) : <div className="text-xs h-5 flex items-center gap-1"><EvaluationIcon />Dial-in not evaluated</div>}
                     </div>
                     {brew.notes && <div>
-                        <div className="notes short text-sm">{brew.notes}</div>
+                        <div className="notes short">{brew.notes}</div>
                     </div>}
                 </div>
             </div>
@@ -892,7 +891,7 @@ export const ItemDetailsDialog = ({
                         </div>
                         {item.notes && <div>
                             <div className="label">Notes:</div>
-                            <div className="notes text-sm">{item.notes}</div>
+                            <div className="notes">{item.notes}</div>
                         </div>}
                         {!isBase && <button onClick={() => markBrewerCleaned(item.id)}>Mark Cleaned</button>}
                         <button onClick={onClose}>Close</button>
@@ -924,7 +923,7 @@ export const ItemDetailsDialog = ({
                         </div>
                         {item.notes && <div>
                             <div className="label">Notes:</div>
-                            <div className="notes text-sm">{item.notes}</div>
+                            <div className="notes">{item.notes}</div>
                         </div>}
                         {!isBase && <button onClick={() => markGrinderCleaned(item.id)}>Mark Cleaned</button>}
                         <button onClick={onClose}>Close</button>
@@ -953,11 +952,11 @@ export const ItemDetailsDialog = ({
                         {roastDate &&
                             <div>
                                 <div className="label">Roast Date:</div>
-                                <div className="timestamp">{new Date(roastDate).toLocaleString()}</div>
+                                <div className="timestamp">{new Date(roastDate).toLocaleDateString()}</div>
                             </div>}
                         {item.notes && <div>
                             <div className="label">Notes:</div>
-                            <div className="notes text-sm">{item.notes}</div>
+                            <div className="notes">{item.notes}</div>
                         </div>}
                         {!dateOpened && <button onClick={() => markBagOpened(item.id)}>Opened</button>}
                         {dateOpened && !isFinished && <button onClick={() => markBagFinished(item.id)}>Finished</button>}
@@ -989,11 +988,11 @@ export const ItemDetailsDialog = ({
                         </div>
                         <div>
                             <div className="label font-hand">Instructions:</div>
-                            <div className="whitespace-pre-wrap font-hand">{(item as Recipe).instructions}</div>
+                            <div className="instructions">{(item as Recipe).instructions}</div>
                         </div>
                         {item.notes && <div>
                             <div className="label font-hand">Notes:</div>
-                            <div className="notes text-sm font-hand">{item.notes}</div>
+                            <div className="notes font-hand">{item.notes}</div>
                         </div>}
                         <button onClick={onClose}>Close</button>
                     </>
@@ -1511,7 +1510,7 @@ export const NewItemDialog = ({
                         </div>
                         <div>
                             <div className="label">Instructions:</div>
-                            <textarea className="notes h-40" value={instructions} onChange={(e) => setInstructions(e.target.value)} placeholder="e.g. Pour in three phases." />
+                            <textarea className="instructions h-40" value={instructions} onChange={(e) => setInstructions(e.target.value)} placeholder="e.g. Pour in three phases." />
                         </div>
                         <div>
                             <div className="label">Notes:</div>
@@ -2289,11 +2288,9 @@ export const BrewDetailsDialog = ({
                             <XActionIcon strokeColor='var(--color-fg1)' fillColor="var(--color-bg1)" /></button>
                     </div>
                     <h2>{brew.name}</h2>
-                    <div className="text-xs text-fg3">
-                        {new Date(brew.timestamp).toLocaleString()}
-                    </div>
+                    <div className="timestamp">{"Created: "}{new Date(brew.timestamp).toLocaleDateString()}</div>
                     {brew.lastUsedTimestamp &&
-                        <div className="text-xs text-fg3">
+                        <div className="timestamp">
                             {formatLastUsed(brew.lastUsedTimestamp)}
                         </div>}
                 </div>
@@ -2376,7 +2373,7 @@ export const BrewDetailsDialog = ({
                 }
                 {brew.notes && <div>
                     <div className="label">Notes:</div>
-                    <div className="notes text-sm">{brew.notes}</div>
+                    <div className="notes">{brew.notes}</div>
                 </div>}
                 <div className="flex items-end gap-1">
                     {!bag.isBase && bag.dateOpened && !bag.isFinished &&
@@ -2634,7 +2631,7 @@ export const NewDialInDialog = ({ brew, recipe, grinder, bag, onSaveDialIn, onCl
                                     {" => "}
                                     {requestSuggestion.request ? requestSuggestion.request : "No Suggestion"}
                                 </div>
-                                <button className='xs'
+                                <button className='sm'
                                     style={{ opacity: requestMatchesSuggestion ? '0' : '1' }}
                                     onClick={() => setRequest(requestSuggestion.request)}>
                                     Use
@@ -2860,7 +2857,7 @@ export const DialInDetailsBlock = ({ brew, recipe, grinder, onDeleteLastEvaluati
                         ) : (
                             <EvaluationAverageCard
                                 evaluations={dialIn.evaluations} />
-                        )) : <div className="text-xs">No Evaluations</div>}
+                        )) : <div className="text-xs flex items-center gap-1"><EvaluationIcon />No Evaluations</div>}
                 </div>
             ))}
             {brew.dialIns.length > 0 && (

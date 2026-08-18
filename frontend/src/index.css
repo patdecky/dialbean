@@ -16,13 +16,6 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: 'Roboto-Medium';
-  src: url('./assets/Roboto-Medium.ttf') format('truetype');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
 
 @font-face {
   font-family: 'Inter-VariableFont_opsz,wght';
@@ -38,7 +31,7 @@
   --color-bg3: #EADED8;
   --color-bg4: #F0D8CC;
   --color-bg5: #cca693;
-  --color-bgrec:  #fff085;
+  --color-bgrec: #fff085;
   --color-bgrec2: #f6e569;
   --color-fgrec: #ffce51;
   --color-mid: #FAB47F;
@@ -49,21 +42,10 @@
 }
 
 @layer base {
-  *:focus {
-    outline: none !important;
-  }
 
-  input[type="text"]:focus,
-  input[type="number"]:focus,
-  textarea:focus {
-    outline: none !important;
-    box-shadow: 0 0 0 2px #FAB47F !important;
-    border-color: #ffce51 !important;
-    border-color: #FAB47F !important;
-  }
 
   body {
-    font-family: 'Inter-VariableFont_opsz,wght';
+    font-family: 'Inter-VariableFont_opsz,wght', sans-serif;
     box-sizing: border-box;
   }
 
@@ -92,6 +74,40 @@
     box-sizing: border-box;
   }
 
+  input[type="text"].name {
+    @apply border rounded-sm border-fg3 text-fg1 p-1 text-sm w-full;
+  }
+
+  input[type="text"].filter {
+    @apply border w-full rounded-sm border-fg3 text-fg1 p-1 text-sm max-w-60;
+  }
+
+  input[type="number"].value {
+    @apply border rounded-sm border-fg3 text-fg1 p-1 text-sm w-20;
+  }
+
+  input[type="date"].date {
+    @apply border rounded-sm border-fg3 text-fg1 p-1 text-sm w-full;
+  }
+
+  *:focus {
+    outline: none !important;
+  }
+
+  input[type="text"]:focus,
+  input[type="number"]:focus,
+  textarea:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 2px #FAB47F !important;
+    border-color: #ffce51 !important;
+    border-color: #FAB47F !important;
+  }
+
+  textarea.notes {
+    @apply border rounded-sm border-fg3 text-fg1 p-1 text-sm w-full;
+  }
+
+
   h1 {
     font-size: 2rem;
     font-weight: 300;
@@ -111,41 +127,40 @@
     @apply text-fg2;
   }
 
+  button {
+    @apply bg-fg1 border border-transparent text-sm font-semibold text-bg1 rounded-md px-3 py-[8px] cursor-pointer hover:ring-1 ring-mid text-nowrap;
+  }
+
+  button.inverse {
+    @apply bg-transparent text-fg1 border-fg1;
+  }
+
+  button.sm {
+    @apply rounded-md px-[6px] py-[4px] text-xs;
+  }
+
+
   .label {
     @apply text-fg3 text-xs italic;
   }
 
   .timestamp {
-    @apply text-fg3 text-xs;
+    @apply text-fg1 text-xs;
   }
 
   .notes {
-    @apply text-fg2 text-sm italic whitespace-pre-wrap;
+    @apply text-fg1 text-xs whitespace-pre-wrap;
+  }
+
+  .instructions {
+    @apply text-fg1 text-sm whitespace-pre-wrap;
+    font-family: 'ComicNeue', sans-serif;
   }
 
   .notes.short {
     @apply line-clamp-2 text-ellipsis overflow-hidden max-w-full;
   }
 
-  textarea.notes {
-    @apply border rounded-sm border-fg3 text-fg1 p-1 text-sm w-full;
-  }
-
-  input[type="text"].name {
-    @apply border rounded-sm border-fg3 text-fg1 p-1 text-sm w-full;
-  }
-
-  input[type="text"].filter {
-    @apply border w-full rounded-sm border-fg3 text-fg1 p-1 text-sm max-w-60;
-  }
-
-  input[type="number"].value {
-    @apply border rounded-sm border-fg3 text-fg1 p-1 text-sm w-20;
-  }
-
-  input[type="date"].date {
-    @apply border rounded-sm border-fg3 text-fg1 p-1 text-sm w-full;
-  }
 
   .error {
     @apply text-red-500 text-sm;
@@ -168,29 +183,23 @@
     /* Firefox */
   }
 
-  .inactive .main-menu-icon {
-    @apply filter grayscale contrast-1000 opacity-50;
+  .nav-item {
+    @apply flex flex-col justify-end items-center gap-1 w-18 h-15 p-1;
   }
 
-  .inactive .main-menu-text {
-    @apply opacity-50;
+  .nav-item span {
+    @apply text-xs;
   }
 
-  button {
-    @apply bg-fg1 border border-transparent text-bg1 rounded-md px-3 py-[3px] cursor-pointer hover:ring-1 ring-mid text-nowrap;
+  .nav-item.inactive .nav-icon {
+    @apply filter saturate-10 brightness-500 contrast-80 grayscale opacity-30;
   }
 
-  button.inverse {
-    @apply bg-transparent text-fg1 border-fg1;
+  .nav-item.inactive span {
+    @apply opacity-40;
   }
 
-  button.sm {
-    @apply rounded-md px-[6px] py-[2px] text-sm;
-  }
 
-  button.xs {
-    @apply rounded-sm px-[5px] py-[1px] text-xs;
-  }
 
 
   .dialog {

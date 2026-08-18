@@ -10,10 +10,10 @@ import type {
     DialIn
 } from './types';
 import type { StorageAdapter } from './adapter';
-import { LocalStorageAdapter } from './adapter';
+import { initStorageEngine } from './pwa';
 
 interface DialBeanContextType {
-    data: DialBeanSchema;
+    data: DialBeanSchema | null;
     // Quick Actions
     addBag: (bag: Omit<Bag, 'id' | 'isBase' | 'usedInBrew'>) => Bag;
     removeBag: (bagId: string) => void;
@@ -43,29 +43,57 @@ interface DialBeanContextType {
     removeEvaluation: (brewId: string) => Brew;
 }
 
-// Single instance of your storage adapter
-const storageAdapter: StorageAdapter = new LocalStorageAdapter();
-
 const DialBeanContext = createContext<DialBeanContextType | null>(null);
 
-export const DialBeanProvider: React.FC<{ setMessage: (message: string) => void; children: React.ReactNode }> = ({ setMessage, children }) => {
-    const [data, setData] = useState<DialBeanSchema>(() => storageAdapter.loadData());
+export const DialBeanProvider: React.FC<{ 
+    setMessage: (message: string) => void; 
+    onPromptPWA?: () => void;
+    children: React.ReactNode }> = ({ setMessage, onPromptPWA, children }) => {
+    const [data, setData] = useState<DialBeanSchema | null>(null);
+    const [storageAdapter, setStorageAdapter] = useState<StorageAdapter | null>(null);
+
+    useEffect(() => {
+        async function setupStorage() {
+            const storageStatus = await initStorageEngine();
+            console.log("Initialized storage:", storageStatus);
+
+            // Load initial data
+            const data = await storageStatus.adapter.loadData();
+            setStorageAdapter(storageStatus.adapter);
+            setData(data);
+
+            // Show top banner / message toast if installed PWA mode is required for permanent storage
+            if (storageStatus.shouldPromptPWA) {
+                onPromptPWA?.();
+            }
+
+        }
+        setupStorage();
+
+        // storageAdapter.loadData().then((loadedData) => {
+        //     setData(loadedData);
+        // });
+    }, []);
 
     // Auto-sync to LocalStorage whenever state updates
     useEffect(() => {
+        if (!data) return;
+        if (!storageAdapter) return;
         storageAdapter.saveData(data);
-    }, [data]);
+    }, [data, storageAdapter]);
 
     // --- ACTIONS ---
 
     const addBag = (bagData: Omit<Bag, 'id' | 'isBase' | 'usedInBrew'>): Bag => {
+        if (!data) throw new Error('Data not loaded yet');
         const newBag: Bag = { ...bagData, id: crypto.randomUUID(), isBase: false, usedInBrew: false };
-        setData((prev) => ({ ...prev, bags: [...prev.bags, newBag] }));
-        setMessage(`Added new bag`);
+        setData((prev) => (prev ? { ...prev, bags: [...prev.bags, newBag] } : prev));
+        setMessage(`Added bag`);
         return newBag;
     };
 
     const removeBag = (bagId: string) => {
+        if (!data) throw new Error('Data not loaded yet');
         const brewsUsingBag = data.brews.filter((brew) => brew.bagId === bagId);
         if (brewsUsingBag.length > 0) {
             brewsUsingBag.forEach((brew) => removeBrew(brew.id));
@@ -78,105 +106,118 @@ export const DialBeanProvider: React.FC<{ setMessage: (message: string) => void;
         if (bag.usedInBrew) {
             throw new Error(`Cannot remove usedInBrew bag with ID ${bagId}`);
         }
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             bags: prev.bags.filter((bag) => bag.id !== bagId)
-        }));
+        } : prev));
         setMessage(`Removed bag`);
     };
 
     const editBag = (bagId: string, bagData: Omit<Bag, 'id' | 'isBase' | 'usedInBrew'>): Bag => {
+        if (!data) throw new Error('Data not loaded yet');
+
         const bag = data.bags.find((b) => b.id === bagId);
         if (!bag) {
             throw new Error(`Bag with ID ${bagId} not found`);
         }
         const newBag: Bag = { ...bag, ...bagData };
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             bags: prev.bags.map((bag) => {
                 if (bag.id !== bagId) return bag;
                 return newBag;
             })
-        }));
-        setMessage(`Saved changes to bag`);
+        } : prev));
+        setMessage(`Saved changes`);
         return newBag;
     };
 
     const markBagFinished = (bagId: string): Bag => {
+        if (!data) throw new Error('Data not loaded yet');
+
         const bag = data.bags.find((b) => b.id === bagId);
         if (!bag) {
             throw new Error(`Bag with ID ${bagId} not found`);
         }
         const newBag: Bag = { ...bag, isFinished: true };
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             bags: prev.bags.map((bag) => {
                 if (bag.id !== bagId) return bag;
                 return newBag;
             })
-        }));
-        setMessage(`Marked bag as finished`);
+        } : prev));
+        setMessage(`Marked as finished`);
         return newBag;
     };
 
     const markBagRestocked = (bagId: string): Bag => {
+        if (!data) throw new Error('Data not loaded yet');
+
         const bag = data.bags.find((b) => b.id === bagId);
         if (!bag) {
             throw new Error(`Bag with ID ${bagId} not found`);
         }
         const newBag: Bag = { ...bag, isFinished: false, dateOpened: undefined };
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             bags: prev.bags.map((bag) => {
                 if (bag.id !== bagId) return bag;
                 return newBag;
             })
-        }));
-        setMessage(`Restocked bag`);
+        } : prev));
+        setMessage(`Restocked`);
         return newBag;
     };
 
     const markBagOpened = (bagId: string): Bag => {
+        if (!data) throw new Error('Data not loaded yet');
+
         const bag = data.bags.find((b) => b.id === bagId);
         if (!bag) {
             throw new Error(`Bag with ID ${bagId} not found`);
         }
         const newBag: Bag = { ...bag, dateOpened: new Date().toISOString() };
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             bags: prev.bags.map((bag) => {
                 if (bag.id !== bagId) return bag;
                 return newBag;
             })
-        }));
-        setMessage(`Marked bag as opened`);
+        } : prev));
+        setMessage(`Marked as opened`);
         return newBag;
     };
 
     const addGrinder = (grinderData: Omit<Grinder, 'id' | 'isBase' | 'usedInBrew'>): Grinder => {
+        if (!data) throw new Error('Data not loaded yet');
         const newGrinder: Grinder = { ...grinderData, id: crypto.randomUUID(), isBase: false, usedInBrew: false };
-        setData((prev) => ({ ...prev, grinders: [...prev.grinders, newGrinder] }));
+        setData((prev) => (prev ? { ...prev, grinders: [...prev.grinders, newGrinder] } : prev));
         setMessage(`Added new grinder`);
         return newGrinder;
     };
 
     const editGrinder = (grinderId: string, grinderData: Omit<Grinder, 'id' | 'isBase' | 'usedInBrew'>): Grinder => {
+
+        if (!data) throw new Error('Data not loaded yet');
         const grinder = data.grinders.find((g) => g.id === grinderId);
         if (!grinder) {
             throw new Error(`Grinder with ID ${grinderId} not found`);
         }
         const newGrinder: Grinder = { ...grinder, ...grinderData };
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             grinders: prev.grinders.map((grinder) => {
                 if (grinder.id !== grinderId) return grinder;
                 return newGrinder;
             })
-        }));
-        setMessage(`Saved changes to grinder`);
+        } : prev));
+        setMessage(`Saved changes`);
         return newGrinder;
     };
     const removeGrinder = (grinderId: string) => {
+
+        if (!data) throw new Error('Data not loaded yet');
         const grinderUsedInBrews = data.brews.filter((brew) => brew.grinderId === grinderId);
         if (grinderUsedInBrews.length > 0) {
             grinderUsedInBrews.forEach((brew) => removeBrew(brew.id));
@@ -189,55 +230,59 @@ export const DialBeanProvider: React.FC<{ setMessage: (message: string) => void;
         if (grinder.usedInBrew) {
             throw new Error(`Cannot remove usedInBrew grinder with ID ${grinderId}`);
         }
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             grinders: prev.grinders.filter((grinder) => grinder.id !== grinderId)
-        }));
+        } : prev));
         setMessage(`Removed grinder`);
     };
 
     const markGrinderCleaned = (grinderId: string): Grinder => {
+        if (!data) throw new Error('Data not loaded yet');
         const grinder = data.grinders.find((g) => g.id === grinderId);
         if (!grinder) {
             throw new Error(`Grinder with ID ${grinderId} not found`);
         }
         const newGrinder: Grinder = { ...grinder, cleanedDate: new Date().toISOString() };
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             grinders: prev.grinders.map((grinder) => {
                 if (grinder.id !== grinderId) return grinder;
                 return newGrinder;
             })
-        }));
-        setMessage(`Marked grinder as cleaned`);
+        } : prev));
+        setMessage(`Marked as cleaned`);
         return newGrinder;
     };
 
     const addBrewer = (brewerData: Omit<Brewer, 'id' | 'isBase' | 'usedInBrew'>): Brewer => {
+        if (!data) throw new Error('Data not loaded yet');
         const newBrewer: Brewer = { ...brewerData, id: crypto.randomUUID(), isBase: false, usedInBrew: false };
-        setData((prev) => ({ ...prev, brewers: [...prev.brewers, newBrewer] }));
-        setMessage(`Added new brewer`);
+        setData((prev) => (prev ? { ...prev, brewers: [...prev.brewers, newBrewer] } : prev));
+        setMessage(`Added brewer`);
         return newBrewer;
     };
 
     const editBrewer = (brewerId: string, brewerData: Omit<Brewer, 'id' | 'isBase' | 'usedInBrew'>): Brewer => {
+        if (!data) throw new Error('Data not loaded yet');
         const brewer = data.brewers.find((b) => b.id === brewerId);
         if (!brewer) {
             throw new Error(`Brewer with ID ${brewerId} not found`);
         }
         const newBrewer: Brewer = { ...brewer, ...brewerData };
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             brewers: prev.brewers.map((brewer) => {
                 if (brewer.id !== brewerId) return brewer;
                 return newBrewer;
             })
-        }));
-        setMessage(`Saved changes to brewer`);
+        } : prev));
+        setMessage(`Saved changes`);
         return newBrewer;
     };
 
     const removeBrewer = (brewerId: string) => {
+        if (!data) throw new Error('Data not loaded yet');
         const brewsUsingBrewer = data.brews.filter((brew) => brew.brewerId === brewerId);
         if (brewsUsingBrewer.length > 0) {
             brewsUsingBrewer.forEach((brew) => removeBrew(brew.id));
@@ -250,55 +295,59 @@ export const DialBeanProvider: React.FC<{ setMessage: (message: string) => void;
         if (brewer.usedInBrew) {
             throw new Error(`Cannot remove usedInBrew brewer with ID ${brewerId}`);
         }
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             brewers: prev.brewers.filter((brewer) => brewer.id !== brewerId)
-        }));
+        } : prev));
         setMessage(`Removed brewer`);
     };
 
     const markBrewerCleaned = (brewerId: string): Brewer => {
+        if (!data) throw new Error('Data not loaded yet');
         const brewer = data.brewers.find((b) => b.id === brewerId);
         if (!brewer) {
             throw new Error(`Brewer with ID ${brewerId} not found`);
         }
         const newBrewer: Brewer = { ...brewer, cleanedDate: new Date().toISOString() };
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             brewers: prev.brewers.map((brewer) => {
                 if (brewer.id !== brewerId) return brewer;
                 return newBrewer;
             })
-        }));
-        setMessage(`Marked brewer as cleaned`);
+        } : prev));
+        setMessage(`Marked as cleaned`);
         return newBrewer;
     };
 
     const addRecipe = (recipeData: Omit<Recipe, 'id' | 'isBase' | 'usedInBrew'>): Recipe => {
+        if (!data) throw new Error('Data not loaded yet');
         const newRecipe: Recipe = { ...recipeData, id: crypto.randomUUID(), isBase: false, usedInBrew: false };
-        setData((prev) => ({ ...prev, recipes: [...prev.recipes, newRecipe] }));
+        setData((prev) => (prev ? { ...prev, recipes: [...prev.recipes, newRecipe] } : prev));
         setMessage(`Added new recipe`);
         return newRecipe;
     };
 
     const editRecipe = (recipeId: string, recipeData: Omit<Recipe, 'id' | 'isBase' | 'usedInBrew'>): Recipe => {
+        if (!data) throw new Error('Data not loaded yet');
         const recipe = data.recipes.find((r) => r.id === recipeId);
         if (!recipe) {
             throw new Error(`Recipe with ID ${recipeId} not found`);
         }
         const newRecipe: Recipe = { ...recipe, ...recipeData };
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             recipes: prev.recipes.map((recipe) => {
                 if (recipe.id !== recipeId) return recipe;
                 return newRecipe;
             })
-        }));
-        setMessage(`Saved changes to recipe`);
+        } : prev));
+        setMessage(`Saved changes`);
         return newRecipe;
     };
 
     const removeRecipe = (recipeId: string) => {
+        if (!data) throw new Error('Data not loaded yet');
         const brewsUsingRecipe = data.brews.filter((brew) => brew.recipeId === recipeId);
         if (brewsUsingRecipe.length > 0) {
             brewsUsingRecipe.forEach((brew) => removeBrew(brew.id));
@@ -311,14 +360,15 @@ export const DialBeanProvider: React.FC<{ setMessage: (message: string) => void;
         if (recipe.usedInBrew) {
             throw new Error(`Cannot remove usedInBrew recipe with ID ${recipeId}`);
         }
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             recipes: prev.recipes.filter((recipe) => recipe.id !== recipeId)
-        }));
+        } : prev));
         setMessage(`Removed recipe`);
     };
 
     const newBrew = (brewData: Omit<Brew, 'id' | 'dialIns'>): Brew => {
+        if (!data) throw new Error('Data not loaded yet');
         const { name, notes, bagId, brewerId, grinderId, recipeId } = brewData;
         const bag = data.bags.find((b) => b.id === bagId);
         const recipe = data.recipes.find((r) => r.id === recipeId);
@@ -359,7 +409,7 @@ export const DialBeanProvider: React.FC<{ setMessage: (message: string) => void;
                 timestamp: new Date().toISOString()
             }],
         };
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             brews: [...prev.brews, newBrew],
             bags: prev.bags.map((d) => {
@@ -378,12 +428,13 @@ export const DialBeanProvider: React.FC<{ setMessage: (message: string) => void;
                 if (d.id !== brewerId) return d;
                 return newBrewer;
             })
-        }));
-        setMessage(`Added new brew`);
+        } : prev));
+        setMessage(`Added brew`);
         return newBrew;
     };
 
     const markBrewUsed = (brewId: string): Brew => {
+        if (!data) throw new Error('Data not loaded yet');
         const brew = data.brews.find((d) => d.id === brewId);
         if (!brew) {
             throw new Error(`Brew with ID ${brewId} not found`);
@@ -395,19 +446,20 @@ export const DialBeanProvider: React.FC<{ setMessage: (message: string) => void;
             ...brew,
             lastUsedTimestamp: new Date().toISOString()
         };
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             brews: prev.brews.map((d) => {
                 if (d.id !== brewId) return d;
                 return newBrew;
             })
-        }));
+        } : prev));
         // no meessage here, silent for notification handling later
         return newBrew;
     };
 
 
     const setDialInDisgusting = (brewId: string, isDisgusting: boolean = true): Brew => {
+        if (!data) throw new Error('Data not loaded yet');
         const brew = data.brews.find((d) => d.id === brewId);
         if (!brew) {
             throw new Error(`Brew with ID ${brewId} not found`);
@@ -423,19 +475,20 @@ export const DialBeanProvider: React.FC<{ setMessage: (message: string) => void;
             ...brew,
             dialIns: [...brew.dialIns.slice(0, -1), newDialIn]
         };
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             brews: prev.brews.map((d) => {
                 if (d.id !== brewId) return d;
                 return newBrew;
             })
-        }));
-        setMessage(`Marked Dial-in disgusting`);
+        } : prev));
+        setMessage(`Marked disgusting`);
         return newBrew;
     };
 
 
     const removeBrew = (brewId: string) => {
+        if (!data) throw new Error('Data not loaded yet');
         const brew = data.brews.find((d) => d.id === brewId);
         if (!brew) return;
         const bag = data.bags.find((d) => d.id === brew.bagId);
@@ -469,7 +522,7 @@ export const DialBeanProvider: React.FC<{ setMessage: (message: string) => void;
             if (!brewerUsed)
                 newBrewer = { ...brewer, usedInBrew: false };
         }
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             brews: prev.brews.filter((d) => d.id !== brewId),
             bags: prev.bags.map((d) => {
@@ -488,12 +541,12 @@ export const DialBeanProvider: React.FC<{ setMessage: (message: string) => void;
                 if (d.id !== brew?.brewerId) return d;
                 return newBrewer ?? d;
             })
-        }));
+        } : prev));
         setMessage(`Removed brew`);
     }
 
     const editBrew = (brewId: string, brewData: Omit<Brew, 'id' | 'dialIns'>): Brew => {
-        console.log("editBrew called with brewId:", brewId, "brewData:", brewData);
+        if (!data) throw new Error('Data not loaded yet');
         const brew = data.brews.find((d) => d.id === brewId);
         if (!brew) {
             throw new Error(`Brew with ID ${brewId} not found`);
@@ -549,7 +602,7 @@ export const DialBeanProvider: React.FC<{ setMessage: (message: string) => void;
         const newNewRecipe: Recipe = { ...newRecipe, usedInBrew: true };
         const newNewGrinder: Grinder = { ...newGrinder, usedInBrew: true };
         const newNewBrewer: Brewer = { ...newBrewer, usedInBrew: true };
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             brews: prev.brews.map((d) => {
                 if (d.id !== brewId) return d;
@@ -575,12 +628,13 @@ export const DialBeanProvider: React.FC<{ setMessage: (message: string) => void;
                 if (d.id === newBrewer?.id) return newNewBrewer ?? d;
                 return newOldBrewer ?? d;
             })
-        }));
-        setMessage(`Saved changes to brew`);
+        } : prev));
+        setMessage(`Saved changes`);
         return newBrew;
     }
 
     const removeDialIn = (brewId: string) => {
+        if (!data) throw new Error('Data not loaded yet');
         const brew = data.brews.find((d) => d.id === brewId);
         if (!brew) {
             throw new Error(`Brew with ID ${brewId} not found`);
@@ -592,14 +646,14 @@ export const DialBeanProvider: React.FC<{ setMessage: (message: string) => void;
             ...brew,
             dialIns: brew.dialIns.slice(0, -1)
         };
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             brews: prev.brews.map((d) => {
                 if (d.id !== brewId) return d;
                 return newBrew;
             })
-        }));
-        setMessage(`Removed Dial-in on a brew`);
+        } : prev));
+        setMessage(`Removed Dial-in`);
         return newBrew;
     }
 
@@ -607,6 +661,7 @@ export const DialBeanProvider: React.FC<{ setMessage: (message: string) => void;
         brewId: string,
         evalData: Omit<Evaluation, 'timestamp'>
     ): Brew => {
+        if (!data) throw new Error('Data not loaded yet');
         const brew = data.brews.find((d) => d.id === brewId);
         if (!brew) {
             throw new Error(`Brew with ID ${brewId} not found`);
@@ -626,18 +681,19 @@ export const DialBeanProvider: React.FC<{ setMessage: (message: string) => void;
             ...brew,
             dialIns: [...brew.dialIns.slice(0, -1), newDialIn]
         };
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             brews: prev.brews.map((d) => {
                 if (d.id !== brewId) return d;
                 return newBrew;
             })
-        }));
-        setMessage(`Added new evaluation for brew`);
+        } : prev));
+        setMessage(`Added evaluation`);
         return newBrew;
     };
 
     const removeEvaluation = (brewId: string) => {
+        if (!data) throw new Error('Data not loaded yet');
         const brew = data.brews.find((d) => d.id === brewId);
         if (!brew) {
             throw new Error(`Brew with ID ${brewId} not found`);
@@ -656,20 +712,21 @@ export const DialBeanProvider: React.FC<{ setMessage: (message: string) => void;
             ...brew,
             dialIns: [...brew.dialIns.slice(0, -1), newDialIn]
         };
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             brews: prev.brews.map((d) => {
                 if (d.id !== brewId) return d;
                 return newBrew;
             })
-        }));
-        setMessage(`Removed evaluation on a brew`);
+        } : prev));
+        setMessage(`Removed evaluation`);
         return newBrew;
     };
 
     const addDialIn = (
         brewId: string, dialIn: Omit<DialIn, 'timestamp' | 'evaluations'>
     ): Brew => {
+        if (!data) throw new Error('Data not loaded yet');
         const brew = data.brews.find((d) => d.id === brewId);
         if (!brew) {
             throw new Error(`Brew with ID ${brewId} not found`);
@@ -684,14 +741,14 @@ export const DialBeanProvider: React.FC<{ setMessage: (message: string) => void;
                 timestamp: new Date().toISOString(),
             }]
         };
-        setData((prev) => ({
+        setData((prev) => (prev ? {
             ...prev,
             brews: prev.brews.map((d) => {
                 if (d.id !== brewId) return d;
                 return newBrew;
             })
-        }));
-        setMessage(`Added new Dial-in`);
+        } : prev));
+        setMessage(`Added Dial-in`);
         return newBrew;
     };
 

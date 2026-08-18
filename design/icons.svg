@@ -228,9 +228,9 @@
        margin="2"
        bleed="0"
        inkscape:label="dial_bean_lg"
-       inkscape:export-filename="dial_bean_sm_p.svg"
-       inkscape:export-xdpi="96"
-       inkscape:export-ydpi="96" />
+       inkscape:export-filename="..\fronend\public\fronend\public\icons\icon_512.png"
+       inkscape:export-xdpi="1024"
+       inkscape:export-ydpi="1024" />
     <inkscape:page
        x="1049.6831"
        y="0"

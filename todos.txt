@@ -1,14 +1,41 @@
 // todos
 
-
-
-
-let copilot check the spelling of all strings.
+the installer is not working correctly.
 
 decide whether to remove all brews with item or to block removal of item if used.
  - if second, fix the remove dialog checkbox.
 When used bag is removed exception appears. Fix.
 
-finish cupboard
-finish recipe book
-    
+write some recipes
+
+help dialogs for the dial in
+help dialog for the grinder
+help dialog for the bag
+
+
+figure out if the scrollbar peeking throught dialogs is normal for dev mode chrome
+
+check the portrait vs landscape layout for each dialog.
+
+
+all the legal pages
+
+copyright
+
+license document - check open source
+cookies?
+
+installable app
+
+make last used analysis for evaluation questionning, maybe notification? IDK.
+
+call the app DialBean not DialBean.
+
+format for desktop as well....
+
+settings page
+ - feature to export data
+ - feature to import data
+
+ 
+let copilot check the spelling of all strings.

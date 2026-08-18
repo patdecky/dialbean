@@ -9,6 +9,7 @@ const Cupboard = () => {
         editGrinder, addGrinder, removeGrinder
     } = useDialBean();
 
+    if (!data) { return <div className="flex items-center justify-center">Loading...</div>; }
 
     return (
         <div className="flex flex-col items-center justify-center h-full w-full">
