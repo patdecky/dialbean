@@ -1,6 +1,10 @@
 
 import type { Brew, Grinder, Recipe, DialIn, DialInRequest, Evaluation, DialInSuggestion, BrewerType, BrewerCategory, Bag } from "./types";
 
+export const isItemUsed = (usageFlags: { id: string; brewIds: string[] }[], itemId: string): boolean => {
+    return (usageFlags.find((flag) => flag.id === itemId)?.brewIds.length ?? 0) > 0;
+};
+
 export const calculateAverageEvaluation = (
     evaluations: Evaluation[]
 ): Omit<Evaluation, 'timestamp' | 'notes'> | null => {

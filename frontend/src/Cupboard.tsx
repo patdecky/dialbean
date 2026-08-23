@@ -23,6 +23,7 @@ const Cupboard = () => {
                         <div className="label">Bags:</div>
                         <PickItemCarousel
                             items={data.bags}
+                            usageMap={data.bagUsedFlags}
                             onSelectDetails={true}
                             type="bag"
                             onNewItem={(item) => addBag(item as Bag)}
@@ -34,6 +35,7 @@ const Cupboard = () => {
                         <div className="label">Grinders:</div>
                         <PickItemCarousel
                             items={data.grinders}
+                            usageMap={data.grinderUsedFlags}
                             onSelectDetails={true}
                             type="grinder"
                             onNewItem={(item) => addGrinder(item as Grinder)}
@@ -45,6 +47,7 @@ const Cupboard = () => {
                         <div className="label">Brewers:</div>
                         <PickItemCarousel
                             items={data.brewers}
+                            usageMap={data.brewerUsedFlags}
                             onSelectDetails={true}
                             type="brewer"
                             onNewItem={(item) => addBrewer(item as Brewer)}

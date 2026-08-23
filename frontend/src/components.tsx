@@ -18,7 +18,11 @@ import type {
     BrewerType,
     DialInRequest,
     ItemTypeName,
-    RoastLevel
+    RoastLevel,
+    BagUsedFlag,
+    GrinderUsedFlag,
+    BrewerUsedFlag,
+    RecipeUsedFlag
 } from './types';
 import { useDialBean } from './DialBeanContext';
 import {
@@ -52,7 +56,6 @@ import {
     PlusActionIcon,
 } from "./action_icons";
 
-import { MdClose } from "react-icons/md";
 import {
     formatDateOpened,
     formatLastCleaned,
@@ -60,17 +63,19 @@ import {
 } from './formating';
 import {
     BrewRatingInfo,
-    ConfirmCloseDialInModal,
-    ConfirmDeleteDialInModal,
-    ConfirmDeleteEvaluationModal,
     ConfirmModal,
-    ConfirmRemoveItemModal
+    DialInEngineInfo,
+    GrinderScaleInfo,
+    GrindFinenessInfo,
+    MessageModal,
+    RoastLevelInfo
 } from './modals';
 import {
     calculateAverageEvaluation,
     getDecimals,
     getGrind,
     getGrindPrecision,
+    isItemUsed,
     suggestDialIn,
     suggestRequest
 } from './brain';
@@ -160,6 +165,7 @@ export const getNameIcon = (iconId: string, type: ItemTypeName): { name: string,
 export const SmallItemCard = ({
     item,
     type,
+    usageMap,
     isSelected = false,
     onItemSelected,
     allowDetails = true,
@@ -171,6 +177,7 @@ export const SmallItemCard = ({
 }: {
     item: ItemType;
     type: 'brewer' | 'grinder' | 'bag' | 'recipe';
+    usageMap: { id: string; brewIds: string[] }[];
     isSelected?: boolean;
     onItemSelected?: ((item: ItemType) => void);
     allowDetails?: boolean;
@@ -189,6 +196,7 @@ export const SmallItemCard = ({
             {showDetails && <ItemDetailsDialog
                 item={item}
                 type={type}
+                usageMap={usageMap}
                 onClose={() => setShowDetails(false)}
                 onNewItem={onNewItem ? (item) => {
                     onNewItem(item);
@@ -214,7 +222,7 @@ export const SmallItemCard = ({
                     {item.isBase && <div className="library-mark small rec"></div>}
                     {allowDetails && (
                         <button
-                            className="absolute top-0 right-0 bg-transparent rounded-full p-[2px]"
+                            className="absolute top-0 right-0 transparent rounded-full p-[2px]"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 e.preventDefault();
@@ -223,12 +231,16 @@ export const SmallItemCard = ({
                             <InfoActionIcon size="12" strokeColor="var(--color-fg1)" />
                         </button>
                     )}
-                    <div className="flex-1 max-w-full inline-flex items-center justify-center flex-col text-xs text-fg3">
+                    <div className="flex-1 w-full h-full inline-flex items-center justify-center flex-col text-xs text-fg3">
                         <div className="text-center line-clamp-2 text-ellipsis overflow-hidden max-w-full font-hand font-bold">
                             {item.name}
                         </div>
                         <div className="text-center line-clamp-2 text-ellipsis overflow-hidden max-w-full font-hand font-bold">
                             for {(item as Recipe).type}
+                        </div>
+                        <div className="flex gap-[2px] items-center justify-start mt-[2px]">
+                            <WaterIcon style={{ width: "12px", height: "12px" }} />
+                            <span className="text-xs">{(item as Recipe).waterMl}ml</span>
                         </div>
                     </div>
                 </div >
@@ -249,7 +261,7 @@ export const SmallItemCard = ({
                     {item.isBase && <div className="library-mark small"></div>}
                     {allowDetails && (
                         <button
-                            className="bg-transparent absolute top-0 right-0 rounded-full p-[2px]"
+                            className="transparent absolute top-0 right-0 rounded-full p-[2px]"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 e.preventDefault();
@@ -312,6 +324,7 @@ export const TinyItemCard = ({ item, type, isSelected = false, onItemSelected = 
 
 export const MediumRecipeCard = ({
     recipe,
+    usageMap,
     isSelected,
     onItemSelected,
     allowDetails = true,
@@ -322,6 +335,7 @@ export const MediumRecipeCard = ({
     itemRef
 }: {
     recipe: Recipe;
+    usageMap: { id: string; brewIds: string[] }[];
     isSelected?: boolean;
     onItemSelected?: ((recipe: Recipe) => void);
     allowDetails?: boolean;
@@ -337,6 +351,7 @@ export const MediumRecipeCard = ({
             {showDetails && <ItemDetailsDialog
                 item={recipe}
                 type="recipe"
+                usageMap={usageMap}
                 onClose={() => {
                     setShowDetails(false)
                 }}
@@ -364,16 +379,19 @@ export const MediumRecipeCard = ({
                 {recipe.isBase && <div className="library-mark small rec"></div>}
                 {allowDetails && (
                     <button
-                        className="absolute top-0 right-0 bg-transparent rounded-full p-[2px]"
+                        className="absolute top-0 right-0 transparent rounded-full p-[2px]"
                         onClick={() => {
                             setShowDetails(true);
                         }} >
                         <InfoActionIcon size="12" strokeColor="var(--color-fg1)" />
                     </button>
                 )}
-
                 <div className="line-clamp-2 text-ellipsis overflow-hidden font-hand font-bold">
                     {recipe.name}
+                </div>
+                <div className="flex gap-[2px] items-center justify-start">
+                    <WaterIcon style={{ width: "12px", height: "12px" }} />
+                    <span className="text-xs">{recipe.waterMl}ml</span>
                 </div>
                 <div className="instructions">
                     {recipe.instructions}
@@ -486,10 +504,11 @@ export const EvaluationAverageCard = ({ evaluations }: {
 }
 
 
-export const DialInCard = ({ dialIn, recipe, grinder }: {
+export const DialInCard = ({ dialIn, recipe, grinder, showWater }: {
     dialIn: DialIn,
     recipe: Recipe,
     grinder: Grinder,
+    showWater?: boolean,
 }) => {
     const recipeGrind = getGrind(grinder, recipe);
     const grindPrecision = getGrindPrecision(grinder);
@@ -498,17 +517,12 @@ export const DialInCard = ({ dialIn, recipe, grinder }: {
             <div className="flex justify-start items-center">
                 <DialIcon style={{ width: "24px", height: "24px" }} />
             </div>
-            {/* <div className="flex justify-start gap-[2px] items-center">
-                <WaterIcon />
-                {dialIn.waterDelta === 0 ? (
+            {showWater && (
+                <div className="flex justify-start gap-[2px] items-center">
+                    <WaterIcon />
                     <span>{recipe.waterMl}ml</span>
-                ) : (
-                    <>
-                        <span className="line-through">{recipe.waterMl}</span>
-                        <span>{recipe.waterMl + dialIn.waterDelta}ml</span>
-                    </>
-                )}
-            </div> */}
+                </div>
+            )}
             <div className="flex justify-start gap-[2px] items-center">
                 <GrindIcon />
                 {dialIn.grinderDelta === 0 ? (
@@ -622,6 +636,14 @@ export const BrewCard = ({ brew, bag, brewer, grinder, recipe, onSelected = null
                         </div>
                     </div>
                     <div>
+                        {brew.dialIns.length > 0 ? (
+                            <DialInCard
+                                dialIn={brew.dialIns[brew.dialIns.length - 1]}
+                                recipe={recipe}
+                                grinder={grinder}
+                                showWater={true}
+                            />
+                        ) : null}
                         {brew.dialIns.length > 0 && brew.dialIns[brew.dialIns.length - 1].evaluations.length > 0 ? (
                             <EvaluationAverageCard evaluations={brew.dialIns[brew.dialIns.length - 1].evaluations} />
                         ) : <div className="text-xs h-5 flex items-center gap-1"><EvaluationIcon />Dial-in not evaluated</div>}
@@ -668,29 +690,6 @@ export const SingleRatingCard = ({ rating, onRatingSelected, category }: {
 
 
 
-export const ConfirmDialog = ({ message, onConfirm, onCancel }:
-    {
-        message: string;
-        onConfirm: () => void;
-        onCancel: () => void
-    }) => {
-    return (
-        <div className="fixed top-0 left-0 w-full h-full z-150 flex items-center justify-center">
-            <div className="fixed top-0 left-0 w-full h-full backdrop-blur-sm bg-gray-200 opacity-50"></div>
-            <div className="bg-white shadow-xl z-60 p-4 rounded shadow-md min-w-64 relative max-h-[90dvh] overflow-y-auto shadow-md w-96">
-                <div>{message}</div>
-                <div>fix me!</div>
-                <div className="flex gap-1">
-                    <button className="border rounded-md px-2 py-1 hover:bg-gray-200" onClick={onConfirm}>Confirm</button>
-                    <button className="border rounded-md px-2 py-1 hover:bg-gray-200" onClick={onCancel}>Cancel</button>
-                </div>
-                <button
-                    className="absolute top-2 right-2 hover:bg-gray-200 rounded-full p-1"
-                    onClick={onCancel}><MdClose /></button>
-            </div>
-        </div>
-    )
-}
 
 export const PickTypeDialog = ({ type, onIconSelected, onClose }:
     {
@@ -712,10 +711,28 @@ export const PickTypeDialog = ({ type, onIconSelected, onClose }:
                 type === "bag" ? "Select bag roast level" :
                     "Select indended brewer type"
     )
+
+    const [showRoastLevelInfo, setShowRoastLevelInfo] = useState(false);
+
     return (
         <div className="dialog">
+            {showRoastLevelInfo && (
+                <RoastLevelInfo onClose={() => setShowRoastLevelInfo(false)} />
+            )}
             <div className="backdrop" onClick={onClose}></div>
             <div className="library flex flex-col gap-2">
+                <div className="absolute top-2 right-2 flex gap-1">
+                    {type === "bag" && (
+                        <button className="transparent rounded-full p-1"
+                            onClick={() => setShowRoastLevelInfo(true)}>
+                            <InfoActionIcon strokeColor='var(--color-fg1)' />
+                        </button>
+                    )}
+                    <button className="transparent rounded-full p-1"
+                        onClick={onClose}>
+                        <XActionIcon strokeColor='var(--color-fg1)' />
+                    </button>
+                </div>
                 <div>{message}</div>
                 <div className="flex flex-wrap gap-2 overflow-y-auto max-h-96">
                     {Object.values(icons).map((iconEntry) => (
@@ -735,7 +752,6 @@ export const PickTypeDialog = ({ type, onIconSelected, onClose }:
                         </div>
                     ))}
                 </div>
-                <button className="absolute top-2 right-2 bg-transparent rounded-full p-1" onClick={onClose}><XActionIcon strokeColor='var(--color-fg1)' /></button>
             </div>
         </div>
     );
@@ -746,6 +762,7 @@ export const PickTypeDialog = ({ type, onIconSelected, onClose }:
 export const ItemDetailsDialog = ({
     item,
     type,
+    usageMap,
     onClose,
     onNewItem,
     onRemoveItem,
@@ -754,6 +771,7 @@ export const ItemDetailsDialog = ({
     {
         item: ItemType;
         type: ItemTypeName;
+        usageMap: { id: string; brewIds: string[] }[];
         onClose: () => void;
         onNewItem?: ((item: ItemType) => void) | undefined;
         onRemoveItem?: ((item: ItemType) => void) | undefined;
@@ -761,6 +779,7 @@ export const ItemDetailsDialog = ({
     }) => {
     const icon = getItemIcon(item, type);
     const { markBrewerCleaned, markGrinderCleaned, markBagOpened, markBagFinished, markBagRestocked } = useDialBean();
+    const usedInBrew = isItemUsed(usageMap, item.id);
 
 
     const [showOptionButtons, setShowOptionButtons] = useState(false);
@@ -774,6 +793,9 @@ export const ItemDetailsDialog = ({
     const [showConfirmRemoveModal, setShowConfirmRemoveModal] = useState(false);
     const [showConfirmCopyModal, setShowConfirmCopyModal] = useState(false);
     const [showConfirmEditModal, setShowConfirmEditModal] = useState(false);
+    const [showItemUsedModal, setShowItemUsedModal] = useState(false);
+    const [showCannotRemoveBaseModal, setShowCannotRemoveBaseModal] = useState(false);
+    const [showCannotEditBaseModal, setShowCannotEditBaseModal] = useState(false);
 
     return (
         <div className="dialog">
@@ -795,14 +817,26 @@ export const ItemDetailsDialog = ({
                 />
             )}
             {showConfirmRemoveModal && (
-                <ConfirmRemoveItemModal
-                    item={item}
-                    type={type}
+                <ConfirmModal
+                    title={`Are you sure you want to remove this ${type}?`}
+                    okButton={"Yes Remove"}
                     onConfirm={() => {
                         setShowConfirmRemoveModal(false);
                         onRemoveItem?.(item);
                     }}
                     onCancel={() => setShowConfirmRemoveModal(false)}
+                />
+            )}
+            {showItemUsedModal && (
+                <MessageModal
+                    title={`This ${type} is used in a brew and cannot be removed.`}
+                    onClose={() => setShowItemUsedModal(false)}
+                />
+            )}
+            {showCannotRemoveBaseModal && (
+                <MessageModal
+                    title={`This ${type} is a base item and cannot be removed.`}
+                    onClose={() => setShowCannotRemoveBaseModal(false)}
                 />
             )}
             {showConfirmCopyModal && (
@@ -837,22 +871,24 @@ export const ItemDetailsDialog = ({
                         (
                             showOptionButtons ?
                                 (<div className="flex gap-2">
-                                    {onRemoveItem && !isBase && <button
-                                        onClick={() => setShowConfirmRemoveModal(true)}
-                                        className="p-1 bg-transparent rounded-full" >
+                                    {onRemoveItem && <button
+                                        onClick={() => isBase ? setShowCannotRemoveBaseModal(true) : (usedInBrew ? setShowItemUsedModal(true) : setShowConfirmRemoveModal(true))}
+                                        className={"p-1 transparent rounded-full" + (isBase || usedInBrew ? " opacity-50 cursor-not-allowed" : "")} >
                                         <DeleteActionIcon strokeColor="var(--color-fg1)" fillColor="white" />
+                                    </button>}
+
+                                    {onEditItem && <button onClick={() => {
+                                        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                                        isBase ? setShowCannotEditBaseModal(true) : setShowConfirmEditModal(true)
+                                    }}
+                                        className={"p-1 transparent rounded-full" + (isBase ? " opacity-50 cursor-not-allowed" : "")} >
+                                        <EditActionIcon strokeColor="var(--color-fg1)" fillColor="white" />
                                     </button>}
                                     {onNewItem && <button onClick={() => {
                                         setShowConfirmCopyModal(true)
                                     }}
-                                        className="p-1 bg-transparent rounded-full" >
+                                        className="p-1 transparent rounded-full" >
                                         <CopyActionIcon strokeColor="var(--color-fg1)" fillColor="white" />
-                                    </button>}
-                                    {onEditItem && !isBase && <button onClick={() => {
-                                        setShowConfirmEditModal(true)
-                                    }}
-                                        className="p-1 bg-transparent rounded-full" >
-                                        <EditActionIcon strokeColor="var(--color-fg1)" fillColor="white" />
                                     </button>}
                                     <button onClick={() => { setShowOptionButtons(false) }}
                                         className="p-1 rounded-full" >
@@ -861,14 +897,14 @@ export const ItemDetailsDialog = ({
                                 </div>
                                 ) : (
                                     <button onClick={() => setShowOptionButtons(true)}
-                                        className="p-1 bg-transparent rounded-full"
+                                        className="p-1 transparent rounded-full"
                                     >
                                         <EllipsisActionIcon fillColor="var(--color-fg1)" />
                                     </button>
                                 )
                         )
                     }
-                    <button onClick={onClose} className="p-1 bg-transparent rounded-full">
+                    <button onClick={onClose} className="p-1 transparent rounded-full">
                         <XActionIcon strokeColor="var(--color-fg1)" />
                     </button>
                 </div>
@@ -876,7 +912,7 @@ export const ItemDetailsDialog = ({
                     <>
                         <div>
                             <h2 className="">{item.name}</h2>
-                            {isBase && <div className="label">System Brewer - copy to edit</div>}
+                            {isBase && <div className="label">Library Brewer - copy to edit</div>}
                             {(item as Brewer).cleanedDate && !isBase && <div className="timestamp">
                                 <div>{formatLastCleaned((item as Brewer).cleanedDate ?? "")}</div>
                             </div>
@@ -902,7 +938,7 @@ export const ItemDetailsDialog = ({
                         <div>
 
                             <h2 className="">{item.name}</h2>
-                            {isBase && <div className="label">System Grinder - copy to edit</div>}
+                            {isBase && <div className="label">Library Grinder - copy to edit</div>}
                             {(item as Grinder).cleanedDate && <div className="timestamp">
                                 <div>{formatLastCleaned((item as Grinder).cleanedDate ?? "")}</div>
                             </div>
@@ -933,7 +969,7 @@ export const ItemDetailsDialog = ({
                     <>
                         <div>
                             <h2 className="">{item.name}</h2>
-                            {isBase && <div className="label">System Bag - copy to edit</div>}
+                            {isBase && <div className="label">Library Bag - copy to edit</div>}
                             {dateOpened && <div className="timestamp">
                                 <div>{formatDateOpened(dateOpened)}</div>
                             </div>
@@ -968,7 +1004,7 @@ export const ItemDetailsDialog = ({
                     <>
                         <div>
                             <h2 className="font-hand font-bold">{item.name}</h2>
-                            {isBase && <div className="label">System Recipe - copy to edit</div>}
+                            {isBase && <div className="label">Library Recipe - copy to edit</div>}
                         </div>
                         <div>
 
@@ -1040,6 +1076,8 @@ export const NewItemDialog = ({
 
     const [showErrors, setShowErrors] = useState(false);
     const [showConfirmClose, setShowConfirmClose] = useState(false);
+    const [showGrinderInfoModal, setShowGrinderInfoModal] = useState(false);
+    const [showGrindSizeInfoModal, setShowGrindSizeInfoModal] = useState(false);
 
     const handleSave = () => {
         if (type === "bag") {
@@ -1103,10 +1141,21 @@ export const NewItemDialog = ({
         <div className="dialog">
             {showConfirmClose && (
                 <ConfirmModal
-                    title="Are you sure you want to close the new brew dialog?"
+                    title={`Are you sure you want to close the new ${type} dialog?`}
                     okButton="Yes Close"
                     onConfirm={onClose}
                     onCancel={() => setShowConfirmClose(false)}
+                />
+            )}
+            {showGrinderInfoModal && (
+                <GrinderScaleInfo
+                    onClose={() => setShowGrinderInfoModal(false)}
+                />
+            )}
+
+            {showGrindSizeInfoModal && (
+                <GrindFinenessInfo
+                    onClose={() => setShowGrindSizeInfoModal(false)}
                 />
             )}
             <div className="backdrop" onClick={() => setShowConfirmClose(true)}></div>
@@ -1133,9 +1182,17 @@ export const NewItemDialog = ({
                         onClose={() => setIconDialogActive(false)}
                     />
                 )}
-                <button
-                    className="absolute top-2 right-2 bg-transparent rounded-full p-1"
-                    onClick={() => setShowConfirmClose(true)}><XActionIcon strokeColor="var(--color-fg1)" /></button>
+                <div className="absolute top-2 right-2 flex gap-1">
+                    {type === "grinder" && <button
+                        className="transparent rounded-full p-1"
+                        onClick={() => setShowGrinderInfoModal(true)}><InfoActionIcon strokeColor="var(--color-fg1)" /></button>}
+                    {type === "recipe" && <button
+                        className="transparent rounded-full p-1"
+                        onClick={() => setShowGrindSizeInfoModal(true)}><InfoActionIcon strokeColor="var(--color-fg1)" /></button>}
+                    <button
+                        className="transparent rounded-full p-1"
+                        onClick={() => setShowConfirmClose(true)}><XActionIcon strokeColor="var(--color-fg1)" /></button>
+                </div>
                 {type === "brewer" &&
                     <>
                         <h2>{edit ? "Edit" : "New"} {type.charAt(0).toUpperCase() + type.slice(1)}</h2>
@@ -1528,6 +1585,7 @@ export const LibraryCard = ({
     onItemSelected,
     items,
     type,
+    usageMap,
     onNewItem,
     onRemoveItem,
     onEditItem,
@@ -1541,14 +1599,20 @@ export const LibraryCard = ({
         onEditItem?: ((id: string, item: ItemType) => void);
         onSelectDetails?: boolean;
         type: ItemTypeName;
+        usageMap: { id: string; brewIds: string[] }[];
         brewerType?: BrewerType | null;
     }) => {
+
+    const usedItems = usageMap.map((usage) => items.find((item) => item.id === usage.id && !((type === "bag") && (item as Bag).isFinished))).filter((item): item is ItemType => item !== undefined);
+    const finishedItems = items.filter((item) => type === "bag" && (item as Bag).isFinished);
+    const unusedItems = items.filter((item) => !usedItems.includes(item) && !finishedItems.includes(item));
 
 
     const [filter, setFilter] = useState('');
     const [matchFilter, setMatchFilter] = useState(true);
+
     const filterParts = filter.split(" ").map((part) => part.trim().toLowerCase()).filter((part) => part.length > 0);
-    const filteredItems = items.filter((item) => (
+    const filterItem = (item: ItemType) => (
         (
             filterParts.every((part) => item.name.toLowerCase().includes(part) ||
                 ((type === "brewer" || type === "recipe") && (item as Brewer).type.toLowerCase().includes(part)) ||
@@ -1557,7 +1621,10 @@ export const LibraryCard = ({
             filter === ''
         )
         && (type !== "recipe" || !matchFilter || !brewerType || (item as Recipe).type === brewerType)
-    ));
+    )
+    const filteredUsedItems = usedItems.filter(filterItem);
+    const filteredUnusedItems = unusedItems.filter(filterItem);
+    const filteredFinishedItems = finishedItems.filter(filterItem);
 
     const [newItemDialogActive, setNewItemDialogActive] = useState(false);
 
@@ -1577,7 +1644,7 @@ export const LibraryCard = ({
             <h2>{type.charAt(0).toUpperCase() + type.slice(1)} Library:</h2>
             <div className='flex items-center'>
                 <input type="text" className="filter" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filter ..." />
-                <button className='bg-transparent relative right-7 rounded-md p-[5px]' onClick={() => setFilter('')}>
+                <button className='transparent relative right-7 rounded-md p-[5px]' onClick={() => setFilter('')}>
                     <XActionIcon strokeColor='var(--color-fg1)' />
                 </button>
             </div>
@@ -1591,14 +1658,15 @@ export const LibraryCard = ({
             <div className='flex flex-1 flex-col justify-between gap-2'>
                 <div className='grow-1'>
                     <div className="grow-1 flex flex-wrap gap-2 justify-start items-center">
-                        <>
-                            {filteredItems.length > 0 ? (
-                                filteredItems.map((item) => (
-
+                        {filteredUsedItems.length > 0 && (
+                            <>
+                                <div className="label w-full">Used {type}s:</div>
+                                {filteredUsedItems.map((item) => (
                                     <SmallItemCard
                                         key={item.id}
                                         item={item}
                                         type={type}
+                                        usageMap={usageMap}
                                         isSelected={false}
                                         onItemSelected={onItemSelected ? onItemSelected : undefined}
                                         onSelectDetails={onSelectDetails}
@@ -1606,16 +1674,55 @@ export const LibraryCard = ({
                                         onRemoveItem={onRemoveItem ? onRemoveItem : undefined}
                                         onNewItem={onNewItem ? onNewItem : undefined}
                                     />
-                                ))
-                            ) : (
-                                <>
-                                    <div className='w-full h-30 flex items-center justify-center gap-2'>
-                                        <div>No {type} found.</div>
-                                        {filter && <button className='sm' onClick={() => setFilter('')}>Clear Filter</button>}
-                                    </div>
-                                </>
-                            )}
-                        </>
+                                ))}
+                                {filteredUnusedItems.length > 0 || filteredFinishedItems.length > 0 ? <hr className='w-full' /> : null}
+                            </>
+                        )}
+                        {filteredUnusedItems.length > 0 && (
+                            <>
+                                <div className="label w-full">Unused {type}s:</div>
+                                {filteredUnusedItems.map((item) => (
+                                    <SmallItemCard
+                                        key={item.id}
+                                        item={item}
+                                        type={type}
+                                        usageMap={usageMap}
+                                        isSelected={false}
+                                        onItemSelected={onItemSelected ? onItemSelected : undefined}
+                                        onSelectDetails={onSelectDetails}
+                                        onEditItem={onEditItem ? onEditItem : undefined}
+                                        onRemoveItem={onRemoveItem ? onRemoveItem : undefined}
+                                        onNewItem={onNewItem ? onNewItem : undefined}
+                                    />
+                                ))}
+                                {filteredFinishedItems.length > 0 ? <hr className='w-full' /> : null}
+                            </>
+                        )}
+                        {filteredFinishedItems.length > 0 && (
+                            <>
+                                <div className="label w-full">Finished {type}s:</div>
+                                {filteredFinishedItems.map((item) => (
+                                    <SmallItemCard
+                                        key={item.id}
+                                        item={item}
+                                        type={type}
+                                        usageMap={usageMap}
+                                        isSelected={false}
+                                        onItemSelected={onItemSelected ? onItemSelected : undefined}
+                                        onSelectDetails={onSelectDetails}
+                                        onEditItem={onEditItem ? onEditItem : undefined}
+                                        onRemoveItem={onRemoveItem ? onRemoveItem : undefined}
+                                        onNewItem={onNewItem ? onNewItem : undefined}
+                                    />
+                                ))}
+                            </>
+                        )}
+                        {filteredUsedItems.length === 0 && filteredUnusedItems.length === 0 && filteredFinishedItems.length === 0 && (
+                            <div className='w-full h-30 flex items-center justify-center gap-2'>
+                                <div>No {type} found.</div>
+                                {filter && <button className='sm' onClick={() => setFilter('')}>Clear Filter</button>}
+                            </div>
+                        )}
                     </div>
                 </div>
                 {onNewItem ? <button onClick={() => setNewItemDialogActive(true)}>New {type}</button> : null}
@@ -1628,6 +1735,7 @@ export const ItemLibraryDialog = ({
     onItemSelected,
     items,
     type,
+    usageMap,
     onClose,
     onNewItem,
     onRemoveItem,
@@ -1643,6 +1751,7 @@ export const ItemLibraryDialog = ({
         onEditItem?: ((id: string, item: ItemType) => void);
         onSelectDetails?: boolean;
         type: ItemTypeName;
+        usageMap: { id: string; brewIds: string[] }[];
         brewerType?: BrewerType | null;
     }) => {
 
@@ -1654,13 +1763,14 @@ export const ItemLibraryDialog = ({
             <div className="backdrop" onClick={onClose}></div>
             <div className="library flex flex-col">
                 <button
-                    className="absolute top-2 right-2 bg-transparent rounded-full p-1"
+                    className="absolute top-2 right-2 transparent rounded-full p-1"
                     onClick={onClose}><XActionIcon strokeColor='var(--color-fg1)' /></button>
                 <div className="flex flex-1">
 
                     <LibraryCard
                         items={items}
                         type={type}
+                        usageMap={usageMap}
                         onItemSelected={onItemSelected}
                         onSelectDetails={onSelectDetails}
                         onEditItem={onEditItem}
@@ -1679,6 +1789,7 @@ export const PickItemCarousel = (
     {
         items,
         type,
+        usageMap,
         brewerType,
         selectedItem = null,
         onItemSelected = null,
@@ -1689,6 +1800,7 @@ export const PickItemCarousel = (
     }: {
         items: ItemType[];
         type: 'brewer' | 'grinder' | 'bag' | 'recipe';
+        usageMap: { id: string; brewIds: string[] }[];
         brewerType?: BrewerType | null;
         selectedItem?: ItemType | null;
         onItemSelected?: ((item: ItemType) => void) | null;
@@ -1698,9 +1810,9 @@ export const PickItemCarousel = (
         onEditItem?: ((id: string, item: ItemType) => void) | null;
     }) => {
     const matchingItems = type === "recipe" && brewerType ? items.filter((item) => (item as Recipe).type === brewerType) : items;
-    const activeUsedItems = matchingItems.filter((item) => item.usedInBrew && !item.isBase);
-    const inactiveUserItems = matchingItems.filter((item) => !item.usedInBrew && !item.isBase);
-    const activeBaseItems = matchingItems.filter((item) => item.isBase && item.usedInBrew);
+    const activeUsedItems = matchingItems.filter((item) => isItemUsed(usageMap, item.id) && !item.isBase);
+    const inactiveUserItems = matchingItems.filter((item) => !isItemUsed(usageMap, item.id) && !item.isBase);
+    const activeBaseItems = matchingItems.filter((item) => item.isBase && isItemUsed(usageMap, item.id));
     const visibleItems = [...activeUsedItems, ...inactiveUserItems, ...activeBaseItems];
     if (selectedItem && !visibleItems.some((item) => item.id === selectedItem.id)) {
         visibleItems.push(selectedItem);
@@ -1771,6 +1883,7 @@ export const PickItemCarousel = (
                     }
                     items={items}
                     type={type}
+                    usageMap={usageMap}
                     onClose={() => setLibraryDialogActive(false)}
                     onNewItem={onNewItem ? (item) => {
                         onNewItem(item);
@@ -1813,6 +1926,7 @@ export const PickItemCarousel = (
                                 key={item.id}
                                 item={item}
                                 type={type}
+                                usageMap={usageMap}
                                 onSelectDetails={onSelectDetails}
                                 isSelected={selectedItem?.id === item.id}
                                 onItemSelected={onItemSelected ? onItemSelected : undefined}
@@ -1843,6 +1957,10 @@ export const NewBrewDialog = ({
     grinders,
     recipes,
     brews,
+    bagUsedFlags,
+    grinderUsedFlags,
+    brewerUsedFlags,
+    recipeUsedFlags,
     onSaveBrew,
     onCancel,
     onAddBag,
@@ -1869,6 +1987,10 @@ export const NewBrewDialog = ({
         grinders: Grinder[];
         recipes: Recipe[];
         brews: Brew[];
+        bagUsedFlags: BagUsedFlag[];
+        grinderUsedFlags: GrinderUsedFlag[];
+        brewerUsedFlags: BrewerUsedFlag[];
+        recipeUsedFlags: RecipeUsedFlag[];
 
         onAddBag: (bag: Bag) => Bag;
         onRemoveBag: (bag: Bag) => void;
@@ -1934,6 +2056,7 @@ export const NewBrewDialog = ({
                             }}
                             items={bags}
                             type="bag"
+                            usageMap={bagUsedFlags}
                             onNewItem={onAddBag ? (item) => {
                                 const newBag = onAddBag(item as Bag);
                                 setBagId(newBag.id);
@@ -1955,6 +2078,7 @@ export const NewBrewDialog = ({
                             }}
                             items={grinders}
                             type="grinder"
+                            usageMap={grinderUsedFlags}
                             onNewItem={onAddGrinder ? (item) => {
                                 const newGrinder = onAddGrinder(item as Grinder);
                                 setGrinderId(newGrinder.id)
@@ -1976,6 +2100,7 @@ export const NewBrewDialog = ({
                             }}
                             items={brewers}
                             type="brewer"
+                            usageMap={brewerUsedFlags}
                             onNewItem={onAddBrewer ? (item) => {
                                 const newBrewer = onAddBrewer(item as Brewer);
                                 console.log("setting new brewer", newBrewer)
@@ -1999,6 +2124,7 @@ export const NewBrewDialog = ({
                                 setRecipeId(item?.id);
                             }}
                             type="recipe"
+                            usageMap={recipeUsedFlags}
                             brewerType={brewer?.type}
                             onNewItem={onAddRecipe ? (item) => {
                                 const newRecipe = onAddRecipe(item as Recipe);
@@ -2038,7 +2164,7 @@ export const NewBrewDialog = ({
                 }}>
                     Save Brew
                 </button>
-                <button className="absolute top-2 right-2 p-1 rounded-full bg-transparent" onClick={() => setShowConfirmClose(true)}><XActionIcon strokeColor="var(--color-fg1)" /></button>
+                <button className="absolute top-2 right-2 p-1 rounded-full transparent" onClick={() => setShowConfirmClose(true)}><XActionIcon strokeColor="var(--color-fg1)" /></button>
             </div>
         </div>
     );
@@ -2052,6 +2178,10 @@ export const BrewDetailsDialog = ({
     bags,
     recipes,
     brews,
+    bagUsedFlags,
+    grinderUsedFlags,
+    brewerUsedFlags,
+    recipeUsedFlags,
     onDeleteBrew,
     onNewBrew,
     onEditBrew,
@@ -2082,6 +2212,10 @@ export const BrewDetailsDialog = ({
         bags: Bag[];
         recipes: Recipe[];
         brews: Brew[];
+        bagUsedFlags: BagUsedFlag[];
+        grinderUsedFlags: GrinderUsedFlag[];
+        brewerUsedFlags: BrewerUsedFlag[];
+        recipeUsedFlags: RecipeUsedFlag[];
 
         onDeleteBrew: (brew: Brew) => void;
         onNewBrew: (brew: Brew) => void;
@@ -2192,6 +2326,10 @@ export const BrewDetailsDialog = ({
                     grinders={grinders}
                     recipes={recipes}
                     brews={brews}
+                    bagUsedFlags={bagUsedFlags}
+                    grinderUsedFlags={grinderUsedFlags}
+                    brewerUsedFlags={brewerUsedFlags}
+                    recipeUsedFlags={recipeUsedFlags}
                     onAddBrewer={onAddBrewer}
                     onAddGrinder={onAddGrinder}
                     onAddBag={onAddBag}
@@ -2269,22 +2407,22 @@ export const BrewDetailsDialog = ({
                     <div className="absolute top-2 right-2 gap-2 flex items-start justify-end">
                         {showOptionButtons &&
                             <div className="flex gap-2">
-                                <button className="bg-transparent rounded-full p-1" onClick={() => setShowConfirmDeleteBrewModal(true)}>
+                                <button className="transparent rounded-full p-1" onClick={() => setShowConfirmDeleteBrewModal(true)}>
                                     <DeleteActionIcon strokeColor='var(--color-fg1)' fillColor="var(--color-bg1)" /></button>
-                                <button className="bg-transparent rounded-full p-1" onClick={() => setShowConfirmCopyBrewModal(true)}>
+                                <button className="transparent rounded-full p-1" onClick={() => setShowConfirmCopyBrewModal(true)}>
                                     <CopyActionIcon strokeColor='var(--color-fg1)' fillColor="var(--color-bg1)" /></button>
-                                <button className="bg-transparent rounded-full p-1" onClick={() => setShowConfirmEditBrewModal(true)}>
+                                <button className="transparent rounded-full p-1" onClick={() => setShowConfirmEditBrewModal(true)}>
                                     <EditActionIcon strokeColor='var(--color-fg1)' fillColor="var(--color-bg1)" /></button>
                             </div>
                         }
-                        <button className={"rounded-full p-1" + (showOptionButtons ? " bg-fg1" : " bg-transparent")} onClick={() => setShowOptionButtons(!showOptionButtons)}>
+                        <button className={"rounded-full p-1" + (showOptionButtons ? " bg-fg1" : " transparent")} onClick={() => setShowOptionButtons(!showOptionButtons)}>
                             {showOptionButtons ?
                                 <RightActionIcon strokeColor="var(--color-bg1)" />
                                 :
                                 <EllipsisActionIcon fillColor="var(--color-fg1)" />
                             }
                         </button>
-                        <button className="bg-transparent rounded-full p-1" onClick={onClose}>
+                        <button className="transparent rounded-full p-1" onClick={onClose}>
                             <XActionIcon strokeColor='var(--color-fg1)' fillColor="var(--color-bg1)" /></button>
                     </div>
                     <h2>{brew.name}</h2>
@@ -2298,6 +2436,7 @@ export const BrewDetailsDialog = ({
                     <SmallItemCard
                         item={bag}
                         type="bag"
+                        usageMap={bagUsedFlags}
                         onSelectDetails={true}
                         onNewItem={onAddBag ? (item) => onAddBag(item as Bag) : undefined}
                         onEditItem={(id, item) => onEditBag(id, item as Bag)}
@@ -2306,6 +2445,7 @@ export const BrewDetailsDialog = ({
                     <SmallItemCard
                         item={grinder}
                         type="grinder"
+                        usageMap={grinderUsedFlags}
                         onSelectDetails={true}
                         onNewItem={onAddGrinder ? (item) => onAddGrinder(item as Grinder) : undefined}
                         onEditItem={(id, item) => onEditGrinder(id, item as Grinder)}
@@ -2314,6 +2454,7 @@ export const BrewDetailsDialog = ({
                     <SmallItemCard
                         item={brewer}
                         type="brewer"
+                        usageMap={brewerUsedFlags}
                         onSelectDetails={true}
                         onNewItem={onAddBrewer ? (item) => onAddBrewer(item as Brewer) : undefined}
                         onEditItem={(id, item) => onEditBrewer(id, item as Brewer)}
@@ -2323,6 +2464,7 @@ export const BrewDetailsDialog = ({
                 <div className="flex justify-center">
                     <MediumRecipeCard
                         recipe={recipe}
+                        usageMap={recipeUsedFlags}
                         onSelectDetails={true}
                         onNewItem={onAddRecipe ? (recipe) => onAddRecipe(recipe) : undefined}
                         onEditItem={(id, recipe) => onEditRecipe(id, recipe)}
@@ -2376,17 +2518,17 @@ export const BrewDetailsDialog = ({
                     <div className="notes">{brew.notes}</div>
                 </div>}
                 <div className="flex items-end gap-1">
-                    {!bag.isBase && bag.dateOpened && !bag.isFinished &&
-                        <button className="sm flex-1" onClick={() => setShowBagFinishedModal(true)}>Finish Bag</button>
+                    {/* {!bag.isBase && bag.dateOpened && !bag.isFinished &&
+                        <button className="flex-1" onClick={() => setShowBagFinishedModal(true)}>Finish Bag</button>
                     }
                     {!bag.isBase && !bag.dateOpened &&
-                        <button className="sm flex-1" onClick={() => setShowBagOpenedModal(true)}>Open Bag</button>
-                    }
+                        <button className="flex-1" onClick={() => setShowBagOpenedModal(true)}>Open Bag</button>
+                    } */}
                     {!bag.isBase && bag.isFinished &&
-                        <button className="sm flex-1" onClick={() => setShowBagRestockedModal(true)}>Restock Bag</button>
+                        <button className="flex-1" onClick={() => setShowBagRestockedModal(true)}>Restock Bag</button>
                     }
-                    <button className="sm flex-1" onClick={() => setShowNewEvaluationDialog(true)}>Evaluate</button>
-                    <button className="sm flex-1" onClick={() => setShowNewDialInDialog(true)}>Dial In</button>
+                    <button className="flex-1" onClick={() => setShowNewEvaluationDialog(true)}>Evaluate</button>
+                    <button className="flex-1" onClick={() => setShowNewDialInDialog(true)}>Dial In</button>
                 </div>
 
             </div>
@@ -2487,8 +2629,8 @@ export const NewEvaluationDialog = ({ brew, onSaveEvaluation, onClose }:
                     })
                 }}>Save Evaluation</button>
                 <div className="absolute top-2 right-2 flex items-start justify-end">
-                    <button className="p-1 bg-transparent rounded-full" onClick={() => setShowInfoDialog(true)}><InfoActionIcon strokeColor='var(--color-fg3)' /></button>
-                    <button className="p-1 bg-transparent rounded-full" onClick={() => setShowConfirmClose(true)}><XActionIcon strokeColor='var(--color-fg3)' /></button>
+                    <button className="p-1 transparent rounded-full" onClick={() => setShowInfoDialog(true)}><InfoActionIcon strokeColor='var(--color-fg3)' /></button>
+                    <button className="p-1 transparent rounded-full" onClick={() => setShowConfirmClose(true)}><XActionIcon strokeColor='var(--color-fg3)' /></button>
                 </div>
             </div>
         </div>
@@ -2519,6 +2661,7 @@ export const NewDialInDialog = ({ brew, recipe, grinder, bag, onSaveDialIn, onCl
     const evaluationAvailable = lastDialIn && lastDialIn.evaluations.length > 1 ? true : false;
     const [showEvaluations, setShowEvaluations] = useState<boolean>(false)
     const [optimizationUsed, setOptimizationUsed] = useState<boolean>(true);
+    const [showInfoDialog, setShowInfoDialog] = useState(false);
 
     const [showConfirmClose, setShowConfirmClose] = useState(false);
 
@@ -2578,7 +2721,9 @@ export const NewDialInDialog = ({ brew, recipe, grinder, bag, onSaveDialIn, onCl
     return (
         <div className="dialog">
             {showConfirmClose && (
-                <ConfirmCloseDialInModal
+                <ConfirmModal
+                    title="Are you sure you want to close the new dial-in dialog?"
+                    okButton="Yes Close"
                     onConfirm={() => {
                         setShowConfirmClose(false);
                         onClose();
@@ -2586,8 +2731,23 @@ export const NewDialInDialog = ({ brew, recipe, grinder, bag, onSaveDialIn, onCl
                     onCancel={() => setShowConfirmClose(false)}
                 />
             )}
+            {showInfoDialog && (
+                <DialInEngineInfo
+                    onClose={() => setShowInfoDialog(false)}
+                />
+            )}
             <div className="backdrop" onClick={() => setShowConfirmClose(true)}></div>
             <div className="details flex flex-col gap-2">
+                <div className='absolute top-2 right-2 flex items-start justify-end gap-1'>
+                    <button className='transparent p-1 rounded-full'
+                        onClick={() => setShowInfoDialog(true)}>
+                        <InfoActionIcon strokeColor='var(--color-fg3)' />
+                    </button>
+                    <button className='transparent p-1 rounded-full'
+                        onClick={() => setShowConfirmClose(true)}>
+                        <XActionIcon strokeColor='var(--color-fg3)' />
+                    </button>
+                </div>
                 <h2>New Dial-In</h2>
                 {lastDialIn &&
                     <div>
@@ -2782,7 +2942,6 @@ export const NewDialInDialog = ({ brew, recipe, grinder, bag, onSaveDialIn, onCl
                     </div>
                 </div>
                 <button className="" onClick={handleSaveDialIn}>Save Dial-In</button>
-                <button className='bg-transparent absolute top-2 right-2 p-1 rounded-full' onClick={() => setShowConfirmClose(true)}><XActionIcon strokeColor='var(--color-fg3)' /></button>
             </div>
         </div>
     )
@@ -2804,7 +2963,9 @@ export const DialInDetailsBlock = ({ brew, recipe, grinder, onDeleteLastEvaluati
     return (
         <>
             {showConfirmDeleteEvaluationDialog && (
-                <ConfirmDeleteEvaluationModal
+                <ConfirmModal
+                    title="Are you sure you want to delete the last evaluation?"
+                    okButton="Yes Delete"
                     onConfirm={() => {
                         const lastDialIn = brew.dialIns[brew.dialIns.length - 1];
                         const lastEvaluation = lastDialIn?.evaluations[lastDialIn.evaluations.length - 1];
@@ -2820,7 +2981,9 @@ export const DialInDetailsBlock = ({ brew, recipe, grinder, onDeleteLastEvaluati
                 />
             )}
             {showConfirmDeleteDialInDialog && (
-                <ConfirmDeleteDialInModal
+                <ConfirmModal
+                    title="Are you sure you want to delete the last dial-in?"
+                    okButton="Yes Delete"
                     onConfirm={() => {
                         onDeleteLastDialIn(brew);
                         setShowConfirmDeleteDialInDialog(false);

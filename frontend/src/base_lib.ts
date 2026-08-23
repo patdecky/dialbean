@@ -1,14 +1,13 @@
 import type { Brewer, Recipe, Grinder, Bag, Brew } from './types';
 
-export const bags: Bag[] = [
+export const libBags: Bag[] = [
     {
         id: '1',
         name: 'Light Roast Generic Bag',
         iconId: "1",
         roastLevel: 'Light',
         isFinished: false,
-        isBase: true,
-        usedInBrew: false
+        isBase: true
     },
     {
         id: '2',
@@ -16,8 +15,7 @@ export const bags: Bag[] = [
         iconId: "2",
         roastLevel: 'Light-Medium',
         isFinished: false,
-        isBase: true,
-        usedInBrew: false
+        isBase: true
     },
     {
         id: '3',
@@ -25,8 +23,7 @@ export const bags: Bag[] = [
         iconId: "3",
         roastLevel: 'Medium',
         isFinished: false,
-        isBase: true,
-        usedInBrew: false
+        isBase: true
     },
     {
         id: '4',
@@ -34,8 +31,7 @@ export const bags: Bag[] = [
         iconId: "4",
         roastLevel: 'Medium-Dark',
         isFinished: false,
-        isBase: true,
-        usedInBrew: false
+        isBase: true
     },
     {
         id: '5',
@@ -43,8 +39,7 @@ export const bags: Bag[] = [
         iconId: "5",
         roastLevel: 'Dark',
         isFinished: false,
-        isBase: true,
-        usedInBrew: false
+        isBase: true
     },
     {
         id: '6',
@@ -54,12 +49,11 @@ export const bags: Bag[] = [
         roastDate: '2026-08-06',
         // dateOpened: '2026-08-06',
         isFinished: false,
-        isBase: false,
-        usedInBrew: true
+        isBase: false
     }
 ];
 
-export const grinders: Grinder[] = [
+export const libGrinders: Grinder[] = [
     {
         id: '1',
         name: 'Manual Generic Grinder',
@@ -67,8 +61,7 @@ export const grinders: Grinder[] = [
         scaleMin: 1,
         scaleMax: 30,
         stepSize: 1,
-        isBase: true,
-        usedInBrew: false
+        isBase: true
     },
     {
         id: '2',
@@ -77,8 +70,7 @@ export const grinders: Grinder[] = [
         scaleMin: 1,
         scaleMax: 30,
         stepSize: 1,
-        isBase: true,
-        usedInBrew: false
+        isBase: true
     },
     {
         id: '3',
@@ -87,8 +79,7 @@ export const grinders: Grinder[] = [
         scaleMin: 1,
         scaleMax: 30,
         stepSize: 1,
-        isBase: true,
-        usedInBrew: false
+        isBase: true
     },
     {
         id: '4',
@@ -97,8 +88,7 @@ export const grinders: Grinder[] = [
         scaleMin: 1,
         scaleMax: 30,
         stepSize: 1,
-        isBase: true,
-        usedInBrew: false
+        isBase: true
     },
     {
         id: '5',
@@ -108,106 +98,93 @@ export const grinders: Grinder[] = [
         scaleMax: 30,
         stepSize: 1,
         isBase: false,
-        usedInBrew: true,
         notes: "Something reasonable might come here.\nAnd a new line.\nAnd another line."
 
     }
 ];
 
-export const brewers: Brewer[] = [
+export const libBrewers: Brewer[] = [
     {
         id: '1',
         name: 'AeroPress',
         type: 'AeroPress',
         iconId: "1",
-        isBase: true,
-        usedInBrew: true
+        isBase: true
     },
     {
         id: '2',
         name: 'V60',
         type: 'V60',
         iconId: "2",
-        isBase: true,
-        usedInBrew: true
+        isBase: true
     },
     {
         id: '3',
         name: 'Flat-Bottom',
         type: 'Flat-Bottom',
         iconId: "3",
-        isBase: true,
-        usedInBrew: true
+        isBase: true
     },
     {
         id: '4',
         name: 'Chemex',
         type: 'Chemex',
         iconId: "4",
-        isBase: true,
-        usedInBrew: true
+        isBase: true
     }, {
         id: '5',
         name: 'French-Press',
         type: 'French-Press',
         iconId: "5",
-        isBase: true,
-        usedInBrew: true
+        isBase: true
     },
     {
         id: '6',
         name: 'Moka Pot',
         type: 'Moka Pot',
         iconId: "6",
-        isBase: true,
-        usedInBrew: true
+        isBase: true
     },
     {
         id: '7',
         name: 'Lever Espresso',
         type: 'Lever Espresso',
         iconId: "7",
-        isBase: true,
-        usedInBrew: true
+        isBase: true
     },
     {
         id: '8',
         name: 'Semi Auto Espresso',
         type: 'Semi Auto Espresso',
         iconId: "8",
-        isBase: true,
-        usedInBrew: true
+        isBase: true
     }, {
         id: '9',
         name: 'Super Auto Espresso',
         type: 'Super Auto Espresso',
         iconId: "9",
-        isBase: true,
-        usedInBrew: true
+        isBase: true
     },
     {
         id: '10',
         name: 'Drip Machine',
         type: 'Drip Machine',
         iconId: "10",
-        isBase: true,
-        usedInBrew: false
+        isBase: true
     },
     {
         id: '11',
         name: 'Cold Brew Vessel',
         type: 'Cold Brew Vessel',
         iconId: "11",
-        isBase: true,
-        usedInBrew: false
+        isBase: true
     },
     {
         id: '12',
         name: 'Siphon',
         type: 'Siphon',
         iconId: "12",
-        isBase: true,
-        usedInBrew: false
+        isBase: true
     },
     {
         id: '13',
@@ -215,14 +192,13 @@ export const brewers: Brewer[] = [
         type: 'AeroPress',
         iconId: "1",
         isBase: false,
-        usedInBrew: true,
         cleanedDate: '2026-08-06',
         notes: "Something reasonable might come here.\nAnd a new line.\nAnd another line."
 
     }
 ];
 
-export const recipes: Recipe[] = [
+export const libRecipes: Recipe[] = [
     {
         id: '1',
         name: 'Morning Pour-Over with Specialty Coffee and very long name to test the text wrapping and overflow behavior in the UI',
@@ -233,7 +209,6 @@ export const recipes: Recipe[] = [
         grindPct: 45,
         instructions: 'Use a medium grind and pour in 3 stages.',
         isBase: true,
-        usedInBrew: true,
         notes: "Something reasonable might come here.\nAnd a new line.\nAnd another line."
     },
     {
@@ -245,13 +220,12 @@ export const recipes: Recipe[] = [
         tempC: 93,
         grindPct: 45,
         instructions: '-Bloom 60 seconds 40 ml \n-Pour 1 60 ml 60 seconds \n-Pour 2 60 ml 60 seconds',
-        isBase: false,
-        usedInBrew: true
+        isBase: false
     }
 ];
 
 
-export const brews: Brew[] = [
+export const libBrews: Brew[] = [
     {
         id: "1",
         name: "Brew 1",

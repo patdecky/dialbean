@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { XActionIcon } from "./action_icons";
 import { AcidityIcon, SweetIcon, BitterIcon, BodyIcon, StrengthIcon } from "./icons";
-import type { Brew, Bag, Evaluation, ItemTypeName, ItemType } from "./types";
+import type { Brew, Bag, ItemTypeName, ItemType } from "./types";
 
 export const ConfirmModal = ({ title, okButton, onConfirm, onCancel }:
     {
@@ -24,7 +24,7 @@ export const ConfirmModal = ({ title, okButton, onConfirm, onCancel }:
                         className="inverse"
                         onClick={onCancel}>Cancel</button>
                     <button
-                        className="absolute top-2 right-2 bg-transparent rounded-full p-1"
+                        className="absolute top-2 right-2 transparent rounded-full p-1"
                         onClick={onCancel}><XActionIcon strokeColor="var(--color-fg1)" /></button>
                 </div>
             </div>
@@ -32,179 +32,24 @@ export const ConfirmModal = ({ title, okButton, onConfirm, onCancel }:
     );
 }
 
-export const ConfirmRemoveItemModal = ({ item, type, onConfirm, onCancel }:
+export const MessageModal = ({ title, onClose }:
     {
-        item: ItemType;
-        type: ItemTypeName;
-        onConfirm: () => void;
-        onCancel: () => void;
-    }) => {
-    const [understand, setUnderstand] = useState(false);
-    return (
-        <div className="dialog z-500">
-            <div className="backdrop" onClick={onCancel}></div>
-            <div className="modal flex flex-col gap-2">
-                <div className="message">
-                    Are you sure you want to remove the {type} {item.name}?
-                </div>
-                {item.usedInBrew &&
-                    <div>
-                        <div className="error">This {type} has been used in a brew. Removing it will also remove all associated brews and evaluations.</div>
-                        <div className="flex items-center gap-1">
-                            <input type="checkbox" id="understand" checked={understand} onChange={(e) => setUnderstand(e.target.checked)} />
-                            <label htmlFor="understand">Remove all associated brews and evaluations.</label>
-                        </div>
-                    </div>
-                }
-                <div className="options">
-                    <button
-                        className={item.usedInBrew && !understand ? "opacity-50 cursor-not-allowed" : ""}
-                        onClick={onConfirm}
-                        disabled={item.usedInBrew && !understand}
-                    >Yes Remove</button>
-                    <button
-                        className="inverse"
-                        onClick={onCancel}>Cancel</button>
-                    <button
-                        className="absolute top-2 right-2 bg-transparent rounded-full p-1"
-                        onClick={onCancel}><XActionIcon strokeColor="var(--color-fg1)" /></button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-export const ConfirmDeleteBrewModal = ({ brew, onConfirm, onCancel }:
-    {
-        brew: Brew;
-        onConfirm: () => void;
-        onCancel: () => void;
+        title: string;
+        onClose: () => void;
     }) => {
     return (
         <div className="dialog z-500">
-            <div className="backdrop" onClick={onCancel}></div>
+            <div className="backdrop" onClick={onClose}></div>
             <div className="modal">
                 <div className="message">
-                    Are you sure you want to delete {brew.name}?
+                    {title}
                 </div>
                 <div className="options">
                     <button
-                        onClick={onConfirm}>Delete</button>
+                        onClick={onClose}>OK</button>
                     <button
-                        className="inverse"
-                        onClick={onCancel}>Cancel</button>
-                    <button
-                        className="absolute top-2 right-2 bg-transparent rounded-full p-1"
-                        onClick={onCancel}><XActionIcon strokeColor="var(--color-fg1)" /></button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-export const ConfirmEditBrewModal = ({ brew, onConfirm, onCancel }:
-    {
-        brew: Brew;
-        onConfirm: () => void;
-        onCancel: () => void;
-    }) => {
-    return (
-        <div className="dialog z-500">
-            <div className="backdrop" onClick={onCancel}></div>
-            <div className="modal">
-                <div className="message">
-                    Are you sure you want to edit {brew.name}?
-                </div>
-                <div className="options">
-                    <button
-                        onClick={onConfirm}>Edit</button>
-                    <button
-                        className="inverse"
-                        onClick={onCancel}>Cancel</button>
-                    <button
-                        className="absolute top-2 right-2 bg-transparent rounded-full p-1"
-                        onClick={onCancel}><XActionIcon strokeColor="var(--color-fg1)" /></button>
-                </div>
-            </div>
-        </div>
-    );
-}
-export const ConfirmCopyBrewModal = ({ brew, onConfirm, onCancel }:
-    {
-        brew: Brew;
-        onConfirm: () => void;
-        onCancel: () => void;
-    }) => {
-    return (
-        <div className="dialog z-500">
-            <div className="backdrop" onClick={onCancel}></div>
-            <div className="modal">
-                <div className="message">
-                    Are you sure you want to copy {brew.name}?
-                </div>
-                <div className="options">
-                    <button
-                        onClick={onConfirm}>Copy</button>
-                    <button
-                        className="inverse"
-                        onClick={onCancel}>Cancel</button>
-                    <button
-                        className="absolute top-2 right-2 bg-transparent rounded-full p-1"
-                        onClick={onCancel}><XActionIcon strokeColor="var(--color-fg1)" /></button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-export const ConfirmDeleteEvaluationModal = ({ onConfirm, onCancel }:
-    {
-        onConfirm: () => void;
-        onCancel: () => void;
-    }) => {
-    return (
-        <div className="dialog z-500">
-            <div className="backdrop" onClick={onCancel}></div>
-            <div className="modal">
-                <div className="message">
-                    Are you sure you want to delete the last evaluation?
-                </div>
-                <div className="options">
-                    <button
-                        onClick={onConfirm}>Delete</button>
-                    <button
-                        className="inverse"
-                        onClick={onCancel}>Cancel</button>
-                    <button
-                        className="absolute top-2 right-2 bg-transparent rounded-full p-1"
-                        onClick={onCancel}><XActionIcon strokeColor="var(--color-fg1)" /></button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-export const ConfirmDeleteDialInModal = ({ onConfirm, onCancel }:
-    {
-        onConfirm: () => void;
-        onCancel: () => void;
-    }) => {
-    return (
-        <div className="dialog z-500">
-            <div className="backdrop" onClick={onCancel}></div>
-            <div className="modal">
-                <div className="message">
-                    Are you sure you want to delete the last Dial-in?
-                </div>
-                <div className="options">
-                    <button
-                        onClick={onConfirm}>Delete</button>
-                    <button
-                        className="inverse"
-                        onClick={onCancel}>Cancel</button>
-                    <button
-                        className="absolute top-2 right-2 bg-transparent rounded-full p-1"
-                        onClick={onCancel}><XActionIcon strokeColor="var(--color-fg1)" /></button>
+                        className="absolute top-2 right-2 transparent rounded-full p-1"
+                        onClick={onClose}><XActionIcon strokeColor="var(--color-fg1)" /></button>
                 </div>
             </div>
         </div>
@@ -212,95 +57,6 @@ export const ConfirmDeleteDialInModal = ({ onConfirm, onCancel }:
 }
 
 
-export const ConfirmBagFinishedModal = ({ bag, onConfirm, onCancel }:
-    {
-        bag: Bag;
-        onConfirm: () => void;
-        onCancel: () => void;
-    }) => {
-    return (
-        <div className="dialog z-500">
-            <div className="backdrop" onClick={onCancel}></div>
-            <div className="modal">
-                <div className="message">
-                    <p>
-                        Are you sure you want to mark <i>{bag.name}</i> as finished?
-                    </p>
-                </div>
-                <div className="options">
-                    <button
-                        onClick={onConfirm}>Yes Finish</button>
-                    <button
-                        className="inverse"
-                        onClick={onCancel}>Cancel</button>
-                    <button
-                        className="absolute top-2 right-2 bg-transparent rounded-full p-1"
-                        onClick={onCancel}><XActionIcon strokeColor="var(--color-fg1)" /></button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-
-export const ConfirmCloseEvaluation = ({ onConfirm, onCancel }:
-    {
-        onConfirm: () => void;
-        onCancel: () => void;
-    }) => {
-    return (
-        <div className="dialog z-500">
-            <div className="backdrop" onClick={onCancel}></div>
-            <div className="modal">
-                <div className="message">
-                    <p>
-                        Are you sure you want to close the evaluation dialog?
-                    </p>
-                </div>
-                <div className="options">
-                    <button
-                        onClick={onConfirm}>Yes Close</button>
-                    <button
-                        className="inverse"
-                        onClick={onCancel}>Cancel</button>
-                    <button
-                        className="absolute top-2 right-2 bg-transparent rounded-full p-1"
-                        onClick={onCancel}><XActionIcon strokeColor="var(--color-fg1)" /></button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-
-export const ConfirmCloseDialInModal = ({ onConfirm, onCancel }:
-    {
-        onConfirm: () => void;
-        onCancel: () => void;
-    }) => {
-    return (
-        <div className="dialog z-500">
-            <div className="backdrop" onClick={onCancel}></div>
-            <div className="modal">
-                <div className="message">
-                    <p>
-                        Are you sure you want to close the Dial-in dialog?
-                    </p>
-                </div>
-                <div className="options">
-                    <button
-                        onClick={onConfirm}>Yes Close</button>
-                    <button
-                        className="inverse"
-                        onClick={onCancel}>Cancel</button>
-                    <button
-                        className="absolute top-2 right-2 bg-transparent rounded-full p-1"
-                        onClick={onCancel}><XActionIcon strokeColor="var(--color-fg1)" /></button>
-                </div>
-            </div>
-        </div>
-    );
-}
 
 
 
@@ -354,7 +110,7 @@ export const BrewRatingInfo = ({ onClose }:
                     <button
                         onClick={onClose}>OK</button>
                     <button
-                        className="absolute top-2 right-2 bg-transparent rounded-full p-1"
+                        className="absolute top-2 right-2 transparent rounded-full p-1"
                         onClick={onClose}><XActionIcon strokeColor="var(--color-fg1)" /></button>
                 </div>
             </div>
@@ -362,8 +118,233 @@ export const BrewRatingInfo = ({ onClose }:
     );
 }
 
+export const DialInEngineInfo = ({ onClose }: { onClose: () => void }) => {
+    return (
+        <div className="dialog z-500">
+            <div className="backdrop" onClick={onClose}></div>
+            <div className="modal">
+                <div className="flex flex-col gap-2">
+                    <h2>How the Dial-In Engine Works</h2>
+                    <div className="text-sm flex flex-col gap-2">
+                        <div>
+                            <div className="flex gap-1 items-center font-semibold">
+                                <h3>1. Historical Analysis</h3>
+                            </div>
+                            <p className="ml-3">
+                                The engine reviews your past brews and sensory ratings for this active bean setup to identify taste trends and extraction performance.
+                            </p>
+                        </div>
 
-export const MessageBlock = ({ message, onClear }: { message: string | null, onClear: () => void }) => {
+                        <div>
+                            <div className="flex gap-1 items-center font-semibold">
+                                <h3>2. Context & Equipment Integration</h3>
+                            </div>
+                            <p className="ml-3">
+                                It cross-references the coffee's roast level with your specific brewing hardware to determine how sensitive adjustments should be.
+                            </p>
+                        </div>
+
+                        <div>
+                            <div className="flex gap-1 items-center font-semibold">
+                                <h3>3. Target Selection & Optimization</h3>
+                            </div>
+                            <p className="ml-3">
+                                The app suggests an optimization goal (e.g., <em>"Less Bitter"</em> or <em>"More Body"</em>). You can accept this suggestion or select your own target criteria.
+                            </p>
+                        </div>
+
+                        <div>
+                            <div className="flex gap-1 items-center font-semibold">
+                                <h3>4. Editable Dial-In Generation</h3>
+                            </div>
+                            <p className="ml-3">
+                                Tapping <strong>Optimize</strong> calculates a new proposed setting for dose, temperature, and grinder clicks. You can manually tweak these values before making your cup.
+                            </p>
+                        </div>
+                    </div>
+                    <button onClick={onClose}>OK</button>
+                    <button
+                        className="absolute top-2 right-2 transparent rounded-full p-1"
+                        onClick={onClose}
+                    >
+                        <XActionIcon strokeColor="var(--color-fg1)" />
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export const GrindFinenessInfo = ({ onClose }: { onClose: () => void }) => {
+    return (
+        <div className="dialog z-500">
+            <div className="backdrop" onClick={onClose}></div>
+            <div className="modal">
+                <div className="flex flex-col gap-2">
+                    <h2>Grind Fineness Reference Scale</h2>
+                    <div className="text-sm flex flex-col gap-2">
+                        <div>
+                            <div className="flex gap-1 items-center font-semibold">
+                                <h3>0% — Ultra Fine (Powdered Sugar / Flour)</h3>
+                            </div>
+                            <p className="ml-3">
+                                Turkish coffee and fine espresso. Microscopic particles that form a dense puck under pressure.
+                            </p>
+                        </div>
+
+                        <div>
+                            <div className="flex gap-1 items-center font-semibold">
+                                <h3>25% — Fine (Table Salt)</h3>
+                            </div>
+                            <p className="ml-3">
+                                Moka pot, standard espresso, and quick AeroPress brews.
+                            </p>
+                        </div>
+
+                        <div>
+                            <div className="flex gap-1 items-center font-semibold">
+                                <h3>50% — Medium (Sea Salt / White Sand)</h3>
+                            </div>
+                            <p className="ml-3">
+                                The universal baseline for single-cup pour-overs (V60, Kalita, Flat-Bottom).
+                            </p>
+                        </div>
+
+                        <div>
+                            <div className="flex gap-1 items-center font-semibold">
+                                <h3>75% — Medium-Coarse (Kosher Salt)</h3>
+                            </div>
+                            <p className="ml-3">
+                                Chemex, French press, and large pour-over batches.
+                            </p>
+                        </div>
+
+                        <div>
+                            <div className="flex gap-1 items-center font-semibold">
+                                <h3>100% — Coarse (Cracked Peppercorns)</h3>
+                            </div>
+                            <p className="ml-3">
+                                The upper limit for practical coffee brewing. Used for long cold brew immersions.
+                            </p>
+                        </div>
+                    </div>
+                    <button onClick={onClose}>OK</button>
+                    <button
+                        className="absolute top-2 right-2 transparent rounded-full p-1"
+                        onClick={onClose}
+                    >
+                        <XActionIcon strokeColor="var(--color-fg1)" />
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export const RoastLevelInfo = ({ onClose }: { onClose: () => void }) => {
+    return (
+        <div className="dialog z-500">
+            <div className="backdrop" onClick={onClose}></div>
+            <div className="modal">
+                <div className="flex flex-col gap-2">
+                    <h2>Roast Level Guide</h2>
+                    <div className="text-sm flex flex-col gap-2">
+                        <div>
+                            <div className="flex gap-1 items-center font-semibold">
+                                <h3>Light</h3>
+                            </div>
+                            <p className="ml-3">Nordic / Cinnamon roast. High floral/fruit acidity, light tan color, dry surface.</p>
+                        </div>
+
+                        <div>
+                            <div className="flex gap-1 items-center font-semibold">
+                                <h3>Light-Medium</h3>
+                            </div>
+                            <p className="ml-3">New England / Specialty Filter roast. Vibrant acidity with emerging sweetness.</p>
+                        </div>
+
+                        <div>
+                            <div className="flex gap-1 items-center font-semibold">
+                                <h3>Medium</h3>
+                            </div>
+                            <p className="ml-3">American / City roast. Balanced acidity, caramel sweetness, medium brown color.</p>
+                        </div>
+
+                        <div>
+                            <div className="flex gap-1 items-center font-semibold">
+                                <h3>Medium-Dark</h3>
+                            </div>
+                            <p className="ml-3">Full City / Espresso roast. Lower acidity, rich chocolate/nutty body, slight surface oil.</p>
+                        </div>
+
+                        <div>
+                            <div className="flex gap-1 items-center font-semibold">
+                                <h3>Dark</h3>
+                            </div>
+                            <p className="ml-3">Vienna / French / Italian roast. Very low acidity, intense smoky/bittersweet notes, shiny oily surface.</p>
+                        </div>
+                    </div>
+                    <button onClick={onClose}>OK</button>
+                    <button
+                        className="absolute top-2 right-2 transparent rounded-full p-1"
+                        onClick={onClose}
+                    >
+                        <XActionIcon strokeColor="var(--color-fg1)" />
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+export const GrinderScaleInfo = ({ onClose }: { onClose: () => void }) => {
+    return (
+        <div className="dialog z-500">
+            <div className="backdrop" onClick={onClose}></div>
+            <div className="modal">
+                <div className="flex flex-col gap-2">
+                    <h2>Setting Up Your Grinder Scale</h2>
+                    <div className="text-sm flex flex-col gap-2">
+                        <div>
+                            <div className="flex gap-1 items-center font-semibold">
+                                <h3>Practical Minimum Scale (0%)</h3>
+                            </div>
+                            <p className="ml-3">
+                                Enter the setting where your grinder produces <strong>espresso or fine table salt grounds (~0%)</strong>. Do not use burr touch or absolute zero if it chokes your machine.
+                            </p>
+                        </div>
+
+                        <div>
+                            <div className="flex gap-1 items-center font-semibold">
+                                <h3>Practical Maximum Scale (100%)</h3>
+                            </div>
+                            <p className="ml-3">
+                                Enter the setting where your grinder produces <strong>coarse cold brew grounds (~100%)</strong>. Do not use extreme settings that produce uneven chunks or tree bark.
+                            </p>
+                        </div>
+
+                        <div>
+                            <div className="flex gap-1 items-center font-semibold">
+                                <h3>Step Size</h3>
+                            </div>
+                            <p className="ml-3">
+                                Enter your grinder's smallest usable increment. Use <strong>1.0</strong> for full click increments, or <strong>0.5 / 0.1</strong> for micro-stepless adjustments.
+                            </p>
+                        </div>
+                    </div>
+                    <button onClick={onClose}>OK</button>
+                    <button
+                        className="absolute top-2 right-2 transparent rounded-full p-1"
+                        onClick={onClose}
+                    >
+                        <XActionIcon strokeColor="var(--color-fg1)" />
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export const MessageStack = ({ message, onClear }: { message: string | null, onClear: () => void }) => {
     const [showing, setShowing] = useState<boolean>(Boolean(message));
     const [displayMessage, setDisplayMessage] = useState<string>("");
 
@@ -400,7 +381,7 @@ export const MessageBlock = ({ message, onClear }: { message: string | null, onC
                 <div className="pointer-events-auto inline-flex items-center p-1 rounded-full bg-fg1 text-bg1 max-w-[95dvw] shadow-2xl/20 opacity-80 hover:opacity-100 transition-opacity">
                     <span className="text-sm text-nowrap text-ellipsis overflow-hidden whitespace-nowrap pl-2">
                         {displayMessage}
-                        </span>
+                    </span>
                     <button
                         onClick={() => {
                             setShowing(false);

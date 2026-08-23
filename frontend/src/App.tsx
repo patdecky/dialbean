@@ -10,19 +10,19 @@ import Counter from './Counter'
 import Cupboard from './Cupboard'
 import Cookbook from './Cookbook'
 import Settings from './Settings'
-import { MessageBlock } from './modals';
+import { MessageStack } from './modals';
 import { InstallPwaBanner } from './pwa';
 
 
 const Layout = () => {
     const location = useLocation();
     return (
-        <main className="overflow-hidden h-dvh w-full bg-bg1 flex flex-col justify-stretch items-stretch landscape:flex-row">
+        <main className="overflow-hidden h-dvh w-full bg-bg1 flex flex-col justify-stretch items-stretch md:flex-row xl:flex-col xl:max-w-120 xl:max-h-220 xl:rounded-2xl xl:shadow-2xl/20">
             <div className="flex-1 min-h-0 min-w-0">
                 <Outlet />
             </div>
-            <nav className="shrink-0 bg-bg2 landscape:border-l portrait:border-t border-bg3 p-1 flex justify-center landscape:flex-col">
-                <div className="flex flex-row landscape:flex-col items-center justify-between w-full h-full max-w-90 max-h-70 gap-2">
+            <nav className="shrink-0 bg-bg2 md:flex-col xl:flex-row portrait:border-t md:border-l border-bg3 p-1 flex justify-center">
+                <div className="flex flex-row md:flex-col xl:flex-row items-center justify-between w-full h-full max-w-90 max-h-70 gap-2">
                     <NavLink
                         to="/counter"
                         className={({ isActive }) =>
@@ -55,7 +55,7 @@ const Layout = () => {
                             (isActive ? "nav-item active" : "nav-item inactive")
                         }
                     >
-                        <MenuActionIcon className="mt-1 nav-icon" size={24} strokeColor="black"/>
+                        <MenuActionIcon className="mt-1 nav-icon" size={24} strokeColor="black" />
                         <span>More</span>
                     </NavLink>
                 </div>
@@ -83,9 +83,9 @@ function App() {
     console.log("App.tsx rendered. showPWABanner:", showPWABanner);
     return (
         <>
-            <MessageBlock message={message} onClear={() => setMessage("")} />
+            <MessageStack message={message} onClear={() => setMessage("")} />
             <DialBeanProvider setMessage={setMessage} onPromptPWA={() => setShowPWABanner(true)}>
-                {showPWABanner && <InstallPwaBanner onDismiss={() => {setShowPWABanner(false); console.log("and error");}} />}
+                {showPWABanner && <InstallPwaBanner onDismiss={() => { setShowPWABanner(false); console.log("and error"); }} />}
                 <Routes>
                     <Route element={<Layout />} >
                         <Route path="/counter?" element={<Counter />} />

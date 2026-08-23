@@ -7,6 +7,7 @@ const Cookbook = () => {
     const { data, addRecipe, removeRecipe, editRecipe } = useDialBean();
 
     if (!data) { return <div className="flex items-center justify-center">Loading...</div>; }
+    console.log("Cookbook data:", data);
 
     return (
         <div className="flex flex-col items-center justify-center h-full w-full">
@@ -18,6 +19,7 @@ const Cookbook = () => {
                 <div className="bg-bg2 px-2 flex-1 pt-4 pb-2 w-full h-full rounded-lg flex justify-stretch gap-4">
                     <LibraryCard
                         items={data.recipes}
+                        usageMap={data.recipeUsedFlags}
                         onSelectDetails={true}
                         type="recipe"
                         onNewItem={(item) => addRecipe(item as Recipe)}

@@ -73,7 +73,7 @@ const Counter = () => {
                     )}
                     {finishedBrews.length > 0 && (showFinishedBrews ? (
                         <>
-                            <button className="self-start sm" onClick={() => setShowFinishedBrews(false)}>Hide Finished</button>
+                            <button className="self-start sm" onClick={() => setShowFinishedBrews(false)}>Hide Finished Brews</button>
                             {finishedBrews.map((brew, index) =>
                                 <BrewCard key={brew.id}
                                     brew={brew}
@@ -84,10 +84,10 @@ const Counter = () => {
                                     onSelected={() => setSelectedBrewId(brew.id)} />
                             )}
                         </>
-                    ) : <button onClick={() => setShowFinishedBrews(true)}>Show Finished Brews</button>
+                    ) : <button className="self-start sm" onClick={() => setShowFinishedBrews(true)}>Show Finished Brews</button>
                     )}
+                    <button onClick={() => setNewBrewActive(true)} className="mt-4 landscape:mt-1">New Brew</button>
                 </div>
-                <button onClick={() => setNewBrewActive(true)} className="mt-4 landscape:mt-1">New Brew</button>
                 {newBrewActive && (
                     <NewBrewDialog
                         onSaveBrew={(brew) => {
@@ -121,6 +121,10 @@ const Counter = () => {
                         brewers={data.brewers}
                         recipes={data.recipes}
                         brews={data.brews}
+                        bagUsedFlags={data.bagUsedFlags}
+                        grinderUsedFlags={data.grinderUsedFlags}
+                        brewerUsedFlags={data.brewerUsedFlags}
+                        recipeUsedFlags={data.recipeUsedFlags}
                         onAddBrewer={addBrewer}
                         onAddGrinder={addGrinder}
                         onAddBag={addBag}
@@ -145,6 +149,10 @@ const Counter = () => {
                         grinders={data.grinders}
                         recipes={data.recipes}
                         brews={data.brews}
+                        bagUsedFlags={data.bagUsedFlags}
+                        grinderUsedFlags={data.grinderUsedFlags}
+                        brewerUsedFlags={data.brewerUsedFlags}
+                        recipeUsedFlags={data.recipeUsedFlags}
                         onNewBrew={(brew) => {
                             const newBrewObject = newBrew(brew);
                             setSelectedBrewId(newBrewObject.id);

@@ -58,7 +58,6 @@ export interface Bag {
     dateOpened?: string; // ISO String
     isFinished: boolean;
     isBase: boolean; // true for base bags, false for user-defined bags
-    usedInBrew: boolean;
 }
 
 
@@ -72,7 +71,6 @@ export interface Grinder {
     notes?: string;
     cleanedDate?: string;
     isBase: boolean; // true for base grinders, false for user-defined grinders
-    usedInBrew: boolean;
 }
 
 
@@ -84,7 +82,6 @@ export interface Brewer {
     notes?: string;
     cleanedDate?: string;
     isBase: boolean; // true for base brewers, false for user-defined brewers
-    usedInBrew: boolean;
 }
 
 
@@ -99,7 +96,6 @@ export interface Recipe {
     grindPct: number; // 0% to 100% relative scale
     instructions: string; // Free-text instructions or markdown
     isBase: boolean; // true for base recipes, false for user-defined recipes
-    usedInBrew: boolean;
 }
 
 
@@ -137,6 +133,24 @@ export interface Brew {
 }
 
 
+// --- USAGE FLAGGING (one entry per item id, listing the brews using it) ---
+export interface BagUsedFlag {
+    id: string;
+    brewIds: string[];
+}
+export interface GrinderUsedFlag {
+    id: string;
+    brewIds: string[];
+}
+export interface BrewerUsedFlag {
+    id: string;
+    brewIds: string[];
+}
+export interface RecipeUsedFlag {
+    id: string;
+    brewIds: string[];
+}
+
 // --- DATABASE ROOT SCHEMA (for LocalStorage / JSON export) ---
 export interface DialBeanSchema {
     version: number;
@@ -145,4 +159,8 @@ export interface DialBeanSchema {
     brewers: Brewer[];
     recipes: Recipe[];
     brews: Brew[];
+    bagUsedFlags: BagUsedFlag[];
+    grinderUsedFlags: GrinderUsedFlag[];
+    brewerUsedFlags: BrewerUsedFlag[];
+    recipeUsedFlags: RecipeUsedFlag[];
 }

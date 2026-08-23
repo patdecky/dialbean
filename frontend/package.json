@@ -15,7 +15,6 @@
     "dexie": "^4.4.5",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-icons": "^5.7.0",
     "react-router": "^8.3.0",
     "react-router-dom": "^7.11.0",
     "tailwindcss": "^4.3.3",

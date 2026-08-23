@@ -49,6 +49,15 @@
     box-sizing: border-box;
   }
 
+  #root {
+    background-color: gray;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+
   html,
   body {
     margin: 0;
@@ -103,7 +112,8 @@
     border-color: #FAB47F !important;
   }
 
-  textarea.notes {
+  textarea.notes,
+  textarea.instructions {
     @apply border rounded-sm border-fg3 text-fg1 p-1 text-sm w-full;
   }
 
@@ -128,11 +138,15 @@
   }
 
   button {
-    @apply bg-fg1 border border-transparent text-sm font-semibold text-bg1 rounded-md px-3 py-[8px] cursor-pointer hover:ring-1 ring-mid text-nowrap;
+    @apply bg-fg1 border shadow-sm border-transparent text-sm font-semibold text-bg1 rounded-md px-3 py-[8px] cursor-pointer hover:ring-1 ring-mid text-nowrap;
   }
 
   button.inverse {
-    @apply bg-transparent text-fg1 border-fg1;
+    @apply bg-bg1 text-fg1 border-fg1;
+  }
+
+  button.transparent {
+    @apply bg-transparent shadow-none;
   }
 
   button.sm {
@@ -153,7 +167,7 @@
   }
 
   .instructions {
-    @apply text-fg1 text-sm whitespace-pre-wrap;
+    @apply text-fg1 text-xs whitespace-pre-wrap;
     font-family: 'ComicNeue', sans-serif;
   }
 
