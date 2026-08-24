@@ -59,7 +59,13 @@ const Settings = () => {
                     <h1>About & Settings</h1>
                 </div>
                 <div className="flex flex-col gap-2">
-                    <div className="label">Data:</div>
+                    <div className="label">About:</div>
+                    <p>
+                        DialBean is an open-source project released under the GPLv3 license. You can find the source code, open issues, or contribute on GitHub at <a href="https://github.com/patdecky/dialbean" target="_blank" rel="noopener noreferrer">https://github.com/patdecky/dialbean</a>.
+                    </p>
+                    <p>
+                        If you are interested in taking over or maintaining the project, contact <a href="mailto:patrikdecky@patrikdecky.com">patrikdecky@patrikdecky.com</a>.
+                    </p>
                     <button onClick={exportData}>Export Data</button>
                     <button onClick={() => setShowImportWarning(true)}>Import Data</button>
                     <button onClick={() => setShowRemoveModal(true)}>Remove All Saved Data</button>

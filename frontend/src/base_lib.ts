@@ -40,16 +40,6 @@ export const libBags: Bag[] = [
         roastLevel: 'Dark',
         isFinished: false,
         isBase: true
-    },
-    {
-        id: '6',
-        name: 'Indian Monsoon Malabar',
-        iconId: "3",
-        roastLevel: 'Medium',
-        roastDate: '2026-08-06',
-        // dateOpened: '2026-08-06',
-        isFinished: false,
-        isBase: false
     }
 ];
 
@@ -89,17 +79,6 @@ export const libGrinders: Grinder[] = [
         scaleMax: 30,
         stepSize: 1,
         isBase: true
-    },
-    {
-        id: '5',
-        name: 'Caffia Barista Pink',
-        iconId: "1",
-        scaleMin: 1,
-        scaleMax: 30,
-        stepSize: 1,
-        isBase: false,
-        notes: "Something reasonable might come here.\nAnd a new line.\nAnd another line."
-
     }
 ];
 
@@ -185,42 +164,20 @@ export const libBrewers: Brewer[] = [
         type: 'Siphon',
         iconId: "12",
         isBase: true
-    },
-    {
-        id: '13',
-        name: 'AeroPress Travel',
-        type: 'AeroPress',
-        iconId: "1",
-        isBase: false,
-        cleanedDate: '2026-08-06',
-        notes: "Something reasonable might come here.\nAnd a new line.\nAnd another line."
-
     }
 ];
 
 export const libRecipes: Recipe[] = [
     {
         id: '1',
-        name: 'Morning Pour-Over with Specialty Coffee and very long name to test the text wrapping and overflow behavior in the UI',
-        type: 'V60',
-        waterMl: 300,
-        doseG: 18,
-        tempC: 93,
-        grindPct: 45,
-        instructions: 'Use a medium grind and pour in 3 stages.',
-        isBase: true,
-        notes: "Something reasonable might come here.\nAnd a new line.\nAnd another line."
-    },
-    {
-        id: '2',
         name: 'Strong V60',
         type: 'V60',
-        waterMl: 300,
-        doseG: 18,
+        waterMl: 160,
+        doseG: 15,
         tempC: 93,
         grindPct: 45,
         instructions: '-Bloom 60 seconds 40 ml \n-Pour 1 60 ml 60 seconds \n-Pour 2 60 ml 60 seconds',
-        isBase: false
+        isBase: true
     }
 ];
 
