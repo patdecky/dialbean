@@ -4,7 +4,7 @@ import type { BrewerType, RoastLevel } from "./types";
 export type Icon = (props: React.ComponentProps<"img">) => JSX.Element;
 
 const makeIcon = (source: string, alt: string) => (props: React.ComponentProps<"img">) => (
-    <img src={`/icons/${source}`} alt={alt} {...props} />
+    <img src={`/${source}`} alt={alt} {...props} />
 );
 
 export const AcidityIcon = makeIcon("acidity.svg", "Acidity");

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { XActionIcon } from "./action_icons";
 import { AcidityIcon, SweetIcon, BitterIcon, BodyIcon, StrengthIcon } from "./icons";
-import type { Brew, Bag, ItemTypeName, ItemType } from "./types";
 
 export const ConfirmModal = ({ title, okButton, onConfirm, onCancel }:
     {

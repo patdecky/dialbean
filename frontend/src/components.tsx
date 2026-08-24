@@ -839,6 +839,12 @@ export const ItemDetailsDialog = ({
                     onClose={() => setShowCannotRemoveBaseModal(false)}
                 />
             )}
+            {showCannotEditBaseModal && (
+                <MessageModal
+                    title={`This ${type} is a base item and cannot be edited.`}
+                    onClose={() => setShowCannotEditBaseModal(false)}
+                />
+            )}
             {showConfirmCopyModal && (
                 <ConfirmModal
                     title={`Are you sure you want to copy this ${type}?`}
