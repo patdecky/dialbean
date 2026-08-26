@@ -35,7 +35,7 @@ const Counter = () => {
 
     if (!data) { return <div className="flex items-center justify-center">Loading...</div>; }
 
-    const activeBrews: Brew[] = data.brews.filter(brew => data.bags.find(bag => bag.id === brew.bagId)?.isFinished === false);
+    const activeBrews: Brew[] = data.brews.filter(brew => !data.bags.find(bag => bag.id === brew.bagId)?.isFinished);
     const finishedBrews: Brew[] = data.brews.filter(brew => data.bags.find(bag => bag.id === brew.bagId)?.isFinished === true);
     const activeBrewGrinders: Grinder[] = activeBrews.map(brew => data.grinders.find(grinder => grinder.id === brew.grinderId)) as Grinder[];
     const activeBrewBrewers: Brewer[] = activeBrews.map(brew => data.brewers.find(brewer => brewer.id === brew.brewerId)) as Brewer[];

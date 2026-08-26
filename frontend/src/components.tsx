@@ -801,7 +801,8 @@ export const ItemDetailsDialog = ({
         <div className="dialog">
             {newItemDialogActive && (
                 <NewItemDialog
-                    item={copyItem ? item : undefined}
+                    item={item}
+                    edit={!copyItem}
                     onClose={() => setNewItemDialogActive(false)}
                     type={type}
                     onSave={(itemIN) => {
@@ -1068,7 +1069,7 @@ export const NewItemDialog = ({
     const [scaleMin, setScaleMin] = useState<number | null>((item as Grinder)?.scaleMin ?? 0);
     const [scaleMax, setScaleMax] = useState<number | null>((item as Grinder)?.scaleMax ?? 10);
     const [stepSize, setStepSize] = useState<number | null>((item as Grinder)?.stepSize ?? 1);
-    const [roaster, setRoaster] = useState<string>((item as Bag)?.roaster ?? "Roaster");
+    const [roaster, setRoaster] = useState<string>((item as Bag)?.roaster ?? "");
     const [roastLevel, setRoastLevel] = useState<RoastLevel>((item as Bag)?.roastLevel ?? (getNameIcon(iconId, "bag")?.name ?? "Medium"));
     const [roastDate, setRoastDate] = useState<string | undefined>((item as Bag)?.roastDate ?? undefined); //ISO string
     const [dateOpened, setDateOpened] = useState<string | undefined>((item as Bag)?.dateOpened ?? undefined); //ISO string
@@ -1098,7 +1099,7 @@ export const NewItemDialog = ({
                 roastLevel: roastLevel,
                 roastDate: roastDate ?? undefined,
                 notes: notes.trim() === "" ? undefined : notes,
-                dateOpened: dateOpened ?? undefined
+                dateOpened: dateOpened ?? undefined,
             } as Bag);
         } else if (type === "brewer") {
             if (brewerType.trim() === "") {
@@ -1357,7 +1358,7 @@ export const NewItemDialog = ({
                         </div>
                         <div>
                             <div className="label">Roaster:</div>
-                            <input type="text" value={roaster} className="name" onChange={(e) => setRoaster(e.target.value)} placeholder="e.g. Local Roaster" />
+                            <input type="text" value={roaster} className="name" onChange={(e) => setRoaster(e.target.value)} placeholder="Roaster" />
                         </div>
                         <div>
                             <div className="label">Roast date:</div>
@@ -1901,6 +1902,7 @@ export const PickItemCarousel = (
                     } : undefined}
                     onRemoveItem={onRemoveItem ? onRemoveItem : undefined}
                     brewerType={brewerType ? brewerType : undefined}
+                    onSelectDetails={onSelectDetails ? onSelectDetails : undefined}
                 />
             )}
             {canScrollLeft && (
